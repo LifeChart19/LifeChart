@@ -48,4 +48,11 @@ public class User extends BaseEntity {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
     }
+
+    //소셜로그인
+    @Column
+    private String provider;
+
+    @Column
+    private String providerId;
 }
