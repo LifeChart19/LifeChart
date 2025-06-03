@@ -39,8 +39,8 @@ public class SwaggerConfig {
 						.bearerFormat("JWT")
 				))
 			.externalDocs(new ExternalDocumentation() // 외부 문서 링크
-				.description("깃허르 레포지토리")
-				.url("깃 주소"));
+				.description("깃허브 레포지토리")
+				.url("https://github.com/LifeChart19/LifeChart.git"));
 	}
 
 	@Bean
