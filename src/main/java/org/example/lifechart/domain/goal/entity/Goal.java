@@ -1,0 +1,72 @@
+package org.example.lifechart.domain.goal.entity;
+
+import java.time.LocalDateTime;
+
+import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.enums.Category;
+import org.example.lifechart.domain.goal.enums.Share;
+import org.example.lifechart.domain.goal.enums.Status;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder(toBuilder = true) // 객체2 = 객체1.toBuilder()...를 사용하면 이미 생성된 객체로부터 Builder를 생성해 값 일부만 수정한 새 객체를 만들 수 있음
+@Table(name="goal")
+public class Goal extends BaseEntity {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+
+	@Column(nullable = false)
+	private String title;
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Category category;
+
+	@Column(nullable = false)
+	private Long targetAmount;
+
+	@Column(nullable = false)
+	private LocalDateTime startAt;
+
+	@Column(nullable = false)
+	private LocalDateTime endAt;
+
+	@Column(nullable = false)
+	private Float progressRate;
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Status status;
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Share share;
+
+
+
+
+}
