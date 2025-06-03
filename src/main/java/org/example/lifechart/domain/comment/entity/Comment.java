@@ -1,6 +1,5 @@
 package org.example.lifechart.domain.comment.entity;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
