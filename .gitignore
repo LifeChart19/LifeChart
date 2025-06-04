@@ -25,7 +25,9 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-.env
+
+# secret config
+application-secret.properties
 
 ### NetBeans ###
 /nbproject/private/
