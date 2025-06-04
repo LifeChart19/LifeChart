@@ -1,6 +1,7 @@
 package org.example.lifechart.domain.user.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -18,4 +19,7 @@ public class SignupRequest {
 
     @NotBlank(message = "닉네임은 필수입니다.")
     private String nickname;
+
+    @Min(value = 0, message = "나이는 0 이상이어야 합니다.")
+    private int age;
 }

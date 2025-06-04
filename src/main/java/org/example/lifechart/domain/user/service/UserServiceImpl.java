@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserService{
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .nickname(request.getNickname())
+                .age(request.getAge())
                 .build();
 
         userRepository.save(user);
