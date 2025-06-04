@@ -1,17 +1,30 @@
 package org.example.lifechart.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lifechart.common.enums.ErrorCode;
+import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.auth.dto.LoginRequest;
 import org.example.lifechart.domain.auth.dto.LoginResponse;
+import org.example.lifechart.domain.user.entity.User;
+import org.example.lifechart.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService {
+public class    AuthServiceImpl implements AuthService {
+
+    private final UserRepository userRepository;
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        //로그인 로직 구현 전
+        // 이메일로 유저 조회
+        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+
+        // 이메일로 유저 조회, 실패 시 예외 처리
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorCode.EMAIL_NOT_FOUND));
+
         return null;
     }
 }
