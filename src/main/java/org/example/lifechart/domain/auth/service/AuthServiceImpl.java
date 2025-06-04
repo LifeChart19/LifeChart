@@ -7,6 +7,7 @@ import org.example.lifechart.domain.auth.dto.LoginRequest;
 import org.example.lifechart.domain.auth.dto.LoginResponse;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
@@ -15,16 +16,19 @@ import java.util.Optional;
 public class    AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        // 이메일로 유저 조회
-        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
 
         // 이메일로 유저 조회, 실패 시 예외 처리
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.EMAIL_NOT_FOUND));
 
+        // 비밀번호 불일치 시 예외 발생
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new CustomException(ErrorCode.NOT_MATCH_PASSWORD);
+        }
         return null;
     }
 }
