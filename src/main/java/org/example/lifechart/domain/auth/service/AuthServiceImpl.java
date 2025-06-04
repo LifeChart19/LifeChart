@@ -9,7 +9,8 @@ import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
+import org.example.lifechart.security.JwtUtil;
+
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class    AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -29,6 +31,11 @@ public class    AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.NOT_MATCH_PASSWORD);
         }
-        return null;
+
+        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail());
+        String refreshToken = jwtUtil.createRefreshToken(user.getId(), user.getEmail());
+
+        return new LoginResponse(accessToken, refreshToken);
+
     }
 }
