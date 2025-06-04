@@ -13,7 +13,7 @@ public class SignupRequest {
     private String email;
 
     @NotBlank(message = "비밀번호는 필수입니다.")
-    @Size(min = 4, message = "비밀번호는 최소 4자 이상이어야 합니다.")
+    @Size(min = 4, message = "비밀번호는 최소 4자 이상이어야 합니다.") // 일단은 4자리만 추후에 특수문자등 추가
     private String password;
 
     @NotBlank(message = "닉네임은 필수입니다.")
