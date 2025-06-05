@@ -18,6 +18,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder(toBuilder = true) // 객체2 = 객체1.toBuilder()...를 사용하면 이미 생성된 객체로부터 Builder를 생성해 값 일부만 수정한 새 객체를 만들 수 있음
 @Table(name="goal")
 public class Goal extends BaseEntity {
