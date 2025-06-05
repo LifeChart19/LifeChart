@@ -1,10 +1,9 @@
 package org.example.lifechart.common.enums;
 
-import org.springframework.http.HttpStatus;
+import org.example.lifechart.common.response.ReasonDto;
 
 public interface BaseCode {
 
-    HttpStatus getStatus();
+    ReasonDto getReasonHttpStatus();
 
-    String getMessage();
 }
