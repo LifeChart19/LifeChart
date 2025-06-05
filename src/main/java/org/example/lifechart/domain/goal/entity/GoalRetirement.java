@@ -1,9 +1,12 @@
 package org.example.lifechart.domain.goal.entity;
 
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.enums.RetirementType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,6 +32,9 @@ public class GoalRetirement extends BaseEntity {
 	@OneToOne
 	@JoinColumn(name = "goal_id", nullable = false)
 	private Goal goal;
+
+	@Enumerated(EnumType.STRING)
+	private RetirementType retirementType;
 
 	@Column(nullable = false)
 	private Long monthlyExpense;

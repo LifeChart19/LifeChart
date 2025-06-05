@@ -34,7 +34,10 @@ public class GoalHousing extends BaseEntity {
 	private Goal goal;
 
 	@Column(nullable = false)
-	private String address;
+	private String region;
+
+	@Column(nullable = false)
+	private String subregion;
 
 	@Column(nullable = false)
 	private Long area;
