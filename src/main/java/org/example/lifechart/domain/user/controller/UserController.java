@@ -1,6 +1,8 @@
 package org.example.lifechart.domain.user.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lifechart.common.dto.CommonResponseDto;
+import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.domain.user.dto.SignupRequest;
 import org.example.lifechart.domain.user.dto.SignupResponse;
 import org.example.lifechart.domain.user.entity.User;
@@ -17,9 +19,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody @Validated SignupRequest request) {
+    public ResponseEntity<CommonResponseDto<SignupResponse>> signup(@RequestBody @Validated SignupRequest request) {
         User user = userService.signup(request);
         SignupResponse response = new SignupResponse(user.getId());
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity
+                .status(SuccessCode.CREATE_USER_SUCCESS.getStatus())
+                .body(CommonResponseDto.of(SuccessCode.CREATE_USER_SUCCESS, response));
     }
 }
