@@ -18,7 +18,7 @@ public class UserServiceImpl implements UserService{
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void signup(SignupRequest request) {
+    public User signup(SignupRequest request) {
         // 이메일 중복 확인
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new CustomException(ErrorCode.EXIST_SAME_EMAIL);
@@ -35,6 +35,6 @@ public class UserServiceImpl implements UserService{
                 .age(request.getAge())
                 .build();
 
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 }

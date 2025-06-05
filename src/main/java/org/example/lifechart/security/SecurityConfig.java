@@ -15,13 +15,13 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    //포스트맨 테스트 때문에 잠시 security 인증 모두 해제용
+    //포스트맨 테스트 때문에 잠시 security 모든 요청 허용
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // 모든 요청 허용
+                        .anyRequest().permitAll()
                 );
         return http.build();
     }
