@@ -1,0 +1,63 @@
+# 워크플로우 이름
+name: Spring Boot CI/CD
+
+# 워크플로우 실행 조건: dev 브랜치에 push될 때 실행
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-deploy:
+    # GitHub Actions에서 사용할 실행 환경
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 저장소의 코드를 체크아웃 (runner에 복사)
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2. JDK 17 설치 (Temurin 배포판 사용)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. Gradle로 프로젝트 빌드
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # 4. Docker Hub에 로그인 (비밀번호는 GitHub Secrets에서 가져옴)
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+      # 5. Docker 이미지 빌드
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app .
+
+      # 6. Docker 이미지 푸시 (Docker Hub 업로드)
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
+
+      # 7. EC2에 접속하기 위한 SSH 키 복사 및 권한 설정
+      - name: Copy SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      # 8. EC2 서버에 접속해서 배포 작업 실행
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            # 최신 Docker 이미지 pull
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
+
+            # 기존 컨테이너 중지 및 삭제 (존재할 경우만)
+            docker stop spring-container || true
+            docker rm spring-container || true
+
+            # 새 컨테이너 실행 (80번 포트를 8080으로 매핑)
+            docker run -d --name spring-container -p 80:8080 ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
+          EOF
