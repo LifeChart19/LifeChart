@@ -27,11 +27,12 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.EMAIL_NOT_FOUND));
 
-        // 비밀번호 불일치 시 예외 발생
+        // 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.NOT_MATCH_PASSWORD);
         }
 
+        // JWT 토큰 생성
         String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail());
         String refreshToken = jwtUtil.createRefreshToken(user.getId(), user.getEmail());
 
