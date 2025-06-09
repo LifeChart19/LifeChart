@@ -52,6 +52,12 @@ public enum ErrorCode implements BaseCode {
     NOT_EXIST_COOKIE(HttpStatus.NOT_FOUND, "쿠키가 존재하지 않습니다."),
     SC_BAD_REQUEST(HttpStatus.BAD_REQUEST, "JWT 토큰이 없거나 일치하지 않습니다."),
 
+    // jwt
+    INVALID_JWT_SIGNATURE(HttpStatus.UNAUTHORIZED, "JWT 서명이 유효하지 않습니다."),
+    MALFORMED_JWT(HttpStatus.UNAUTHORIZED, "JWT 형식이 올바르지 않습니다."),
+    EXPIRED_JWT(HttpStatus.UNAUTHORIZED, "JWT 토큰이 만료되었습니다."),
+    UNSUPPORTED_JWT(HttpStatus.UNAUTHORIZED, "지원하지 않는 JWT 토큰입니다."),
+    EMPTY_JWT(HttpStatus.UNAUTHORIZED, "JWT 토큰이 비어 있습니다."),
 
 
 
