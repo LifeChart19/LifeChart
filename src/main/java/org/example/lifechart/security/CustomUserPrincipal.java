@@ -25,11 +25,13 @@ public class CustomUserPrincipal implements UserDetails {
         this.role = user.getRole();
     }
 
+    // 권한 목록
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); // 권한 관리 X 시 비움
+        return Collections.emptyList(); // 현재 권한 미사용(User/Admin...)
     }
 
+    // 인증 시 기준밦으로 사용할 username(email)
     @Override
     public String getUsername() {
         return email;
@@ -40,7 +42,7 @@ public class CustomUserPrincipal implements UserDetails {
         return password;
     }
 
-    // 계정 만료, 잠김, 활성 여부는 true로 고정
+    // 계정 상태 관련 설정 (계정 만료, 잠김, 활성 여부는 true로 고정)
     @Override public boolean isAccountNonExpired()     { return true; }
     @Override public boolean isAccountNonLocked()      { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }

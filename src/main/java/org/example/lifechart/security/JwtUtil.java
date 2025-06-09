@@ -22,14 +22,17 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
+    // AcessToken 생성
     public String createAccessToken(Long userId, String email) {
         return createToken(userId, email, expirationMs);
     }
 
+    // RefreshToken 생성
     public String createRefreshToken(Long userId, String email) {
         return createToken(userId, email, expirationMs * 7); // refresh token은 access보다 7배
     }
 
+    // 토큰 생성 공통 로직
     private String createToken(Long userId, String email, long expiration) {
         return Jwts.builder()
                 .setSubject(email)
@@ -40,6 +43,7 @@ public class JwtUtil {
                 .compact();
     }
 
+    // 토큰 유효성 검증
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -59,18 +63,13 @@ public class JwtUtil {
         }
     }
 
+    // 이메일 추출
     public String getEmailFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return getClaims(token).getSubject();
     }
 
+    // Claims 추출
     public Claims getClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody();
+        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
     }
 }

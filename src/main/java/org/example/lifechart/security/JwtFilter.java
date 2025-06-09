@@ -29,14 +29,19 @@ public class JwtFilter extends OncePerRequestFilter {
 
         final String authorization = request.getHeader("Authorization");
 
+        // Authorization 헤더가 없거나 "Bearer " 로 시작하지 않으면 다음 필터로
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // "Bearer " 이후 토큰만 추출
         String token = authorization.substring(7);
+
+        // 토큰에서 이메일 추출
         String email = jwtUtil.getEmailFromToken(token);
 
+        // 유저가 인증되지 않은 상태라면 토큰 검증 및 인증 객체 설정
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -45,10 +50,13 @@ public class JwtFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // 인증 성공 시 SecurityContext에 저장
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
 
+        // 다음 필터로 넘김
         filterChain.doFilter(request, response);
     }
 }
