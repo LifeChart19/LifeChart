@@ -1,10 +1,9 @@
 package org.example.lifechart.domain.user.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
+
+import java.time.LocalDate;
 
 @Getter
 public class SignupRequest {
@@ -20,6 +19,5 @@ public class SignupRequest {
     @NotBlank(message = "닉네임은 필수입니다.")
     private String nickname;
 
-    @Min(value = 0, message = "나이는 0 이상이어야 합니다.")
-    private int age;
-}
+    @NotNull(message = "생년월일은 필수입니다.")
+    private LocalDate birthDate;}

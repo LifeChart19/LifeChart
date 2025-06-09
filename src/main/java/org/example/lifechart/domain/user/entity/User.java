@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.lifechart.common.entity.BaseEntity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,9 +27,6 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String nickname;
 
-    @Column(nullable = false)
-    private Integer age;
-
     @Column
     private String gender;
 
@@ -38,16 +36,28 @@ public class User extends BaseEntity {
     @Column
     private String job;
 
-    @Column
+    @Column(nullable = false)
     private Boolean isDeleted = false;
 
     @Column
     private LocalDateTime deletedAt;
 
+    @Column(nullable = false)
+    private LocalDate birthDate;
+
+    public int getAge() {
+        if (birthDate == null) return 0; // birthDate가 null일 수 있는 흐름을 대비해서 방어 코드
+        return LocalDate.now().getYear() - birthDate.getYear();
+    }
+
     public void softDelete() {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
     }
+
+    @Builder.Default
+    @Column(nullable = false)
+    private String role = "USER";
 
     //소셜로그인
     @Column

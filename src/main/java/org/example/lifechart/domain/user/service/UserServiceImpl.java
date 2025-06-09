@@ -32,9 +32,22 @@ public class UserServiceImpl implements UserService{
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .nickname(request.getNickname())
-                .age(request.getAge())
+                .birthDate(request.getBirthDate())
+                .role("USER")
                 .build();
 
         return userRepository.save(user);
+    }
+
+    private void validateEmailDuplication(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.EXIST_SAME_EMAIL);
+        }
+    }
+
+    private void validateNicknameDuplication(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            throw new CustomException(ErrorCode.EXIST_SAME_NICKNAME);
+        }
     }
 }
