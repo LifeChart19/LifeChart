@@ -19,12 +19,10 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User signup(SignupRequest request) {
-        // 이메일 중복 확인
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new CustomException(ErrorCode.EXIST_SAME_EMAIL);
-        }
 
-        // 비밀번호 암호화
+        validateEmailDuplication(request.getEmail());
+        validateNicknameDuplication(request.getNickname());
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         // 유저 생성 및 저장
@@ -33,6 +31,9 @@ public class UserServiceImpl implements UserService{
                 .password(encodedPassword)
                 .nickname(request.getNickname())
                 .birthDate(request.getBirthDate())
+                .gender(request.getGender())
+                .job(request.getJob())
+                .phoneNumber(request.getPhoneNumber())
                 .role("USER")
                 .build();
 

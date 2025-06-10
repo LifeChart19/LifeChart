@@ -5,10 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "password")
 public class LoginRequest {
 
     // 사용자 이메일 (로그인 ID 역할)

@@ -20,4 +20,12 @@ public class SignupRequest {
     private String nickname;
 
     @NotNull(message = "생년월일은 필수입니다.")
-    private LocalDate birthDate;}
+    private LocalDate birthDate;
+
+    // 선택 입력
+    private String gender;
+    private String job;
+    private String phoneNumber;
+}
+
+
