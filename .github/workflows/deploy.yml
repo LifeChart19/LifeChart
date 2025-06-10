@@ -6,10 +6,10 @@ on:
   push:
     branches:
       - dev
-#    paths:
-#      - 'src/**'
-#      - 'build.gradle'
-#      - 'settings.gradle'
+    paths:
+      - 'src/**'
+      - 'build.gradle'
+      - 'settings.gradle'
   workflow_dispatch:
     inputs:
       confirm:
