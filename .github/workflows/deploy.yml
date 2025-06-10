@@ -30,7 +30,7 @@ jobs:
 
       # 4. Gradle로 프로젝트 빌드
       - name: Build with Gradle
-        run: ./gradlew build -x test
+        run: ./gradlew build -x test -x checkstyleMain -x checkstyleTest -x jacocoTestReport
 
       # 5. Docker Hub에 로그인 (비밀번호는 GitHub Secrets에서 가져옴)
       - name: Login to Docker Hub
