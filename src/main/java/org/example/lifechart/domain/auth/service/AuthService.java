@@ -6,4 +6,5 @@ import org.example.lifechart.domain.auth.dto.LoginResponse;
 public interface AuthService {
 
     LoginResponse login(LoginRequest request);
+    void logout(Long userId);
 }

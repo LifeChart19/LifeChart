@@ -7,9 +7,12 @@ import org.example.lifechart.domain.auth.dto.LoginRequest;
 import org.example.lifechart.domain.auth.dto.LoginResponse;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.example.lifechart.security.JwtUtil;
+
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -19,6 +22,10 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final StringRedisTemplate redisTemplate;
+
+
+    private final long refreshTokenValidityMs = 1000L * 60 * 60 * 24 * 7; // 7일
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -36,7 +43,19 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail());
         String refreshToken = jwtUtil.createRefreshToken(user.getId(), user.getEmail());
 
-        return new LoginResponse(accessToken, refreshToken);
+        // refreshToken 저장
+        redisTemplate.opsForValue().set(
+                "refresh:" + user.getId(),
+                refreshToken,
+                7, TimeUnit.DAYS // 유효기간 설정 (선택)
+        );
 
+        return new LoginResponse(accessToken, refreshToken);
+    }
+
+    @Override
+    public void logout(Long userId) {
+        // RefreshToken 삭제
+        redisTemplate.delete("refresh:" + userId);
     }
 }

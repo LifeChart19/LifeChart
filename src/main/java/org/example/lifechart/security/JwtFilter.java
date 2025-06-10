@@ -43,15 +43,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // 유저가 인증되지 않은 상태라면 토큰 검증 및 인증 객체 설정
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            CustomUserPrincipal userDetails = (CustomUserPrincipal) userDetailsService.loadUserByUsername(email);
 
             if (jwtUtil.validateToken(token)) {
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // 인증 성공 시 SecurityContext에 저장
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

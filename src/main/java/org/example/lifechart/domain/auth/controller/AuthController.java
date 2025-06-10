@@ -6,7 +6,9 @@ import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.auth.dto.LoginRequest;
 import org.example.lifechart.domain.auth.dto.LoginResponse;
 import org.example.lifechart.domain.auth.service.AuthService;
+import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -23,5 +25,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody @Valid LoginRequest request) {
         LoginResponse response = authService.login(request);
         return ApiResponse.onSuccess(SuccessCode.SUCCESS_USER_LOGIN, response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Object>> logout(@AuthenticationPrincipal CustomUserPrincipal userPrincipal) {
+        authService.logout(userPrincipal.getUserId());
+        return ApiResponse.onSuccess(SuccessCode.SUCCESS_USER_LOGOUT, null);
     }
 }

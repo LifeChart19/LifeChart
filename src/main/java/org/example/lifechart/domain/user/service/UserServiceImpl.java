@@ -2,6 +2,7 @@ package org.example.lifechart.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.domain.user.dto.SignupRequest;
+import org.example.lifechart.domain.user.dto.WithdrawalRequest;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.example.lifechart.common.exception.CustomException;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService{
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService{
                 .job(request.getJob())
                 .phoneNumber(request.getPhoneNumber())
                 .role("USER")
+                .isDeleted(false)
                 .build();
 
         return userRepository.save(user);
@@ -44,11 +47,27 @@ public class UserServiceImpl implements UserService{
         if (userRepository.existsByEmail(email)) {
             throw new CustomException(ErrorCode.EXIST_SAME_EMAIL);
         }
+        if (userRepository.existsByEmailAndIsDeletedTrue(email)) {
+            throw new CustomException(ErrorCode.DELETED_USER_EXISTS);  // 탈퇴 중 이메일 예외
+        }
     }
 
     private void validateNicknameDuplication(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
             throw new CustomException(ErrorCode.EXIST_SAME_NICKNAME);
         }
+    }
+
+    @Override
+    @Transactional
+    public void withdraw(Long userId, WithdrawalRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new CustomException(ErrorCode.NOT_MATCH_PASSWORD);
+        }
+
+        user.softDelete();
     }
 }

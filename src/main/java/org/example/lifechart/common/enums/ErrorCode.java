@@ -22,7 +22,8 @@ public enum ErrorCode implements BaseCode {
     EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "이메일을 찾을 수 없습니다."),
     NOT_MATCH_USER(HttpStatus.UNAUTHORIZED, "유저가 일치하지 않습니다."),
     EXIST_SAME_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
-    EXIST_SAME_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
+    DELETED_USER_EXISTS(HttpStatus.BAD_REQUEST, "탈퇴 진행 중인 이메일입니다."),
+    EXIST_SAME_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재 하는 닉네임입니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST,"입력한 값의 형식이 잘못되었습니다."),
 
 
