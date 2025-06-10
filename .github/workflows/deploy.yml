@@ -10,6 +10,12 @@ on:
       - 'src/**'
       - 'build.gradle'
       - 'settings.gradle'
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '⚠️ 진짜 배포하시겠습니까? yes 입력 시에만 진행됩니다.'
+        required: true
+        default: 'no'
 
 jobs:
   build-deploy:
@@ -69,10 +75,6 @@ jobs:
             --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
             --build-arg JAR_FILE=build/libs/*.jar \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app .
-
-#      # 6. Docker 이미지 빌드
-#      - name: Build Docker Image
-#        run: docker build --build-arg JAR_FILE=build/libs/*.jar -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app .
 
       # 7. Docker 이미지 푸시 (Docker Hub 업로드)
       - name: Push Docker Image
