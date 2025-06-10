@@ -6,6 +6,10 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - 'src/**'
+      - 'build.gradle'
+      - 'settings.gradle'
 
 jobs:
   build-deploy:
@@ -16,6 +20,16 @@ jobs:
       # 1. 저장소의 코드를 체크아웃 (runner에 복사)
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+              ~/.gradle/caches
+              ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       # 2. JDK 21 설치 (corretto 사용)
       - name: Set up JDK 21
@@ -35,10 +49,30 @@ jobs:
       # 5. Docker Hub에 로그인 (비밀번호는 GitHub Secrets에서 가져옴)
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          
+      # Docker Buildx 및 레이어 캐시 설정
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      # 6. Docker 이미지 빌드
-      - name: Build Docker Image
-        run: docker build --build-arg JAR_FILE=build/libs/*.jar -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app .
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker Image with cache
+        run: |
+          docker buildx build \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
+            --build-arg JAR_FILE=build/libs/*.jar \
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app .
+
+#      # 6. Docker 이미지 빌드
+#      - name: Build Docker Image
+#        run: docker build --build-arg JAR_FILE=build/libs/*.jar -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app .
 
       # 7. Docker 이미지 푸시 (Docker Hub 업로드)
       - name: Push Docker Image
@@ -55,14 +89,6 @@ jobs:
       - name: Add EC2 Host to known_hosts
         run: |
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          
-      - name: Check SSH key and permissions
-        run: |
-           ls -l ~/.ssh/
-           cat ~/.ssh/ec2_key | head -10
-
-      - name: Debug known_hosts content
-        run: cat ~/.ssh/known_hosts
 
       # 10. EC2 서버에 접속해서 배포 작업 실행
       - name: Deploy to EC2
