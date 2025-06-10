@@ -1,7 +1,9 @@
 package org.example.lifechart.domain.auth.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.enums.SuccessCode;
+import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.auth.dto.LoginRequest;
 import org.example.lifechart.domain.auth.dto.LoginResponse;
@@ -28,8 +30,18 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Object>> logout(@AuthenticationPrincipal CustomUserPrincipal userPrincipal) {
-        authService.logout(userPrincipal.getUserId());
+    public ResponseEntity<ApiResponse<Object>> logout(
+            @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        String accessToken = null;
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            accessToken = authorizationHeader.substring(7);
+        } else {
+            throw new RuntimeException("AccessToken이 필요합니다.");
+        }
+
+        authService.logout(userPrincipal.getUserId(), accessToken);
         return ApiResponse.onSuccess(SuccessCode.SUCCESS_USER_LOGOUT, null);
     }
 }

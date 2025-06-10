@@ -1,5 +1,6 @@
 package org.example.lifechart.domain.auth.service;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
@@ -54,8 +55,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logout(Long userId) {
+    public void logout(Long userId, String accessToken) {
         // RefreshToken 삭제
         redisTemplate.delete("refresh:" + userId);
+
+        // AccessToken 블랙리스트 등록 (남은 만료시간 계산)
+        Claims claims = jwtUtil.getClaims(accessToken);
+        long expirationTime = claims.getExpiration().getTime() - System.currentTimeMillis();
+        if (expirationTime > 0) {
+            redisTemplate.opsForValue().set("blacklist:" + accessToken, "logout", expirationTime, TimeUnit.MILLISECONDS);
+        }
     }
 }

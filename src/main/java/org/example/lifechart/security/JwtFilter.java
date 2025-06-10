@@ -5,9 +5,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.lifechart.common.enums.ErrorCode;
+import org.example.lifechart.common.exception.CustomException;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final StringRedisTemplate redisTemplate;
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -35,8 +39,13 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        // "Bearer " 이후 토큰만 추출
         String token = authorization.substring(7);
+
+        // ✅ 블랙리스트 확인
+        Boolean isBlacklisted = redisTemplate.hasKey("blacklist:" + token);
+        if (Boolean.TRUE.equals(isBlacklisted)) {
+            throw new CustomException(ErrorCode.INVALID_JWT_SIGNATURE); // 또는 블랙리스트 전용 에러코드
+        }
 
         // 토큰에서 이메일 추출
         String email = jwtUtil.getEmailFromToken(token);
