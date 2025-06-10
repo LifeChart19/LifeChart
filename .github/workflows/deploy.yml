@@ -55,6 +55,14 @@ jobs:
       - name: Add EC2 Host to known_hosts
         run: |
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          
+      - name: Check SSH key and permissions
+        run: |
+           ls -l ~/.ssh/
+           cat ~/.ssh/ec2_key | head -10
+
+      - name: Debug known_hosts content
+        run: cat ~/.ssh/known_hosts
 
       # 10. EC2 서버에 접속해서 배포 작업 실행
       - name: Deploy to EC2
