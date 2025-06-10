@@ -109,3 +109,14 @@ checkstyle {
     toolVersion = "8.24" // toolVersion: 사용할 Checkstyle 버전 지정 (8.24)
 }
 
+tasks.withType(Test) {
+    javaLauncher.set(
+            javaToolchains.launcherFor {
+                languageVersion.set(JavaLanguageVersion.of(17))
+            }
+    )
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release.set(17)
+}
