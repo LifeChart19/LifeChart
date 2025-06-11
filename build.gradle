@@ -7,7 +7,7 @@ plugins {
 }
 
 jacoco {
-    toolVersion = "0.8.8"
+    toolVersion = "0.8.13"
 }
 
 group = 'org.example'
@@ -107,16 +107,4 @@ checkstyle {
     configFile = file("config/checkstyle/naver-checkstyle-rules.xml") // configFile: 체크스타일 룰이 정의된 XML 경로 (네이버 사내 규칙 적용 중)
     configProperties = ["suppressionFile": "config/checkstyle/naver-checkstyle-suppressions.xml"] // configProperties: 룰 중 예외 규칙(suppression) 지정 파일
     toolVersion = "8.24" // toolVersion: 사용할 Checkstyle 버전 지정 (8.24)
-}
-
-tasks.withType(Test) {
-    javaLauncher.set(
-            javaToolchains.launcherFor {
-                languageVersion.set(JavaLanguageVersion.of(17))
-            }
-    )
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.release.set(17)
 }
