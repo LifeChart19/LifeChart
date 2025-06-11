@@ -31,7 +31,5 @@ public class SimulationParamsConverter implements AttributeConverter<SimulationP
         }
     }
 
-
-
     //
 }
