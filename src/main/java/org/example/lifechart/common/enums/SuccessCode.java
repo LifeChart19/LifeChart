@@ -47,11 +47,11 @@ public enum SuccessCode implements BaseCode{
 
 
 
-
     // Auth (Line#: 50~79)
     SUCCESS_USER_LOGIN(HttpStatus.OK,"로그인을 성공하였습니다."),
     SUCCESS_USER_LOGOUT(HttpStatus.OK,"로그아웃 되었습니다."),
     REFRESH_TOKEN_SUCCESS(HttpStatus.OK, "토큰 재발급에 성공했습니다."),
+
 
 
 
