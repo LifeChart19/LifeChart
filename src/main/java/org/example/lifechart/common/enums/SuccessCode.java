@@ -79,7 +79,7 @@ public enum SuccessCode implements BaseCode{
 
     // Goal (Line#: 80~109)
     CREATE_GOAL_SUCCESS(HttpStatus.CREATED, "목표가 생성되었습니다."),
-
+    GOAL_CALCULATE_SUCCESS(HttpStatus.OK, "목표 금액을 계산했습니다."),
 
 
 
