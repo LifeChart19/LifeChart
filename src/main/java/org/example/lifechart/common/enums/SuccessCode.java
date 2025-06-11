@@ -21,7 +21,8 @@ public enum SuccessCode implements BaseCode{
     CREATE_USER_SUCCESS(HttpStatus.CREATED, "유저를 생성했습니다."),
     UPDATE_USER_SUCCESS(HttpStatus.OK,"유저를 수정했습니다."),
     DELETE_USER_SUCCESS(HttpStatus.OK,"유저탈퇴가 완료되었습니다."),
-
+    GET_USER_INFO_SUCCESS(HttpStatus.OK, "내 정보를 조회했습니다."),
+    GET_USER_PROFILE_SUCCESS(HttpStatus.OK, "유저 프로필을 조회했습니다."),
 
 
 
@@ -50,8 +51,7 @@ public enum SuccessCode implements BaseCode{
     // Auth (Line#: 50~79)
     SUCCESS_USER_LOGIN(HttpStatus.OK,"로그인을 성공하였습니다."),
     SUCCESS_USER_LOGOUT(HttpStatus.OK,"로그아웃 되었습니다."),
-
-
+    REFRESH_TOKEN_SUCCESS(HttpStatus.OK, "토큰 재발급에 성공했습니다."),
 
 
 
