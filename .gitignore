@@ -41,3 +41,4 @@ src/main/resources/secrets/*
 !src/main/resources/secrets/application-secret.example.properties
 
 
+application-secret.properties
