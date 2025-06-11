@@ -88,7 +88,8 @@ public enum ErrorCode implements BaseCode {
 
 
     // Goal (Line#: 80~109)
-
+    GOAL_LIFESPAN_DATA_NOT_EXIST(HttpStatus.BAD_REQUEST, "사라졌습니다"),
+    GOAL_INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "임시입니다")
 
 
 

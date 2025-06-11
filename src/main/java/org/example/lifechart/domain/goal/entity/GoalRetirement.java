@@ -1,5 +1,7 @@
 package org.example.lifechart.domain.goal.entity;
 
+import java.time.LocalDate;
+
 import org.example.lifechart.common.entity.BaseEntity;
 import org.example.lifechart.domain.goal.enums.RetirementType;
 
@@ -35,6 +37,9 @@ public class GoalRetirement extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	private RetirementType retirementType;
+
+	@Column(nullable = false)
+	private LocalDate expectedDeathDate;
 
 	@Column(nullable = false)
 	private Long monthlyExpense;
