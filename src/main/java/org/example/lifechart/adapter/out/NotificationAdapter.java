@@ -24,7 +24,7 @@ public class NotificationAdapter implements NotificationPort {
 
     ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${aws.url.sqs.test}")
+    @Value("${aws.url.sqs.notification}")
     private String URL_SQS_TEST;
 
     public MessageQueueDto receiveAndDelete() {
