@@ -74,7 +74,8 @@ jobs:
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
             --build-arg JAR_FILE=build/libs/*.jar \
-            -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app .
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app \
+            --load .
 
       # 7. Docker 이미지 푸시 (Docker Hub 업로드)
       - name: Push Docker Image
