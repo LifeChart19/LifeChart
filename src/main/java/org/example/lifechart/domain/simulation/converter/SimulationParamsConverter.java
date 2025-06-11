@@ -10,7 +10,7 @@ import java.io.IOException;
 
 @Converter
 public class SimulationParamsConverter implements AttributeConverter<SimulationParams, String> {
-    
+
     //직렬화를 위해 Jackson의 ObjectMapper객체를 생성해야함.
     private final ObjectMapper objectMapper = new ObjectMapper();
 
