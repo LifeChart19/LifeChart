@@ -2,10 +2,7 @@ package org.example.lifechart.domain.simulation.dto.response;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import org.example.lifechart.domain.simulation.converter.SimulationParamsConverter;
 import org.example.lifechart.domain.simulation.entity.Simulation;
 import org.example.lifechart.domain.simulation.entity.SimulationParams;
@@ -16,10 +13,12 @@ import java.util.List;
 
 
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @Getter
 //final???
-public class SimulationResponseDto {
+//공통 부모 DTO
+public class BaseSimulationResponseDto {
 
     private Long simulationId;
 
@@ -52,8 +51,9 @@ public class SimulationResponseDto {
     @Column(columnDefinition = "json")
     private SimulationParams results;
 
-    public static SimulationResponseDto toDto(Simulation simulation) {
-        return SimulationResponseDto.builder()
+
+    public static BaseSimulationResponseDto toDto(Simulation simulation) {
+        return BaseSimulationResponseDto.builder()
                 .simulationId(simulation.getId())
                 .userNickname(simulation.getUser().getNickname())
                 .title(simulation.getTitle())

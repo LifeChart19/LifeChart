@@ -15,7 +15,6 @@ public class SimulationSummaryDto {
 
     private String title;
 
-
     public static SimulationSummaryDto toDto(Simulation simulation) {
         return SimulationSummaryDto.builder()
                     .simulationId(simulation.getId())
