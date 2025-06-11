@@ -28,10 +28,10 @@ public class AwsTestAdapter implements AwsTestPort {
     private final SqsClient sqsClient;
     private final SnsClient snsClient;
 
-    @Value("${aws.url.sqs.test}")
+    @Value("${aws.url.sqs.notification}")
     private String URL_SQS_TEST;
 
-    @Value("${aws.arn.sns.test}")
+    @Value("${aws.arn.sns.notification}")
     private String ARN_SNS_TEST;
 
     ObjectMapper objectMapper = new ObjectMapper();
