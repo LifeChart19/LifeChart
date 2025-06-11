@@ -51,8 +51,10 @@
         }
 
         public void softDelete() {
+            if (!Boolean.TRUE.equals(this.isDeleted)) {
             this.isDeleted = true;
             this.deletedAt = LocalDateTime.now();
+            }
         }
 
         @Builder.Default

@@ -41,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = authorization.substring(7);
 
-        // ✅ 블랙리스트 확인
+        // 블랙리스트 확인
         Boolean isBlacklisted = redisTemplate.hasKey("blacklist:" + token);
         if (Boolean.TRUE.equals(isBlacklisted)) {
             throw new CustomException(ErrorCode.INVALID_JWT_SIGNATURE); // 또는 블랙리스트 전용 에러코드

@@ -87,13 +87,22 @@ public class AuthServiceImpl implements AuthService {
         // 3. Redis에 저장된 리프레시 토큰과 일치하는지 체크 (보안)
         String redisKey = "refresh:" + userId;
         String savedRefreshToken = redisTemplate.opsForValue().get(redisKey);
-
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
+        redisTemplate.delete(redisKey);
+
         // 4. 새 accessToken/refreshToken 발급 (필요에 따라 refresh는 그대로, 또는 갱신)
         String newAccessToken = jwtUtil.createAccessToken(userId, email);
+        String newRefreshToken = jwtUtil.createRefreshToken(userId, email);
+
+        redisTemplate.opsForValue().set(
+                redisKey,
+                newRefreshToken,
+                refreshTokenValidityMs,
+                TimeUnit.MILLISECONDS
+        );
 
 
         return new TokenRefreshResponse(newAccessToken, refreshToken /*또는 newRefreshToken*/);
