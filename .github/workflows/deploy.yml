@@ -1,0 +1,127 @@
+# 워크플로우 이름
+name: Spring Boot CI/CD
+
+# 워크플로우 실행 조건: dev 브랜치에 push될 때 실행
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'src/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '⚠️ 진짜 배포하시겠습니까? yes 입력 시에만 진행됩니다.'
+        required: true
+        default: 'no'
+
+jobs:
+  build-deploy:
+    # GitHub Actions에서 사용할 실행 환경
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 저장소의 코드를 체크아웃 (runner에 복사)
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+              ~/.gradle/caches
+              ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # 2. JDK 21 설치 (corretto 사용)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      # 3. 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # 4. Gradle로 프로젝트 빌드
+      - name: Build with Gradle
+        run: ./gradlew build -x test -x checkstyleMain -x checkstyleTest -x jacocoTestReport
+
+      # 5. Docker Hub에 로그인 (비밀번호는 GitHub Secrets에서 가져옴)
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          
+      # Docker Buildx 및 레이어 캐시 설정
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker Image with cache
+        run: |
+          docker buildx build \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
+            --build-arg JAR_FILE=build/libs/*.jar \
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app \
+            --load .
+
+      # 7. Docker 이미지 푸시 (Docker Hub 업로드)
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
+
+      # 8. EC2에 접속하기 위한 SSH 키 복사 및 권한 설정
+      - name: Copy SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+
+        # 9. EC2 서버 호스트키 등록 (보안 강화를 위해 known_hosts에 추가)
+      - name: Add EC2 Host to known_hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # 10. EC2 서버에 접속해서 배포 작업 실행
+      - name: Deploy to EC2
+        run: |
+          ssh -i ~/.ssh/ec2_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            # 최신 Docker 이미지 받아오기
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
+
+            # 기존 컨테이너가 실행 중이면 중지 (없어도 에러 무시)
+            docker stop spring-container || true
+
+            # 기존 컨테이너가 있으면 삭제 (없어도 에러 무시)
+            docker rm spring-container || true
+
+            # 새 컨테이너 실행
+            docker run -d --name spring-container \
+              -p 80:8080 \
+              --restart always \
+              -e SPRING_PROFILES_ACTIVE=dev \
+              --health-cmd='curl -f http://localhost:8080/actuator/health || exit 1' \
+              --health-interval=30s \
+              --health-timeout=10s \
+              --health-retries=3 \
+              ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
+          EOF
+
+          # 호스트 80번 포트를 컨테이너 8080번 포트와 연결
+          # EC2 재부팅 시 자동 재시작
+          # 환경변수로 Spring 프로파일 dev로 설정
+          # 헬스체크 명령어
+          # 30초마다 헬스체크 실행
+          # 헬스체크 타임아웃 10초
+          # 헬스체크 실패시 최대 3번 재시도
