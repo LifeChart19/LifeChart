@@ -17,6 +17,7 @@ import org.example.lifechart.domain.user.service.UserService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,17 @@ public class GoalController {
 	private final GoalCalculateService goalCalculateService;
 	private final GoalServiceImpl goalService;
 	private final UserRepository userRepository;
+
+	// @Operation(
+	// 	summary = "은퇴 목표 기본(default) 설정값 반환 API",
+	// 	description = "유저의 정보를 바탕으로 은퇴 목표의 기본 설정값을 반환합니다."
+	// )
+	// @GetMapping("/retirement")
+	// public ResponseEntity<ApiResponse<RetirementGoalDefaultResponse>> getDefaultRetirementGoal(
+	// 	@AuthenticationPrincipal CustomUserPrincipal principal
+	// ) {
+	//
+	// }
 
 	@Operation(
 		summary = "목표 금액 계산",
