@@ -1,9 +1,15 @@
 package org.example.lifechart.domain.goal.entity;
 
+import java.time.LocalDate;
+
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.enums.RetirementType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,9 +32,16 @@ public class GoalRetirement extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "goal_id", nullable = false)
 	private Goal goal;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private RetirementType retirementType;
+
+	@Column(nullable = false)
+	private LocalDate expectedDeathDate;
 
 	@Column(nullable = false)
 	private Long monthlyExpense;

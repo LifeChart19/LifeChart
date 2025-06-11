@@ -1,14 +1,12 @@
 package org.example.lifechart.domain.goal.enums;
 
-public enum Status {
-	ACTIVE("활성화"), // 활성화
-	ACHIEVED("달성"), // 달성
-	DELETED("삭제"), // 삭제
-	MISSED("미달성"); // 미달성
+public enum RetirementType {
+	COUPLE("부부"), // 부부
+	SOLO("개인"); // 개인
 
 	private final String description;
 
-	Status(String description) {
+	RetirementType(String description) {
 		this.description = description;
 	}
 

@@ -47,7 +47,6 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
     // Auth (Line#: 50~79)
     NOT_MATCH_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
     NOT_EXIST_COOKIE(HttpStatus.NOT_FOUND, "쿠키가 존재하지 않습니다."),
@@ -78,21 +77,12 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
-
-
-
-
-
-
-
-
     // Goal (Line#: 80~109)
-
-
-
-
-
+    GOAL_BAD_REQUEST(HttpStatus.BAD_REQUEST,"잘못된 요청입니다."),
+    GOAL_INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
+    GOAL_INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "잘못된 카테고리입니다."),
+    GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE(HttpStatus.BAD_REQUEST, "기대 수명은 목표 종료일 이후여야 합니다."),
+    GOAL_LIFESPAN_DATA_NOT_EXIST(HttpStatus.UNPROCESSABLE_ENTITY, "성별과 연도에 해당하는 기대 수명 데이터가 존재하지 않습니다.")
 
 
 
