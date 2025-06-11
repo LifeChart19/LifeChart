@@ -3,18 +3,14 @@ package org.example.lifechart.domain.simulation.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.lifechart.domain.simulation.entity.SimulationParams;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
@@ -44,8 +40,8 @@ public class BaseCreateSimulationRequestDto {
     @Min(value = 0, message = "월 지출(monthlyExpense)은 0 이상이어야 합니다.")
     private Long monthlyExpense;
 
-    @Schema(description = "시뮬레이션 파라미터")
-    private SimulationParams params;
+//    @Schema(description = "시뮬레이션 파라미터")
+//    private SimulationParams params;
 
     @Schema(description = "연결할 목표 ID 리스트", example = "[1, 2, 3]")
     private List<Long> goalIds = new ArrayList<>();
