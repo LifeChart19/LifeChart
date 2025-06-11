@@ -116,6 +116,7 @@ jobs:
               --health-timeout=10s \
               --health-retries=3 \
               ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
+            docker image prune -f
           EOF
 
           # 호스트 80번 포트를 컨테이너 8080번 포트와 연결
