@@ -7,7 +7,7 @@ plugins {
 }
 
 jacoco {
-    toolVersion = "0.8.8"
+    toolVersion = "0.8.13"
 }
 
 group = 'org.example'
@@ -108,4 +108,3 @@ checkstyle {
     configProperties = ["suppressionFile": "config/checkstyle/naver-checkstyle-suppressions.xml"] // configProperties: 룰 중 예외 규칙(suppression) 지정 파일
     toolVersion = "8.24" // toolVersion: 사용할 Checkstyle 버전 지정 (8.24)
 }
-
