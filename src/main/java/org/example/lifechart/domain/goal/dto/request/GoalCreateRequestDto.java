@@ -10,7 +10,6 @@ import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.validation.annotation.ValidGoalPeriod;
 import org.example.lifechart.validation.support.HaSGoalPeriod;
-import org.springframework.cglib.core.Local;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -53,9 +52,9 @@ public class GoalCreateRequestDto implements HaSGoalPeriod {
 	@Schema(description = "카테고리별 상세 정보", example = "housing: {} / retirement : {} / etc: {}")
 	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 	@JsonSubTypes({
-		@JsonSubTypes.Type(value = GoalHousingDetailRequestDto.class, name = "housing"),
-		@JsonSubTypes.Type(value = GoalRetirementDetailRequestDto.class, name = "retirement"),
-		@JsonSubTypes.Type(value = GoalEtcDetailRequestDto.class, name = "etc")
+		@JsonSubTypes.Type(value = GoalHousingRequestDto.class, name = "housing"),
+		@JsonSubTypes.Type(value = GoalRetirementRequestDto.class, name = "retirement"),
+		@JsonSubTypes.Type(value = GoalEtcRequestDto.class, name = "etc")
 	})
 	@NotNull(message = "카테고리 상세 정보는 필수 입력입니다.")
 	private GoalDetailRequestDto detail;

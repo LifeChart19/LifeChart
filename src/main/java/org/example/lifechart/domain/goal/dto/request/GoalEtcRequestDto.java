@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GoalEtcDetailRequestDto implements GoalDetailRequestDto{
+public class GoalEtcRequestDto implements GoalDetailRequestDto{
 
 	@Schema(description = "필요 금액", example = "100000000")
 	@NotNull(message = "필요 금액은 필수 입력입니다.")

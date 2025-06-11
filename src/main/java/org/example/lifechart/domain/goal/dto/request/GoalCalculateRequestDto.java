@@ -38,9 +38,9 @@ public class GoalCalculateRequestDto implements HaSGoalPeriod {
 	@NotNull(message = "목표 상세 정보는 필수 입력입니다.")
 	@JsonTypeInfo(use= JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 	@JsonSubTypes({
-		@JsonSubTypes.Type(value = GoalHousingDetailRequestDto.class, name = "housing"),
-		@JsonSubTypes.Type(value = GoalRetirementDetailRequestDto.class, name = "retirement"),
-		@JsonSubTypes.Type(value = GoalEtcDetailRequestDto.class, name = "etc")
+		@JsonSubTypes.Type(value = GoalHousingRequestDto.class, name = "housing"),
+		@JsonSubTypes.Type(value = GoalRetirementRequestDto.class, name = "retirement"),
+		@JsonSubTypes.Type(value = GoalEtcRequestDto.class, name = "etc")
 	})
 	private GoalDetailRequestDto detail;
 

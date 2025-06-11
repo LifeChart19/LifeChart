@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GoalRetirementDetailRequestDto implements GoalDetailRequestDto{
+public class GoalRetirementRequestDto implements GoalDetailRequestDto{
 
 	@Schema(description = "월 지출", example = "3000000")
 	@Min(1L) // 최소 1원
@@ -42,8 +42,8 @@ public class GoalRetirementDetailRequestDto implements GoalDetailRequestDto{
 	@NotNull(message = "기대 수명은 필수 입력입니다.")
 	private Long expectedLifespan; // endAt보다 크거나 같음을 검증하는 로직 필요. 어디에서 할지는 고민 필요
 
-	public GoalRetirementDetailRequestDto withFallbacks(User user, StandardValueService standardValueService) {
-		return GoalRetirementDetailRequestDto.builder()
+	public GoalRetirementRequestDto withFallbacks(User user, StandardValueService standardValueService) {
+		return GoalRetirementRequestDto.builder()
 			.retirementType(this.retirementType != null ? this.retirementType : RetirementType.COUPLE) // 은퇴 타입 기본 설정: 부부
 			.monthlyExpense(this.monthlyExpense != null ? this.monthlyExpense : standardValueService.getAverageMonthlyExpense(retirementType)) // 은퇴 타입에 따라 월 평균 지출 기본 설정
 			.expectedLifespan(this.expectedLifespan != null ? this.expectedLifespan : standardValueService.getExpectedLifespan(user.getGender(), LocalDate.now().getYear())) // 성별에 따른 평균 수명 기본 설정

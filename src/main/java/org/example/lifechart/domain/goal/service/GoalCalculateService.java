@@ -8,9 +8,9 @@ import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.request.GoalCalculateRequestDto;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequestDto;
 import org.example.lifechart.domain.goal.dto.request.GoalDetailRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalEtcDetailRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalHousingDetailRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalRetirementDetailRequestDto;
+import org.example.lifechart.domain.goal.dto.request.GoalEtcRequestDto;
+import org.example.lifechart.domain.goal.dto.request.GoalHousingRequestDto;
+import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequestDto;
 import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.HousingType;
 import org.example.lifechart.domain.goal.helper.GoalDateHelper;
@@ -42,16 +42,16 @@ public class GoalCalculateService implements GoalCalculator{
 	private Long doCalculate(Category category, LocalDate endAt, GoalDetailRequestDto detail, User user) {
 		switch (category) {
 			case HOUSING -> {
-				var housing = (GoalHousingDetailRequestDto)detail;
+				var housing = (GoalHousingRequestDto)detail;
 				return calculateHousingPrice(endAt, housing);
 			}
 			case RETIREMENT -> {
-				var retirement = (GoalRetirementDetailRequestDto)detail;
+				var retirement = (GoalRetirementRequestDto)detail;
 				int birthYear = user.getBirthDate().getYear();
 				return calculateRetirementPrice(endAt, retirement, birthYear);
 			}
 			case ETC -> {
-				var etc = (GoalEtcDetailRequestDto)detail;
+				var etc = (GoalEtcRequestDto)detail;
 				return calculateEtcPrice(endAt, etc);
 			}
 			default -> throw new CustomException(ErrorCode.GOAL_INVALID_CATEGORY);
@@ -68,7 +68,7 @@ public class GoalCalculateService implements GoalCalculator{
 	}
 
 	// 집값 계산 로직
-	private Long calculateHousingPrice(LocalDate endAt, GoalHousingDetailRequestDto housing) {
+	private Long calculateHousingPrice(LocalDate endAt, GoalHousingRequestDto housing) {
 		String region = housing.getRegion();
 		String subregion = housing.getSubregion();
 		Long area = housing.getArea();
@@ -84,7 +84,7 @@ public class GoalCalculateService implements GoalCalculator{
 	}
 
 	// 은퇴비 계산 로직
-	private Long calculateRetirementPrice(LocalDate endAt, GoalRetirementDetailRequestDto retirement, int birthYear) {
+	private Long calculateRetirementPrice(LocalDate endAt, GoalRetirementRequestDto retirement, int birthYear) {
 
 		// Float avgInflation = 외부 데이터 가져오기
 		// 갖고 있는 데이터: 월 지출(monthlyExpense), 은퇴 타입(retirementType), 기대 수명(expectedLifespan), 은퇴시점(endAt)
@@ -100,7 +100,7 @@ public class GoalCalculateService implements GoalCalculator{
 	}
 
 	// etc 계산 로직
-	private Long calculateEtcPrice(LocalDate endAt, GoalEtcDetailRequestDto etc) {
+	private Long calculateEtcPrice(LocalDate endAt, GoalEtcRequestDto etc) {
 		Long expectedPrice = etc.getExpectedPrice();
 		// Float avgInflation = 외부 데이터 가져오기
 		// 이 정보로 DB에서 조회하는 로직 처리

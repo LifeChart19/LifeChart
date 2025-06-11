@@ -1,15 +1,14 @@
 package org.example.lifechart.domain.goal.service;
 
 import java.time.LocalDate;
-import java.util.Locale;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequestDto;
 import org.example.lifechart.domain.goal.dto.request.GoalDetailRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalEtcDetailRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalHousingDetailRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalRetirementDetailRequestDto;
+import org.example.lifechart.domain.goal.dto.request.GoalEtcRequestDto;
+import org.example.lifechart.domain.goal.dto.request.GoalHousingRequestDto;
+import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequestDto;
 import org.example.lifechart.domain.goal.dto.response.GoalResponseDto;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
@@ -48,7 +47,7 @@ public class GoalServiceImpl {
 
 		// 1.5 기대 수명 유효성 검증 (RETIREMENT 카테고리일 경우) ... 애도 나중에 메서드 분리할 수 있을 것 같음
 		if (requestDto.getCategory() == Category.RETIREMENT) {
-			GoalRetirementDetailRequestDto retirementDetail = (GoalRetirementDetailRequestDto) fallbackAppliedDetail;
+			GoalRetirementRequestDto retirementDetail = (GoalRetirementRequestDto) fallbackAppliedDetail;
 			LocalDate expectedDeathDate = GoalDateHelper.toExpectedDeathDate(
 				retirementDetail.getExpectedLifespan(),
 				user.getBirthDate().getYear()
@@ -73,13 +72,13 @@ public class GoalServiceImpl {
 		Goal savedGoal = goalRepository.save(newGoal);
 
 		// 5. 세부 목표 저장
-		if (fallbackAppliedDetail instanceof GoalRetirementDetailRequestDto retirementDetail) {
+		if (fallbackAppliedDetail instanceof GoalRetirementRequestDto retirementDetail) {
 			GoalRetirement goalRetirement = retirementDetail.toEntity(savedGoal, user.getBirthDate().getYear());
 			goalRetirementRepository.save(goalRetirement);
-		} else if (fallbackAppliedDetail instanceof GoalHousingDetailRequestDto housingDetail) {
+		} else if (fallbackAppliedDetail instanceof GoalHousingRequestDto housingDetail) {
 			GoalHousing goalHousing = housingDetail.toEntity(savedGoal);
 			goalHousingRepository.save(goalHousing);
-		} else if (fallbackAppliedDetail instanceof GoalEtcDetailRequestDto etcDetail) {
+		} else if (fallbackAppliedDetail instanceof GoalEtcRequestDto etcDetail) {
 			GoalEtc goalEtc = etcDetail.toEntity(savedGoal);
 			goalEtcRepository.save(goalEtc);
 		} else {

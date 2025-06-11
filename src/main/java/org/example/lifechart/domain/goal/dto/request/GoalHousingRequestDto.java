@@ -1,13 +1,8 @@
 package org.example.lifechart.domain.goal.dto.request;
 
-import java.time.LocalDate;
-
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.enums.HousingType;
-import org.example.lifechart.domain.goal.enums.RetirementType;
-import org.example.lifechart.domain.goal.service.StandardValueService;
-import org.example.lifechart.domain.user.entity.User;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GoalHousingDetailRequestDto implements GoalDetailRequestDto{
+public class GoalHousingRequestDto implements GoalDetailRequestDto{
 
 	@Schema(description = "지역", example = "서울특별시")
 	@NotBlank(message = "지역은 필수 입력입니다.")
