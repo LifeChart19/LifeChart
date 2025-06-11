@@ -7,6 +7,8 @@ import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.auth.dto.LoginRequest;
 import org.example.lifechart.domain.auth.dto.LoginResponse;
+import org.example.lifechart.domain.auth.dto.TokenRefreshRequest;
+import org.example.lifechart.domain.auth.dto.TokenRefreshResponse;
 import org.example.lifechart.domain.auth.service.AuthService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
@@ -44,4 +46,13 @@ public class AuthController {
         authService.logout(userPrincipal.getUserId(), accessToken);
         return ApiResponse.onSuccess(SuccessCode.SUCCESS_USER_LOGOUT, null);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenRefreshResponse>> refresh(
+            @RequestBody @Valid TokenRefreshRequest request
+    ) {
+        TokenRefreshResponse response = authService.refresh(request);
+        return ApiResponse.onSuccess(SuccessCode.REFRESH_TOKEN_SUCCESS, response);
+    }
+
 }

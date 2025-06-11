@@ -6,6 +6,8 @@ import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.auth.dto.LoginRequest;
 import org.example.lifechart.domain.auth.dto.LoginResponse;
+import org.example.lifechart.domain.auth.dto.TokenRefreshRequest;
+import org.example.lifechart.domain.auth.dto.TokenRefreshResponse;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -66,4 +68,35 @@ public class AuthServiceImpl implements AuthService {
             redisTemplate.opsForValue().set("blacklist:" + accessToken, "logout", expirationTime, TimeUnit.MILLISECONDS);
         }
     }
+
+    @Override
+    public TokenRefreshResponse refresh(TokenRefreshRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        // 1. RefreshToken 유효성 검증
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        // 2. 토큰에서 유저 정보(email, userId) 추출
+        String email = jwtUtil.getEmailFromToken(refreshToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        Long userId = user.getId();
+
+        // 3. Redis에 저장된 리프레시 토큰과 일치하는지 체크 (보안)
+        String redisKey = "refresh:" + userId;
+        String savedRefreshToken = redisTemplate.opsForValue().get(redisKey);
+
+        if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        // 4. 새 accessToken/refreshToken 발급 (필요에 따라 refresh는 그대로, 또는 갱신)
+        String newAccessToken = jwtUtil.createAccessToken(userId, email);
+
+
+        return new TokenRefreshResponse(newAccessToken, refreshToken /*또는 newRefreshToken*/);
+    }
+
 }
