@@ -1,4 +1,4 @@
-package org.example.lifechart.domain.goal.dto.response;
-
-public class GoalDetailResponseDto {
-}
+// package org.example.lifechart.domain.goal.dto.response;
+//
+// public class GoalDetailResponseDto {
+// }
