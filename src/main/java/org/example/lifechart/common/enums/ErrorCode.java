@@ -76,13 +76,14 @@ public enum ErrorCode implements BaseCode {
 
 
 
+
 	// Goal (Line#: 80~109)
-
-
-
-
-
-
+	GOAL_BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+	GOAL_INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
+	GOAL_INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "잘못된 카테고리입니다."),
+	GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE(HttpStatus.BAD_REQUEST, "기대 수명은 목표 종료일 이후여야 합니다."),
+	GOAL_LIFESPAN_DATA_NOT_EXIST(HttpStatus.UNPROCESSABLE_ENTITY, "성별과 연도에 해당하는 기대 수명 데이터가 존재하지 않습니다."),
+	GOAL_INIT_DATA_MISSING(HttpStatus.INTERNAL_SERVER_ERROR, "목표 데이터 파일을 찾을 수 없습니다."),
 
 
 
