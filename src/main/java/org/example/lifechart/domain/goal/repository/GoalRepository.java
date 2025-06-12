@@ -1,12 +1,12 @@
 package org.example.lifechart.domain.goal.repository;
 
-
-import org.example.lifechart.domain.goal.entity.Goal;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.example.lifechart.domain.goal.entity.Goal;
+import org.example.lifechart.domain.goal.enums.Status;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
@@ -16,4 +16,5 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     // goalId + userId 조건으로 Goal 조회 (권한 검증용으로 자주 사용)
     Optional<Goal> findByIdAndUserId(Long id, Long userId);
     // 추가적인 쿼리 메서드가 필요하면 여기에 선언하시면 됩니다.
+    Optional<Goal> findByIdAndStatus(Long id, Status status);
 }
