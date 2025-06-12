@@ -84,7 +84,7 @@ public enum ErrorCode implements BaseCode {
 	GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE(HttpStatus.BAD_REQUEST, "기대 수명은 목표 종료일 이후여야 합니다."),
 	GOAL_LIFESPAN_DATA_NOT_EXIST(HttpStatus.UNPROCESSABLE_ENTITY, "성별과 연도에 해당하는 기대 수명 데이터가 존재하지 않습니다."),
 	GOAL_INIT_DATA_MISSING(HttpStatus.INTERNAL_SERVER_ERROR, "목표 데이터 파일을 찾을 수 없습니다."),
-
+	GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "목표가 존재하지 않습니다."),
 
 
 
@@ -135,14 +135,10 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
-
 	// Follow (Line#: 140~169)
 	FOLLOW_CONFLICT(HttpStatus.CONFLICT, "팔로우가 이미 존재합니다."),
 	FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우를 찾을 수 없습니다."),
-
-
-
+	FOLLOW_FORBIDDEN(HttpStatus.FORBIDDEN, "본인을 팔로우 할 수 없습니다."),
 
 
 
@@ -194,16 +190,10 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
-
-
 	// Like (Line#: 200~229)
 	LIKE_CONFLICT(HttpStatus.CONFLICT, "좋아요를 이미 눌렀습니다."),
 	LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 찾을 수 없습니다."),
 	LIKE_FORBIDDEN(HttpStatus.FORBIDDEN, "좋아요 취소는 본인만 가능합니다."),
-
-
-
 
 
 
