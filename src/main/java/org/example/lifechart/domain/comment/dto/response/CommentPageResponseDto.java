@@ -10,4 +10,5 @@ import lombok.Getter;
 public class CommentPageResponseDto {
 	private List<CommentGetResponseDto> content;
 	private Long nextCursor;
+
 }

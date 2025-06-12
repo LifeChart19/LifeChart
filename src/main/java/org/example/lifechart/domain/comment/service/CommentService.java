@@ -6,14 +6,14 @@ import org.example.lifechart.domain.comment.dto.response.CommentPageResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentResponseDto;
 
 public interface CommentService {
-	CommentResponseDto createComment(Long goalId, CommentRequestDto commentRequestDto);
+	CommentResponseDto createComment(Long authId, Long goalId, CommentRequestDto commentRequestDto);
 
-	CommentPageResponseDto getComments(Long goalId, Long cursorId, int size);
+	CommentPageResponseDto getComments(Long authId, Long goalId, Long cursorId, int size);
 
-	CommentGetResponseDto getComment(Long commentId);
+	CommentGetResponseDto getComment(Long authId, Long commentId);
 
-	CommentGetResponseDto updateComment(Long commentId, CommentRequestDto commentRequestDto);
+	CommentGetResponseDto updateComment(Long authId, Long commentId, CommentRequestDto commentRequestDto);
 
-	void deleteComment(Long commentId);
+	void deleteComment(Long authId, Long commentId);
 
 }
