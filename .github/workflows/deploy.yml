@@ -97,28 +97,23 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/ec2_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            # 최신 Docker 이미지 받아오기
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
+            cd /home/ubuntu/app
+            
+            docker compose pull
 
-            # 기존 컨테이너가 실행 중이면 중지 (없어도 에러 무시)
-            docker stop spring-container || true
+            docker compose down
 
-            # 기존 컨테이너가 있으면 삭제 (없어도 에러 무시)
-            docker rm spring-container || true
+            docker compose up -d
 
-            # 새 컨테이너 실행
-            docker run -d --name spring-container \
-              -p 80:8080 \
-              --restart always \
-              -e SPRING_PROFILES_ACTIVE=dev \
-              --health-cmd='curl -f http://localhost:8080/actuator/health || exit 1' \
-              --health-interval=30s \
-              --health-timeout=10s \
-              --health-retries=3 \
-              ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
             docker image prune -f
           EOF
-
+          
+          # docker-compose.yml이 있는 경로
+          # 최신 이미지 pull
+          # 기존 컨테이너 중지 및 삭제
+          # 새로 실행
+          # 사용하지 않는 이미지 정리
+          
           # 호스트 80번 포트를 컨테이너 8080번 포트와 연결
           # EC2 재부팅 시 자동 재시작
           # 환경변수로 Spring 프로파일 dev로 설정
