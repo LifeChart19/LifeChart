@@ -64,8 +64,8 @@ public class GoalCreateRequest implements HaSGoalPeriod {
 	private Long targetAmount;
 
 	@Schema(description = "공유 설정", example = "ALL / FOLLOWER / PRIVATE")
-	@NotNull(message = "공유 설정은 필수 입력입니다.")
 	@JsonProperty("share")
+	@NotNull(message = "공유 설정은 필수 입력입니다.")
 	private Share share; // nullable
 
 	public Goal toEntity(User user) { // GoalCreateDto를 Goal entity로 변환하는 메서드. 서비스 레이어에서 활용 예정

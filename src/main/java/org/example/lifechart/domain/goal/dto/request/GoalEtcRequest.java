@@ -23,8 +23,8 @@ public class GoalEtcRequest implements GoalDetailRequest {
 	private String theme;
 
 	@Schema(description = "필요 금액", example = "100000000")
-	@NotNull(message = "필요 금액은 필수 입력입니다.")
 	@Max(1_000_000_000_000L) // 최대 1조
+	@NotNull(message = "필요 금액은 필수 입력입니다.")
 	private Long expectedPrice;
 
 	public GoalEtc toEntity(Goal goal) {

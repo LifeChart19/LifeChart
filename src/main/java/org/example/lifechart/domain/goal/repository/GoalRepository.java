@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
     // userId 기준으로 Goal 목록 조회 (예: 특정 사용자의 모든 목표 조회)
     List<Goal> findByUserId(Long userId);

@@ -36,7 +36,7 @@ public class GoalHousingApartmentCalculateServiceTest {
 			.build();
 
 		// Mocking
-		when(apartmentPriceService.getAveragePrice("서울", "서남권", 100L)).thenReturn(143_210L);
+		given(apartmentPriceService.getAveragePrice("서울", "서남권", 100L)).willReturn(143_210L);
 
 		// when
 		Long result = goalCalculateService.calculateTargetAmount(housingDetail);
