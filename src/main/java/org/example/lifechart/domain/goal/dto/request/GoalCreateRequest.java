@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @ValidGoalPeriod
-public class GoalCreateRequestDto implements HaSGoalPeriod {
+public class GoalCreateRequest implements HaSGoalPeriod {
 
 	@Schema(description = "목표명", example = "강남 집사기")
 	@NotBlank(message = "목표명은 필수 입력입니다.")
@@ -52,12 +52,12 @@ public class GoalCreateRequestDto implements HaSGoalPeriod {
 	@Schema(description = "카테고리별 상세 정보", example = "housing: {} / retirement : {} / etc: {}")
 	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 	@JsonSubTypes({
-		@JsonSubTypes.Type(value = GoalHousingRequestDto.class, name = "housing"),
-		@JsonSubTypes.Type(value = GoalRetirementRequestDto.class, name = "retirement"),
-		@JsonSubTypes.Type(value = GoalEtcRequestDto.class, name = "etc")
+		@JsonSubTypes.Type(value = GoalHousingRequest.class, name = "housing"),
+		@JsonSubTypes.Type(value = GoalRetirementRequest.class, name = "retirement"),
+		@JsonSubTypes.Type(value = GoalEtcRequest.class, name = "etc")
 	})
 	@NotNull(message = "카테고리 상세 정보는 필수 입력입니다.")
-	private GoalDetailRequestDto detail;
+	private GoalDetailRequest detail;
 
 	@Schema(description = "목표 금액", example = "850000000") // 계산 후 반환해주며, 유저가 수정 가능함
 	@NotNull(message = "목표 금액은 필수 입력입니다.")
@@ -68,7 +68,7 @@ public class GoalCreateRequestDto implements HaSGoalPeriod {
 	@JsonProperty("share")
 	private Share share; // nullable
 
-	public Goal toEntity(User user, Long targetAmount, float progressRate) { // GoalCreateDto를 Goal entity로 변환하는 메서드. 서비스 레이어에서 활용 예정
+	public Goal toEntity(User user) { // GoalCreateDto를 Goal entity로 변환하는 메서드. 서비스 레이어에서 활용 예정
 		return Goal.builder()
 			.user(user)
 			.title(title)
@@ -76,7 +76,6 @@ public class GoalCreateRequestDto implements HaSGoalPeriod {
 			.startAt(startAt != null ? startAt : LocalDateTime.now())
 			.endAt(endAt)
 			.targetAmount(targetAmount)
-			.progressRate(progressRate)
 			.status(Status.ACTIVE)
 			.share(share != null ? share : Share.PRIVATE)
 			.build();

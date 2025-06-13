@@ -1,27 +1,23 @@
 package org.example.lifechart.domain.goal.service;
 
-import java.time.LocalDate;
-
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
-import org.example.lifechart.domain.goal.dto.request.GoalCreateRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalDetailRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalEtcRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalHousingRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequestDto;
+import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalDetailRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
 import org.example.lifechart.domain.goal.dto.response.GoalResponseDto;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.entity.GoalRetirement;
-import org.example.lifechart.domain.goal.enums.Category;
-import org.example.lifechart.domain.goal.helper.GoalDateHelper;
-import org.example.lifechart.domain.goal.helper.GoalFallbackHelper;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
 import org.example.lifechart.domain.user.entity.User;
+import org.example.lifechart.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,57 +30,39 @@ import lombok.extern.slf4j.Slf4j;
 public class GoalServiceImpl {
 
 	private final GoalRepository goalRepository;
-	private final GoalCalculateService goalCalculateService;
 	private final GoalRetirementRepository goalRetirementRepository;
 	private final GoalHousingRepository goalHousingRepository;
 	private final GoalEtcRepository goalEtcRepository;
-	private final GoalFallbackHelper goalFallbackHelper;
+	private final UserRepository userRepository;
 
 	@Transactional
-	public GoalResponseDto createGoal(GoalCreateRequestDto requestDto, User user) {
-		// 1. fallback 적용 (null 값 보정)
-		GoalDetailRequestDto fallbackAppliedDetail = goalFallbackHelper.applyFallback(requestDto, user);
+	public GoalResponseDto createGoal(GoalCreateRequest requestDto, Long userId) {
+		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		// 1.5 기대 수명 유효성 검증 (RETIREMENT 카테고리일 경우) ... 애도 나중에 메서드 분리할 수 있을 것 같음
-		if (requestDto.getCategory() == Category.RETIREMENT) {
-			GoalRetirementRequestDto retirementDetail = (GoalRetirementRequestDto) fallbackAppliedDetail;
-			LocalDate expectedDeathDate = GoalDateHelper.toExpectedDeathDate(
-				retirementDetail.getExpectedLifespan(),
-				user.getBirthDate().getYear()
-			);
-
-			if (expectedDeathDate.isBefore(requestDto.getEndAt().toLocalDate())) {
-				throw new CustomException(ErrorCode.GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE);
-			}
-		}
-
-		// 2. 목표 금액 계산
-		Long targetAmount = requestDto.getTargetAmount() != null
-			? requestDto.getTargetAmount()
-			: goalCalculateService.calculateTargetAmount(requestDto, user);
-
-		// 3. progressRate 계산
-		Long asset = 100_000_000L; // 더미 데이터. 추후 user에서 갖고 오기.
-		float progressRate = goalCalculateService.calculateProgressRate(asset, targetAmount); // 유저 자산이 입력 필드로 필요할 듯
-
-		// 4. Goal 저장
-		Goal newGoal = requestDto.toEntity(user, targetAmount, progressRate);
+		// Goal 저장
+		Goal newGoal = requestDto.toEntity(user);
 		Goal savedGoal = goalRepository.save(newGoal);
 
-		// 5. 세부 목표 저장
-		if (fallbackAppliedDetail instanceof GoalRetirementRequestDto retirementDetail) {
+		GoalDetailRequest detail = requestDto.getDetail();
+		saveGoalDetail(detail, savedGoal, user);
+
+		return GoalResponseDto.from(savedGoal);
+	}
+
+	private void saveGoalDetail(GoalDetailRequest detail, Goal savedGoal, User user) {
+		if (detail instanceof GoalRetirementRequest retirementDetail) {
 			GoalRetirement goalRetirement = retirementDetail.toEntity(savedGoal, user.getBirthDate().getYear());
 			goalRetirementRepository.save(goalRetirement);
-		} else if (fallbackAppliedDetail instanceof GoalHousingRequestDto housingDetail) {
+		} else if (detail instanceof GoalHousingRequest housingDetail) {
 			GoalHousing goalHousing = housingDetail.toEntity(savedGoal);
 			goalHousingRepository.save(goalHousing);
-		} else if (fallbackAppliedDetail instanceof GoalEtcRequestDto etcDetail) {
+		} else if (detail instanceof GoalEtcRequest etcDetail) {
 			GoalEtc goalEtc = etcDetail.toEntity(savedGoal);
 			goalEtcRepository.save(goalEtc);
 		} else {
 			throw new CustomException(ErrorCode.GOAL_INVALID_CATEGORY);
 		}
 
-		return GoalResponseDto.from(savedGoal);
 	}
 }

@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Service
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApartmentPriceServiceImpl implements ApartmentPriceService {
+public class JsonApartmentPriceService implements ApartmentPriceService {
 
 	private Map<String, Map<String, Double>> apartmentPriceMap;
 

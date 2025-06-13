@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GoalHousingRequestDto implements GoalDetailRequestDto{
+public class GoalHousingRequest implements GoalDetailRequest {
 
 	@Schema(description = "지역", example = "서울특별시")
 	@NotBlank(message = "지역은 필수 입력입니다.")

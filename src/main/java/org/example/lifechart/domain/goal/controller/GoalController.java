@@ -1,19 +1,18 @@
 package org.example.lifechart.domain.goal.controller;
 
-import java.security.Principal;
+import java.time.LocalDate;
 
-import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.enums.SuccessCode;
-import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.common.response.ApiResponse;
-import org.example.lifechart.domain.goal.dto.request.GoalCalculateRequestDto;
-import org.example.lifechart.domain.goal.dto.request.GoalCreateRequestDto;
+import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalHousingCalculateRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalRetirementCalculateRequest;
 import org.example.lifechart.domain.goal.dto.response.GoalResponseDto;
-import org.example.lifechart.domain.goal.service.GoalCalculateService;
+import org.example.lifechart.domain.goal.dto.response.GoalRetirementEstimateResponse;
+import org.example.lifechart.domain.goal.service.GoalHousingCalculateService;
+import org.example.lifechart.domain.goal.service.GoalRetirementCalculateService;
 import org.example.lifechart.domain.goal.service.GoalServiceImpl;
-import org.example.lifechart.domain.user.entity.User;
-import org.example.lifechart.domain.user.repository.UserRepository;
-import org.example.lifechart.domain.user.service.UserService;
+import org.example.lifechart.domain.goal.service.RetirementReferenceValueService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,37 +33,50 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/goals")
 public class GoalController {
 
-	private final GoalCalculateService goalCalculateService;
+	private final GoalRetirementCalculateService goalRetirementCalculateService;
+	private final GoalHousingCalculateService goalHousingCalculateService;
+	private final RetirementReferenceValueService retirementReferenceValueService;
 	private final GoalServiceImpl goalService;
-	private final UserRepository userRepository;
-
-	// @Operation(
-	// 	summary = "은퇴 목표 기본(default) 설정값 반환 API",
-	// 	description = "유저의 정보를 바탕으로 은퇴 목표의 기본 설정값을 반환합니다."
-	// )
-	// @GetMapping("/retirement")
-	// public ResponseEntity<ApiResponse<RetirementGoalDefaultResponse>> getDefaultRetirementGoal(
-	// 	@AuthenticationPrincipal CustomUserPrincipal principal
-	// ) {
-	//
-	// }
 
 	@Operation(
-		summary = "목표 금액 계산",
-		description = "유저의 목표, 목표 상세 입력값을 바탕으로 목표 금액을 계산합니다."
+		summary = "은퇴 목표 기본 설정값(estimate) 반환 API",
+		description = "유저의 정보를 바탕으로 은퇴 목표의 기본 설정값을 반환합니다."
 	)
-	// 1. 목표 금액 계산 API (프론트에서 '적용' 버튼 클릭 시 호출)
-	@PostMapping("/calculate")
-	public ResponseEntity<ApiResponse<Long>> calculateTargetAmount(
-		@RequestBody GoalCalculateRequestDto requestDto,
-		@AuthenticationPrincipal CustomUserPrincipal principal) {
+	@GetMapping("/retirement/estimate")
+	public ResponseEntity<ApiResponse<GoalRetirementEstimateResponse>> getEstimateRetirementGoal(
+		@AuthenticationPrincipal CustomUserPrincipal principal
+	) {
+		int currentYear = LocalDate.now().getYear();
+		GoalRetirementEstimateResponse response = retirementReferenceValueService.getReferenceValues(principal.getUserId(), currentYear);
+		return ApiResponse.onSuccess(SuccessCode.GOAL_RETIREMENT_ESTIMATE_SUCCESS, response);
+	}
 
-		User user = userRepository.findById(principal.getUserId())
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		Long calculatedTargetAmount = goalCalculateService.calculateTargetAmount(requestDto, user);
-
+	@Operation(
+		summary = "은퇴 목표 금액 계산 API",
+		description = "은퇴 목표 입력값을 바탕으로 목표 금액을 계산합니다."
+	)
+	// 은퇴 목표 금액 계산 API (값 입력 후 프론트에서 '계산' 버튼 클릭 시 호출됩니다.)
+	@PostMapping("/retirement/calculate")
+	public ResponseEntity<ApiResponse<Long>> calculateRetirementTargetAmount(
+		@RequestBody GoalRetirementCalculateRequest request,
+		@AuthenticationPrincipal CustomUserPrincipal principal
+	) {
+		Long calculatedTargetAmount = goalRetirementCalculateService.calculateTargetAmount(request, principal.getUserId());
 		return ApiResponse.onSuccess(SuccessCode.GOAL_CALCULATE_SUCCESS, calculatedTargetAmount);
 	};
+
+	@Operation(
+		summary = "주거 목표 금액 계산 API",
+		description = "주거 목표 입력값을 바탕으로 목표 금액을 계산합니다."
+	)
+	@PostMapping("/housing/calculate")
+	public ResponseEntity<ApiResponse<Long>> calculateHousingTargetAmount(
+		@RequestBody GoalHousingCalculateRequest request,
+		@AuthenticationPrincipal CustomUserPrincipal principal
+	) {
+		Long targetAmount = goalHousingCalculateService.calculateTargetAmount(request);
+		return ApiResponse.onSuccess(SuccessCode.GOAL_CALCULATE_SUCCESS, targetAmount);
+	}
 
 	@Operation(
 		summary = "목표 생성",
@@ -72,12 +84,11 @@ public class GoalController {
 	)
 	@PostMapping
 	public ResponseEntity<ApiResponse<GoalResponseDto>> createGoal(
-		@Valid @RequestBody GoalCreateRequestDto requestDto,
+		@Valid @RequestBody GoalCreateRequest requestDto,
 		@AuthenticationPrincipal CustomUserPrincipal principal
 		) {
-		User user = userRepository.findById(principal.getUserId())
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		GoalResponseDto responseDto = goalService.createGoal(requestDto, user);
+
+		GoalResponseDto responseDto = goalService.createGoal(requestDto, principal.getUserId());
 		return ApiResponse.onSuccess(SuccessCode.GOAL_CREATE_SUCCESS, responseDto);
 	}
 
