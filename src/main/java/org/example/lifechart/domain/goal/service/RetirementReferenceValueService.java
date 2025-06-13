@@ -11,6 +11,7 @@ import org.example.lifechart.domain.goal.enums.RetirementMonthlyExpense;
 import org.example.lifechart.domain.goal.enums.RetirementType;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,13 +22,19 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class RetirementReferenceValueService {
 
 	// 기대수명 데이터: 연도 → (성별 → 기대수명)
 	private Map<String, Map<String, Double>> lifespanMap;
 	private final UserRepository userRepository;
 
+	// 운영 환경용 생성자
+	@Autowired
+	public RetirementReferenceValueService(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
+
+	// 테스트 전용 생성자
 	public RetirementReferenceValueService(Map<String, Map<String, Double>> lifespanMap, UserRepository userRepository) {
 		this.lifespanMap = lifespanMap;
 		this.userRepository = userRepository;
