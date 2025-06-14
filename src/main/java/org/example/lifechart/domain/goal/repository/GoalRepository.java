@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.enums.Status;
+import org.example.lifechart.domain.shareGoal.repository.CustomShareGoalRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface GoalRepository extends JpaRepository<Goal, Long> {
+public interface GoalRepository extends JpaRepository<Goal, Long>, CustomShareGoalRepository {
     // userId 기준으로 Goal 목록 조회 (예: 특정 사용자의 모든 목표 조회)
     List<Goal> findByUserId(Long userId);
 
