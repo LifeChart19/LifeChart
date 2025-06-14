@@ -3,8 +3,8 @@ package org.example.lifechart.domain.comment.controller;
 import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.comment.dto.request.CommentRequestDto;
+import org.example.lifechart.domain.comment.dto.response.CommentCursorResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentGetResponseDto;
-import org.example.lifechart.domain.comment.dto.response.CommentPageResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentResponseDto;
 import org.example.lifechart.domain.comment.service.CommentService;
 import org.example.lifechart.security.CustomUserPrincipal;
@@ -40,7 +40,7 @@ public class CommentController {
 
 	// 댓글 목록 조회 (cursor 기반 QueryDSL)
 	@GetMapping("/goals/{goalId}/comments")
-	public ResponseEntity<ApiResponse<CommentPageResponseDto>> getComments(
+	public ResponseEntity<ApiResponse<CommentCursorResponseDto>> getComments(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
 		@PathVariable Long goalId,
 		@RequestParam(required = false) Long cursorId,

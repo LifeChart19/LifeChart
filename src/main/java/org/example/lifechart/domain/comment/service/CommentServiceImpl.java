@@ -5,8 +5,8 @@ import java.util.List;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.comment.dto.request.CommentRequestDto;
+import org.example.lifechart.domain.comment.dto.response.CommentCursorResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentGetResponseDto;
-import org.example.lifechart.domain.comment.dto.response.CommentPageResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentResponseDto;
 import org.example.lifechart.domain.comment.entity.Comment;
 import org.example.lifechart.domain.comment.repository.CommentRepository;
@@ -42,19 +42,16 @@ public class CommentServiceImpl implements CommentService {
 
 	@Transactional
 	@Override
-	public CommentPageResponseDto getComments(Long authId, Long goalId, Long cursorId, int size) {
+	public CommentCursorResponseDto getComments(Long authId, Long goalId, Long cursorId, int size) {
 		// 로그인 유저 존재 여부 검증
 		User findedUser = validUser(authId);
 		// 목표 존재 여부 검증
 		Goal findedGoal = validGoal(goalId);
 		List<CommentGetResponseDto> list = commentRepository.findByIdAndCursor(findedGoal.getId(), cursorId, size)
 			.stream()
-			.map(CommentGetResponseDto::from).toList();
-		Long nextCursor = list.isEmpty() ? null : list.getLast().getId() - 1;
-		return CommentPageResponseDto.builder()
-			.content(list)
-			.nextCursor(nextCursor)
-			.build();
+			.map(CommentGetResponseDto::from)
+			.toList();
+		return CommentCursorResponseDto.from(list);
 	}
 
 	@Transactional

@@ -9,8 +9,8 @@ import java.util.Optional;
 
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.comment.dto.request.CommentRequestDto;
+import org.example.lifechart.domain.comment.dto.response.CommentCursorResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentGetResponseDto;
-import org.example.lifechart.domain.comment.dto.response.CommentPageResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentResponseDto;
 import org.example.lifechart.domain.comment.entity.Comment;
 import org.example.lifechart.domain.comment.repository.CommentRepository;
@@ -118,7 +118,7 @@ class CommentServiceImplTest {
 		given(commentRepository.findByIdAndCursor(goalId, null, 10)).willReturn(comments);
 
 		// when
-		CommentPageResponseDto result = commentService.getComments(me, goalId, null, 10);
+		CommentCursorResponseDto result = commentService.getComments(me, goalId, null, 10);
 
 		// then
 		assertEquals(comment.getId(), result.getContent().getFirst().getId());
@@ -139,7 +139,7 @@ class CommentServiceImplTest {
 		given(commentRepository.findByIdAndCursor(goalId, null, 10)).willReturn(list);
 
 		// when
-		CommentPageResponseDto result = commentService.getComments(me, goalId, null, 10);
+		CommentCursorResponseDto result = commentService.getComments(me, goalId, null, 10);
 
 		// then
 		assertEquals(responseDtoList, result.getContent());
