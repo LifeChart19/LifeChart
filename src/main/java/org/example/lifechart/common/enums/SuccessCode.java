@@ -137,7 +137,7 @@ public enum SuccessCode implements BaseCode {
 
 
 
-	// Follow (Line#: 140~169)
+	// Follow (Line#: 140~156)
 	CREATE_FOLLOW_SUCCESS(HttpStatus.CREATED, "팔로우를 생성했습니다."),
 	GET_ALL_FOLLOWERS_SUCCESS(HttpStatus.OK, "대상의 팔로워 목록을 조회합니다."),
 	GET_ALL_FOLLOWING_SUCCESS(HttpStatus.OK, "대상의 팔로잉 목록을 조회합니다."),
@@ -154,8 +154,8 @@ public enum SuccessCode implements BaseCode {
 
 
 
-
-
+	// ShareGoal (Line#: 157~169)
+	GET_ALL_SHAREGOALS_SUCCESS(HttpStatus.OK, "공유 목표 목록을 조회합니다"),
 
 
 
