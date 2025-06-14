@@ -1,6 +1,7 @@
 package org.example.lifechart.common.enums;
 
 import org.example.lifechart.common.response.ReasonDto;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
@@ -76,7 +77,6 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
 	// Goal (Line#: 80~109)
 	GOAL_BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 	GOAL_INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
@@ -135,10 +135,14 @@ public enum ErrorCode implements BaseCode {
 
 
 
+
+
 	// Follow (Line#: 140~169)
 	FOLLOW_CONFLICT(HttpStatus.CONFLICT, "팔로우가 이미 존재합니다."),
 	FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우를 찾을 수 없습니다."),
 	FOLLOW_FORBIDDEN(HttpStatus.FORBIDDEN, "본인을 팔로우 할 수 없습니다."),
+
+
 
 
 
@@ -190,10 +194,16 @@ public enum ErrorCode implements BaseCode {
 
 
 
+
+
+
 	// Like (Line#: 200~229)
 	LIKE_CONFLICT(HttpStatus.CONFLICT, "좋아요를 이미 눌렀습니다."),
 	LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 찾을 수 없습니다."),
 	LIKE_FORBIDDEN(HttpStatus.FORBIDDEN, "좋아요 취소는 본인만 가능합니다."),
+
+
+
 
 
 
