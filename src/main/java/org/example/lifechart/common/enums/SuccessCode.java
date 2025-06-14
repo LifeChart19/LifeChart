@@ -22,6 +22,7 @@ public enum SuccessCode implements BaseCode {
 	// Goal (Line#: 80~109)
 	GOAL_CREATE_SUCCESS(HttpStatus.CREATED, "목표가 생성되었습니다."),
 	GOAL_CALCULATE_SUCCESS(HttpStatus.OK, "목표 금액을 계산했습니다."),
+	GOAL_RETIREMENT_ESTIMATE_SUCCESS(HttpStatus.OK, "은퇴 목표 기본값 반환에 성공했습니다."),
 
 	// Simulation (Line#: 110~139)
 
