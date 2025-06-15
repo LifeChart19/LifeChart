@@ -11,7 +11,7 @@ import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
-import org.example.lifechart.domain.goal.dto.response.GoalResponseDto;
+import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
@@ -93,7 +93,7 @@ public class GoalServiceImplTest {
 		given(goalRetirementRepository.save(any())).willReturn(goalRetirement);
 
 		// when
-		GoalResponseDto response = goalService.createGoal(request, user.getId());
+		GoalResponse response = goalService.createGoal(request, user.getId());
 
 		// then
 		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
@@ -144,7 +144,7 @@ public class GoalServiceImplTest {
 		given(goalHousingRepository.save(any())).willReturn(goalHousing);
 
 		// when
-		GoalResponseDto response = goalService.createGoal(request, user.getId());
+		GoalResponse response = goalService.createGoal(request, user.getId());
 
 		// then
 		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
@@ -193,7 +193,7 @@ public class GoalServiceImplTest {
 		given(goalEtcRepository.save(any())).willReturn(goalEtc);
 
 		// when
-		GoalResponseDto response = goalService.createGoal(request, user.getId());
+		GoalResponse response = goalService.createGoal(request, user.getId());
 
 		// then
 		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());

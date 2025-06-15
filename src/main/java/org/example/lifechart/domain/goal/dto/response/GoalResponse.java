@@ -7,12 +7,12 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class GoalResponseDto {
+public class GoalResponse {
 
 	private final Long goalId;
 
-	public static GoalResponseDto from(Goal savedGoal) {
-		return GoalResponseDto.builder()
+	public static GoalResponse from(Goal savedGoal) {
+		return GoalResponse.builder()
 			.goalId(savedGoal.getId())
 			.build();
 	}

@@ -7,7 +7,8 @@ import org.example.lifechart.domain.goal.dto.request.GoalDetailRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
-import org.example.lifechart.domain.goal.dto.response.GoalResponseDto;
+import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
@@ -36,7 +37,7 @@ public class GoalServiceImpl {
 	private final UserRepository userRepository;
 
 	@Transactional
-	public GoalResponseDto createGoal(GoalCreateRequest requestDto, Long userId) {
+	public GoalResponse createGoal(GoalCreateRequest requestDto, Long userId) {
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -47,7 +48,7 @@ public class GoalServiceImpl {
 		GoalDetailRequest detail = requestDto.getDetail();
 		saveGoalDetail(detail, savedGoal, user);
 
-		return GoalResponseDto.from(savedGoal);
+		return GoalResponse.from(savedGoal);
 	}
 
 	private void saveGoalDetail(GoalDetailRequest detail, Goal savedGoal, User user) {
@@ -63,6 +64,13 @@ public class GoalServiceImpl {
 		} else {
 			throw new CustomException(ErrorCode.GOAL_INVALID_CATEGORY);
 		}
+	}
+
+	public GoalInfoResponse findGoal(Long goalId) {
+		Goal goal = goalRepository.findById(goalId).
+				orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
+
+		GoalDetailInfoResponse
 
 	}
 }
