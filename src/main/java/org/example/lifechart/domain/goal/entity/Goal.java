@@ -58,9 +58,6 @@ public class Goal extends BaseEntity {
 	private LocalDateTime endAt;
 
 	@Column(nullable = false)
-	private Float progressRate;
-
-	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 

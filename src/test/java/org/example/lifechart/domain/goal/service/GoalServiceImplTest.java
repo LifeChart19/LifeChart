@@ -1,16 +1,22 @@
 package org.example.lifechart.domain.goal.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.example.lifechart.common.enums.ErrorCode;
+import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
+import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalEtcInfoResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
@@ -20,6 +26,7 @@ import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.HousingType;
 import org.example.lifechart.domain.goal.enums.RetirementType;
 import org.example.lifechart.domain.goal.enums.Share;
+import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
@@ -50,6 +57,9 @@ public class GoalServiceImplTest {
 
 	@Mock
 	private UserRepository userRepository;
+
+	@Mock
+	private GoalDetailFetcherFactory goalDetailFetcherFactory;
 
 	@InjectMocks
 	private GoalServiceImpl goalService;
@@ -203,5 +213,66 @@ public class GoalServiceImplTest {
 		assertThat(goalEtc.getTheme()).isEqualTo("여행");
 		assertThat(goalEtc.getGoal()).isEqualTo(goal);
 		assertThat(response.getGoalId()).isEqualTo(1L);
+	}
+
+	@Test
+	@DisplayName("목표 개별 조회에 성공한다")
+	void findGoal_목표_개별_조회에_성공한다() {
+		// given
+		Goal goal = Goal.builder()
+			.id(1L)
+			.category(Category.ETC)
+			.build();
+
+		User user = User.builder()
+			.id(1L)
+			.build();
+
+		GoalDetailInfoResponse goalDetailInfoResponse = GoalEtcInfoResponse.builder()
+			.expectedPrice(1_000_000L)
+			.theme("여행")
+			.build();
+
+		given(goalRepository.findByIdAndUserId(goal.getId(), user.getId())).willReturn(Optional.of(goal));
+		given(goalDetailFetcherFactory.getDetail(goal)).willReturn(goalDetailInfoResponse);
+
+		// when
+		GoalInfoResponse goalInfoResponse = goalService.findGoal(goal.getId(), user.getId());
+		GoalEtcInfoResponse etcInfoResponse = (GoalEtcInfoResponse) goalInfoResponse.getDetail();
+
+		// then
+		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
+		assertThat(goalInfoResponse.getCategory()).isEqualTo(Category.ETC);
+		assertThat(goalInfoResponse.getDetail()).isEqualTo(goalDetailInfoResponse);
+		assertThat(etcInfoResponse.getTheme()).isEqualTo("여행");
+		assertThat(etcInfoResponse.getExpectedPrice()).isEqualTo(1_000_000L);
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 goalId이거나, 다른 사용자의 목표인 경우 예외를 던진다.")
+	void findGoal_존재하지_않는_goalId이거나_다른_사용자의_목표인_경우_GOAL_NOT_FOUND_예외를_던진다() {
+		// given
+		User loginUser = User.builder()
+			.id(1L)
+			.build();
+
+		User anotherUser = User.builder()
+			.id(2L)
+			.build();
+
+		Goal goal = Goal.builder()
+			.id(1L)
+			.user(anotherUser)
+			.build();
+
+		given(goalRepository.findByIdAndUserId(goal.getId(), loginUser.getId())).willReturn(Optional.empty());
+
+		// when
+		CustomException customException = assertThrows(CustomException.class, () ->
+			goalService.findGoal(goal.getId(), loginUser.getId()));
+
+		// then
+		verify(goalRepository).findByIdAndUserId(goal.getId(), loginUser.getId());
+		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_NOT_FOUND);
 	}
 }

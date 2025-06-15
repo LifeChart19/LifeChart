@@ -10,7 +10,6 @@ public class GoalMapper {
                 .title(goal.getTitle())
                 .category(goal.getCategory())
                 .targetAmount(goal.getTargetAmount())
-                .progressRate(progressRate)
                 .status(goal.getStatus())
                 .share(goal.getShare())
                 .detail(detail)

@@ -7,18 +7,21 @@ import org.example.lifechart.domain.goal.dto.request.GoalDetailRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
+import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.entity.GoalRetirement;
+import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +38,7 @@ public class GoalServiceImpl {
 	private final GoalHousingRepository goalHousingRepository;
 	private final GoalEtcRepository goalEtcRepository;
 	private final UserRepository userRepository;
+	private final GoalDetailFetcherFactory goalDetailFetcherFactory;
 
 	@Transactional
 	public GoalResponse createGoal(GoalCreateRequest requestDto, Long userId) {
@@ -66,11 +70,11 @@ public class GoalServiceImpl {
 		}
 	}
 
-	public GoalInfoResponse findGoal(Long goalId) {
-		Goal goal = goalRepository.findById(goalId).
+	public GoalInfoResponse findGoal(Long goalId, Long userId) {
+		Goal goal = goalRepository.findByIdAndUserId(goalId, userId).
 				orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
+		GoalDetailInfoResponse goalDetail = goalDetailFetcherFactory.getDetail(goal);
 
-		GoalDetailInfoResponse
-
+		return GoalInfoResponse.from(goal, goalDetail);
 	}
 }

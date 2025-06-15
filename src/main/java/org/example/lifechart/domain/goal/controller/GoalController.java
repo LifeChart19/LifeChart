@@ -94,11 +94,12 @@ public class GoalController {
 			description = "개별 목표를 조회합니다."
 	)
 	@GetMapping("/{goalId}")
-	public ResponseEntity<ApiResponse<GoalInfoResponse>> getGoalInfo(@PathVariable Long goalId) {
-		GoalInfoResponse response = goalService.findGoal(goalId);
-		return ApiResponse.onSuccess(SuccessCode.GOAL_GET_INFO_SUCCESS, goalService.findGoal(goalId));
+	public ResponseEntity<ApiResponse<GoalInfoResponse>> getGoalInfo(
+		@PathVariable Long goalId,
+		@AuthenticationPrincipal CustomUserPrincipal principal
+	) {
+		GoalInfoResponse response = goalService.findGoal(goalId, principal.getUserId());
+		return ApiResponse.onSuccess(SuccessCode.GOAL_GET_INFO_SUCCESS, response);
 	}
-
-
 
 }
