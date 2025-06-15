@@ -1,11 +1,15 @@
 package org.example.lifechart.domain.like.entity;
 
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.entity.Goal;
+import org.example.lifechart.domain.user.entity.User;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -26,19 +30,18 @@ public class Like extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	// @ManyToOne
-	// @JoinColumn(name = "user_id", nullable = false)
-	// private User userId;
-	// @ManyToOne
-	// @JoinColumn(name = "goal_id", nullable = false)
-	// private Goal goalId;
-	private Long userId;
-	private Long goalId;
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+	@ManyToOne
+	@JoinColumn(name = "goal_id", nullable = false)
+	private Goal goal;
 
-	public static Like createLike(Long userId, Long goalId) {
+
+	public static Like createLike(User user, Goal goal) {
 		return Like.builder()
-			.userId(userId)
-			.goalId(goalId)
+			.user(user)
+			.goal(goal)
 			.build();
 	}
 }

@@ -15,4 +15,5 @@ public class FollowRequestResponseDto {
 			.id(follow.getId())
 			.build();
 	}
+
 }

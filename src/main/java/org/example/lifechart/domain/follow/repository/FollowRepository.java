@@ -10,10 +10,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 	Page<Follow> findByReceiverId(Long receiverId, Pageable pageable);
 
-	Page<Follow> findByRequestId(Long userId, Pageable pageable);
+	Page<Follow> findByRequesterId(Long userId, Pageable pageable);
 
-	Optional<Follow> findByRequestIdAndReceiverId(Long myId, Long userId);
+	Optional<Follow> findByRequesterIdAndReceiverId(Long myId, Long userId);
 
-	boolean existsByRequestIdAndReceiverId(Long myId, Long userId);
+	boolean existsByRequesterIdAndReceiverId(Long myId, Long userId);
 
 }
