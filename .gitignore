@@ -44,4 +44,4 @@ src/main/resources/secrets/*
 application-secret.properties
 
 .env
-.env.
+.env.*
