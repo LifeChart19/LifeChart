@@ -1,10 +1,12 @@
 package org.example.lifechart.domain.user.dto;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
 
+@Builder
 @Getter
 public class SignupRequest {
 
