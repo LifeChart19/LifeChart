@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/users/signup").permitAll()  // 인증 없이 허용(회원 가입 / 로그인)
+                        .requestMatchers("/auth/login", "/users/signup", "/actuator/health", "/actuator/prometheus").permitAll()  // 인증 없이 허용(회원 가입 / 로그인)
                         .anyRequest().authenticated()                              // 그 외 요청은 인증 필요
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
