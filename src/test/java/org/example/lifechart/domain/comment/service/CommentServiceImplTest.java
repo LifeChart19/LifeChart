@@ -125,7 +125,7 @@ class CommentServiceImplTest {
 		assertEquals(comment.getUser().getId(), result.getContent().getFirst().getUserId());
 		assertEquals(comment.getGoal().getId(), result.getContent().getFirst().getGoalId());
 		assertEquals(comment.getContents(), result.getContent().getFirst().getContents());
-		assertEquals(0, result.getNextCursor());
+		assertEquals(1, result.getNextCursor());
 	}
 
 	@Test

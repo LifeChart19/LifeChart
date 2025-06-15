@@ -12,7 +12,7 @@ public class CommentCursorResponseDto {
 	private Long nextCursor;
 
 	public static CommentCursorResponseDto from(List<CommentGetResponseDto> content) {
-		Long nextCursor = content.isEmpty() ? null : content.getLast().getId() - 1;
+		Long nextCursor = content.isEmpty() ? null : content.getLast().getId();
 		return CommentCursorResponseDto.builder()
 			.content(content)
 			.nextCursor(nextCursor)
