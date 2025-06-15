@@ -9,6 +9,4 @@ import java.util.Optional;
 public interface UserService {
     User signup(SignupRequest request);
     void withdraw(Long userId, WithdrawalRequest request);
-    User findByIdAndIsDeletedFalse(Long id);
-
 }

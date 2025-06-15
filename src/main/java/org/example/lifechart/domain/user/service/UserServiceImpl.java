@@ -71,10 +71,4 @@ public class UserServiceImpl implements UserService{
         user.softDelete();
     }
 
-    @Override
-    public User findByIdAndIsDeletedFalse(Long id) {
-        return userRepository.findById(id)
-                .filter(user -> !Boolean.TRUE.equals(user.getIsDeleted()))
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
 }
