@@ -18,13 +18,16 @@ public class ShareGoalResponseDto {
 	private String title;
 	private Category category;
 	private Long targetAmount;
-	private Period remainingPeriod;
+	private String remainingPeriod;
 	private Float progressRate;
 	private Share share;
 	private LocalDateTime createdAt;
 
 	public static ShareGoalResponseDto from(Goal goal) {
 		Period period = Period.between(goal.getStartAt().toLocalDate(), goal.getEndAt().toLocalDate());
+		int years = period.getYears();
+		int months = period.getMonths();
+		String periodFormat = String.format("%d년 %d개월", years, months);
 
 		return ShareGoalResponseDto.builder()
 			.goalId(goal.getId())
@@ -32,8 +35,8 @@ public class ShareGoalResponseDto {
 			.title(goal.getTitle())
 			.category(goal.getCategory())
 			.targetAmount(goal.getTargetAmount())
-			.remainingPeriod(period)
-			.progressRate(goal.getProgressRate())
+			.remainingPeriod(periodFormat)
+			.progressRate(null)
 			.share(goal.getShare())
 			.createdAt(goal.getCreatedAt())
 			.build();
