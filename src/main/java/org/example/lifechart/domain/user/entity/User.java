@@ -57,6 +57,13 @@
             }
         }
 
+        public void updateProfile(String nickname, String gender, String job, String phoneNumber) {
+            this.nickname = nickname;
+            this.gender = gender;
+            this.job = job;
+            this.phoneNumber = phoneNumber;
+        }
+
         @Builder.Default
         @Column(nullable = false)
         private String role = "USER";

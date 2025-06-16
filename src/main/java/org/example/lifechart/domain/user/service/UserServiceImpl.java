@@ -2,6 +2,7 @@ package org.example.lifechart.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.domain.user.dto.SignupRequest;
+import org.example.lifechart.domain.user.dto.UserUpdateRequest;
 import org.example.lifechart.domain.user.dto.WithdrawalRequest;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
@@ -57,6 +58,27 @@ public class UserServiceImpl implements UserService{
             throw new CustomException(ErrorCode.EXIST_SAME_NICKNAME);
         }
     }
+
+
+    @Override
+    @Transactional
+    public void updateProfile(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.getNickname().equals(request.getNickname()) &&
+                userRepository.existsByNickname(request.getNickname())) {
+            throw new CustomException(ErrorCode.EXIST_SAME_NICKNAME);
+        }
+
+        user.updateProfile(
+                request.getNickname(),
+                request.getGender(),
+                request.getJob(),
+                request.getPhoneNumber()
+        );
+    }
+
 
     @Override
     @Transactional
