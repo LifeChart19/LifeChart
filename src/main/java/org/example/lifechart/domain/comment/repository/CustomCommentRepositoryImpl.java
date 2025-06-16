@@ -20,7 +20,7 @@ public class CustomCommentRepositoryImpl implements CustomCommentRepository {
 
 		return jpaQueryFactory
 			.selectFrom(comment)
-			.where(comment.goalId.eq(goalId),
+			.where(comment.goal.id.eq(goalId),
 				cursorId != null ? comment.id.lt(cursorId) : null
 			)
 			.orderBy(comment.id.desc())

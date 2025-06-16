@@ -20,8 +20,8 @@ public class CommentGetResponseDto {
 	public static CommentGetResponseDto from(Comment comment) {
 		return CommentGetResponseDto.builder()
 			.id(comment.getId())
-			.userId(comment.getUserId())
-			.goalId(comment.getGoalId())
+			.userId(comment.getUser().getId())
+			.goalId(comment.getGoal().getId())
 			.contents(comment.getContents())
 			.createdAt(comment.getCreatedAt())
 			.updatedAt(comment.getUpdatedAt())

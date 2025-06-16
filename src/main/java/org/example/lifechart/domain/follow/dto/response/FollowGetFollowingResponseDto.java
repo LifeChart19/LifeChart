@@ -17,7 +17,7 @@ public class FollowGetFollowingResponseDto {
 	public static FollowGetFollowingResponseDto from(Follow follow) {
 		return FollowGetFollowingResponseDto.builder()
 			.id(follow.getId())
-			.receiverId(follow.getReceiverId())
+			.receiverId(follow.getReceiver().getId())
 			.createdAt(follow.getCreatedAt())
 			.build();
 	}

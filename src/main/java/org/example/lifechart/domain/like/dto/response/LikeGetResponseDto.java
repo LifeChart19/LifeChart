@@ -18,8 +18,8 @@ public class LikeGetResponseDto {
 	public static LikeGetResponseDto from(Like like) {
 		return LikeGetResponseDto.builder()
 			.id(like.getId())
-			.userId(like.getUserId())
-			.goalId(like.getGoalId())
+			.userId(like.getUser().getId())
+			.goalId(like.getGoal().getId())
 			.createdAt(like.getCreatedAt())
 			.build();
 	}

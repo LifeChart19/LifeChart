@@ -91,6 +91,7 @@ dependencies {
     //JUnit 5 플랫폼 런처. 보통 직접 쓸 일이 없고, IDE나 빌드 도구(예: Gradle, Maven)가 테스트를 실행할 수 있게 해주는 백엔드 런타임 라이브러리
     testImplementation 'org.assertj:assertj-core:3.24.2'
     // JUnit 테스트에서 사용하는 assertEquals, assertTrue 같은 기본적인 assertion보다 더 읽기 쉽고 강력한 문법을 제공
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 
     // querydsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

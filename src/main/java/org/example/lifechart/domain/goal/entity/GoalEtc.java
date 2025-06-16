@@ -32,5 +32,8 @@ public class GoalEtc extends BaseEntity {
 	private Goal goal;
 
 	@Column(nullable = false)
+	private String theme;
+
+	@Column(nullable = false)
 	private Long expectedPrice;
 }
