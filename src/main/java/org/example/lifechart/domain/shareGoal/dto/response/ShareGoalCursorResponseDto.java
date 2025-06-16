@@ -12,7 +12,7 @@ public class ShareGoalCursorResponseDto {
 	private List<ShareGoalResponseDto> content = new ArrayList<>();
 	private Long nextCursor;
 	public static ShareGoalCursorResponseDto from(List<ShareGoalResponseDto> content ) {
-		long nextCursor = content.getLast().getGoalId();
+		Long nextCursor = content.isEmpty() ? null : content.getLast().getGoalId();
 		return ShareGoalCursorResponseDto.builder()
 			.content(content)
 			.nextCursor(nextCursor)
