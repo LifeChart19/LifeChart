@@ -230,7 +230,12 @@ public enum SuccessCode implements BaseCode {
 
 
 	// Notification (Line#: 230~259)
-
+	GET_NOTIFICATION_SUCCESS(HttpStatus.OK, "알림 단건을 조회합니다."),
+	GET_NOTIFICATIONS_SUCCESS(HttpStatus.OK, "알림 목록을 조회합니다."),
+	PATCH_NOTIFICATION_SUCCESS(HttpStatus.NO_CONTENT, "알림 단건을 읽음 처리합니다."),
+	PATCH_ALL_NOTIFICATIONS_SUCCESS(HttpStatus.NO_CONTENT, "알림 목록을 읽음 처리합니다."),
+	DELETE_NOTIFICATION_SUCCESS(HttpStatus.NO_CONTENT, "알림 단건을 삭제합니다."),
+	DELETE_NOTIFICATIONS_SUCCESS(HttpStatus.NO_CONTENT, "알림 목록을 삭제합니다."),
 	;
 
 

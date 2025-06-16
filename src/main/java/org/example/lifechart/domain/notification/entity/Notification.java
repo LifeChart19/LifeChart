@@ -2,7 +2,8 @@ package org.example.lifechart.domain.notification.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.lifechart.domain.user.entity.User;
+
+import org.example.lifechart.domain.notification.dto.NotificationCreateRequestDto;
 
 import java.time.LocalDateTime;
 
@@ -12,49 +13,60 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(
+	uniqueConstraints = {
+		@UniqueConstraint(columnNames = {"type", "user_id", "requested_at", "title"})
+	}
+)
 public class Notification {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+	private Long userId;
 
-    @Enumerated(EnumType.STRING)
-    private Type type;
+	@Enumerated(EnumType.STRING)
+	private Type type;
 
-    @Enumerated(EnumType.STRING)
-    private Status status;
+	@Enumerated(EnumType.STRING)
+	private Status status;
 
-    private String title;
+	private String title;
 
-    private String message;
+	private String message;
 
-    @Column(columnDefinition = "DATETIME(0)")
-    private LocalDateTime requestedAt;
+	@Column(columnDefinition = "DATETIME(0)")
+	private LocalDateTime requestedAt;
 
-    private LocalDateTime processedAt;
+	private LocalDateTime processedAt;
 
-    private LocalDateTime viewedAt;
+	private LocalDateTime completedAt;
 
-    private LocalDateTime readAt;
+	private LocalDateTime fetchedAt;
 
+	public Notification(NotificationCreateRequestDto dto) {
+		this.userId = dto.getUserId();
+		this.type = dto.getType();
+		this.requestedAt = dto.getRequestedAt();
+		this.title = dto.getTitle();
+		this.message = dto.getMessage();
+		this.processedAt = LocalDateTime.now();
+		this.status = Status.UNREAD;
+	}
 
-    public String getEventId(){
-        return String.valueOf(user.getId()) + "-" +
-                type + "-" +
-                requestedAt.toString() + "-" +
-                title;
-    }
+	public String getEventId() {
+		return userId + "-" +
+			type + "-" +
+			requestedAt.toString() + "-" +
+			title;
+	}
 
+	public enum Type {
+		NOTICE, EMAIL, USER_NOTIFICATION
+	}
 
-    public enum Type {
-        NOTICE, EMAIL, PUSH, EVENT
-    }
-
-    public enum Status {
-        FAILED, UNREAD, READ
-    }
+	public enum Status {
+		FAILED, UNREAD, READ
+	}
 }
