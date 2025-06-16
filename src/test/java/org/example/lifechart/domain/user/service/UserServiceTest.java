@@ -8,6 +8,7 @@ import org.example.lifechart.domain.user.dto.WithdrawalRequest;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -38,8 +39,8 @@ class UserServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // 1. 회원가입 성공
     @Test
+    @DisplayName("회원가입 성공")
     void signup_success() {
         SignupRequest request = new SignupRequest("test@email.com", "pass", "nick", LocalDate.now(), "MALE", "JOB", "01012345678");
 
@@ -54,8 +55,8 @@ class UserServiceTest {
         assertThat(result.getPassword()).isEqualTo("encoded_pw");
     }
 
-    // 2. 이메일 중복
     @Test
+    @DisplayName("회원가입 실패 - 이메일 중복")
     void signup_fail_duplicate_email() {
         when(userRepository.existsByEmail("duplicate@email.com")).thenReturn(true);
 
@@ -64,8 +65,8 @@ class UserServiceTest {
                 .hasMessageContaining(ErrorCode.EXIST_SAME_EMAIL.getMessage());
     }
 
-    // 3. 삭제된 유저 이메일로 재가입 시도
     @Test
+    @DisplayName("회원가입 실패 - soft delete된 이메일로 재가입 시도")
     void signup_fail_deleted_user_email() {
         when(userRepository.existsByEmail("deleted@email.com")).thenReturn(false);
         when(userRepository.existsByEmailAndIsDeletedTrue("deleted@email.com")).thenReturn(true);
@@ -75,8 +76,8 @@ class UserServiceTest {
                 .hasMessageContaining(ErrorCode.DELETED_USER_EXISTS.getMessage());
     }
 
-    // 4. 닉네임 중복
     @Test
+    @DisplayName("회원가입 실패 - 닉네임 중복")
     void signup_fail_duplicate_nickname() {
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(userRepository.existsByEmailAndIsDeletedTrue(any())).thenReturn(false);
@@ -87,8 +88,8 @@ class UserServiceTest {
                 .hasMessageContaining(ErrorCode.EXIST_SAME_NICKNAME.getMessage());
     }
 
-    // 5. 회원정보 수정 성공
     @Test
+    @DisplayName("회원정보 수정 성공")
     void updateProfile_success() {
         User user = User.builder().id(1L).nickname("oldNick").build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -101,8 +102,8 @@ class UserServiceTest {
         assertThat(user.getJob()).isEqualTo("DEV");
     }
 
-    // 6. 존재하지 않는 유저 수정
     @Test
+    @DisplayName("회원정보 수정 실패 - 존재하지 않는 유저")
     void updateProfile_fail_user_not_found() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
@@ -111,8 +112,8 @@ class UserServiceTest {
                 .hasMessageContaining(ErrorCode.USER_NOT_FOUND.getMessage());
     }
 
-    // 7. 닉네임 중복으로 정보 수정 실패
     @Test
+    @DisplayName("회원정보 수정 실패 - 닉네임 중복")
     void updateProfile_fail_duplicate_nickname() {
         User user = User.builder().id(1L).nickname("myNick").build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -123,8 +124,8 @@ class UserServiceTest {
                 .hasMessageContaining(ErrorCode.EXIST_SAME_NICKNAME.getMessage());
     }
 
-    // 8. 탈퇴 성공
     @Test
+    @DisplayName("회원 탈퇴 성공")
     void withdraw_success() {
         User user = User.builder().id(1L).password("encoded").build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -134,8 +135,8 @@ class UserServiceTest {
         assertThat(user.getIsDeleted()).isTrue();
     }
 
-    // 9. 비밀번호 불일치로 탈퇴 실패
     @Test
+    @DisplayName("회원 탈퇴 실패 - 비밀번호 불일치")
     void withdraw_fail_wrong_password() {
         User user = User.builder().id(1L).password("encoded").build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -146,8 +147,8 @@ class UserServiceTest {
                 .hasMessageContaining(ErrorCode.NOT_MATCH_PASSWORD.getMessage());
     }
 
-    // 10. 존재하지 않는 유저 탈퇴 실패
     @Test
+    @DisplayName("회원 탈퇴 실패 - 존재하지 않는 유저")
     void withdraw_fail_user_not_found() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
