@@ -8,6 +8,7 @@
     import java.time.LocalDateTime;
 
     @Entity
+    @Table(name = "users")
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
@@ -55,6 +56,13 @@
             this.isDeleted = true;
             this.deletedAt = LocalDateTime.now();
             }
+        }
+
+        public void updateProfile(String nickname, String gender, String job, String phoneNumber) {
+            if (nickname != null)this.nickname = nickname;
+            if (gender != null) this.gender = gender;
+            if (job != null) this.job = job;
+            if (phoneNumber != null) this.phoneNumber = phoneNumber;
         }
 
         @Builder.Default

@@ -42,6 +42,7 @@ public class CustomUserPrincipal implements UserDetails {
         return password;
     }
 
+
     // 계정 상태 관련 설정 (계정 만료, 잠김, 활성 여부는 true로 고정)
     @Override public boolean isAccountNonExpired()     { return true; }
     @Override public boolean isAccountNonLocked()      { return true; }
