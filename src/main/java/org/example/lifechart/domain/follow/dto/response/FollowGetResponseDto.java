@@ -11,15 +11,15 @@ import lombok.Getter;
 @Builder
 public class FollowGetResponseDto {
 	private Long id;
-	private Long requestId;
+	private Long requesterId;
 	private Long receiverId;
 	private LocalDateTime createdAt;
 
 	public static FollowGetResponseDto from(Follow follow) {
 		return FollowGetResponseDto.builder()
 			.id(follow.getId())
-			.requestId(follow.getRequestId())
-			.receiverId(follow.getReceiverId())
+			.requesterId(follow.getRequester().getId())
+			.receiverId(follow.getReceiver().getId())
 			.createdAt(follow.getCreatedAt())
 			.build();
 	}

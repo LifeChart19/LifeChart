@@ -107,7 +107,6 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
 	// Simulation (Line#: 110~139)
 
 
@@ -141,7 +140,7 @@ public enum ErrorCode implements BaseCode {
 	// Follow (Line#: 140~169)
 	FOLLOW_CONFLICT(HttpStatus.CONFLICT, "팔로우가 이미 존재합니다."),
 	FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우를 찾을 수 없습니다."),
-
+	FOLLOW_FORBIDDEN(HttpStatus.FORBIDDEN, "본인을 팔로우 할 수 없습니다."),
 
 
 
