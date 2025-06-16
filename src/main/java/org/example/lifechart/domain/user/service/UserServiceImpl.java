@@ -2,6 +2,7 @@ package org.example.lifechart.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.domain.user.dto.SignupRequest;
+import org.example.lifechart.domain.user.dto.UserUpdateRequest;
 import org.example.lifechart.domain.user.dto.WithdrawalRequest;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
@@ -58,9 +59,32 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+
     @Override
     @Transactional
-    public void withdraw(Long userId, WithdrawalRequest request) {
+    public Long updateProfile(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.getNickname().equals(request.getNickname()) &&
+                userRepository.existsByNickname(request.getNickname())) {
+            throw new CustomException(ErrorCode.EXIST_SAME_NICKNAME);
+        }
+
+        user.updateProfile(
+                request.getNickname(),
+                request.getGender(),
+                request.getJob(),
+                request.getPhoneNumber()
+        );
+
+        return user.getId();
+    }
+
+
+    @Override
+    @Transactional
+    public Long withdraw(Long userId, WithdrawalRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -69,12 +93,7 @@ public class UserServiceImpl implements UserService{
         }
 
         user.softDelete();
+        return user.getId();
     }
 
-    @Override
-    public User findByIdAndIsDeletedFalse(Long id) {
-        return userRepository.findById(id)
-                .filter(user -> !Boolean.TRUE.equals(user.getIsDeleted()))
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
 }

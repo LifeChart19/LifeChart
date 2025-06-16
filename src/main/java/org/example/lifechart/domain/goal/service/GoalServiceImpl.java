@@ -7,11 +7,15 @@ import org.example.lifechart.domain.goal.dto.request.GoalDetailRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
-import org.example.lifechart.domain.goal.dto.response.GoalResponseDto;
+import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.entity.GoalRetirement;
+import org.example.lifechart.domain.goal.enums.Status;
+import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
@@ -27,18 +31,19 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class GoalServiceImpl {
+public class GoalServiceImpl implements GoalService {
 
 	private final GoalRepository goalRepository;
 	private final GoalRetirementRepository goalRetirementRepository;
 	private final GoalHousingRepository goalHousingRepository;
 	private final GoalEtcRepository goalEtcRepository;
 	private final UserRepository userRepository;
+	private final GoalDetailFetcherFactory goalDetailFetcherFactory;
 
 	@Transactional
-	public GoalResponseDto createGoal(GoalCreateRequest requestDto, Long userId) {
-		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+	@Override
+	public GoalResponse createGoal(GoalCreateRequest requestDto, Long userId) {
+		User user = validUser(userId);
 
 		// Goal 저장
 		Goal newGoal = requestDto.toEntity(user);
@@ -47,7 +52,42 @@ public class GoalServiceImpl {
 		GoalDetailRequest detail = requestDto.getDetail();
 		saveGoalDetail(detail, savedGoal, user);
 
-		return GoalResponseDto.from(savedGoal);
+		return GoalResponse.from(savedGoal);
+	}
+
+	@Override
+	public GoalInfoResponse findGoal(Long goalId, Long userId) {
+		Goal goal = validGoal(goalId, userId);
+		GoalDetailInfoResponse goalDetail = goalDetailFetcherFactory.getDetail(goal);
+
+		return GoalInfoResponse.from(goal, goalDetail);
+	}
+
+	@Transactional
+	@Override
+	public void deleteGoal(Long goalId, Long userId) {
+		User user = validUser(userId);
+		Goal goal = validGoal(goalId, user.getId());
+		if (isDeleted(goal)) {
+			throw new CustomException(ErrorCode.GOAL_ALREADY_DELETED);
+		}
+		goal.delete();
+	}
+
+	private User validUser(Long userId) {
+		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+		return user;
+	}
+
+	private Goal validGoal(Long goalId, Long userId) {
+		Goal goal = goalRepository.findByIdAndUserId(goalId, userId).
+			orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
+		return goal;
+	}
+
+	private boolean isDeleted(Goal goal) {
+		return (goal.getStatus() == Status.DELETED);
 	}
 
 	private void saveGoalDetail(GoalDetailRequest detail, Goal savedGoal, User user) {
@@ -63,6 +103,5 @@ public class GoalServiceImpl {
 		} else {
 			throw new CustomException(ErrorCode.GOAL_INVALID_CATEGORY);
 		}
-
 	}
 }

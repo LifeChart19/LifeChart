@@ -7,7 +7,8 @@ import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingCalculateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementCalculateRequest;
-import org.example.lifechart.domain.goal.dto.response.GoalResponseDto;
+import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalRetirementEstimateResponse;
 import org.example.lifechart.domain.goal.service.GoalHousingCalculateService;
 import org.example.lifechart.domain.goal.service.GoalRetirementCalculateService;
@@ -16,11 +17,7 @@ import org.example.lifechart.domain.goal.service.RetirementReferenceValueService
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -83,15 +80,39 @@ public class GoalController {
 		description = "새로운 목표를 생성합니다."
 	)
 	@PostMapping
-	public ResponseEntity<ApiResponse<GoalResponseDto>> createGoal(
-		@Valid @RequestBody GoalCreateRequest requestDto,
+	public ResponseEntity<ApiResponse<GoalResponse>> createGoal(
+		@Valid @RequestBody GoalCreateRequest request,
 		@AuthenticationPrincipal CustomUserPrincipal principal
 		) {
 
-		GoalResponseDto responseDto = goalService.createGoal(requestDto, principal.getUserId());
-		return ApiResponse.onSuccess(SuccessCode.GOAL_CREATE_SUCCESS, responseDto);
+		GoalResponse response = goalService.createGoal(request, principal.getUserId());
+		return ApiResponse.onSuccess(SuccessCode.GOAL_CREATE_SUCCESS, response);
 	}
 
+	@Operation(
+			summary = "목표 개별 조회",
+			description = "개별 목표를 조회합니다."
+	)
+	@GetMapping("/{goalId}")
+	public ResponseEntity<ApiResponse<GoalInfoResponse>> getGoalInfo(
+		@PathVariable Long goalId,
+		@AuthenticationPrincipal CustomUserPrincipal principal
+	) {
+		GoalInfoResponse response = goalService.findGoal(goalId, principal.getUserId());
+		return ApiResponse.onSuccess(SuccessCode.GOAL_GET_INFO_SUCCESS, response);
+	}
 
+	@Operation(
+		summary = "목표 삭제",
+		description = "개별 목표를 삭제합니다."
+	)
+	@DeleteMapping("/{goalId}")
+	public ResponseEntity<ApiResponse<Void>> deleteGoal(
+		@PathVariable Long goalId,
+		@AuthenticationPrincipal CustomUserPrincipal principal
+	) {
+		goalService.deleteGoal(goalId, principal.getUserId());
+		return ApiResponse.onSuccess(SuccessCode.GOAL_DELETE_SUCCESS, null);
+	}
 
 }
