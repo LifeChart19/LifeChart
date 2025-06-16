@@ -2,9 +2,7 @@ package org.example.lifechart.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.port.SendSqsPort;
-import org.example.lifechart.domain.user.dto.SignupRequest;
-import org.example.lifechart.domain.user.dto.UserUpdateRequest;
-import org.example.lifechart.domain.user.dto.WithdrawalRequest;
+import org.example.lifechart.domain.user.dto.*;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.example.lifechart.common.exception.CustomException;
@@ -86,6 +84,20 @@ public class UserServiceImpl implements UserService{
         );
 
         return user.getId();
+    }
+
+    @Override
+    public UserProfileResponse getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return new UserProfileResponse(user);
+    }
+
+    @Override
+    public UserPublicProfileResponse getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return new UserPublicProfileResponse(user);
     }
 
 
