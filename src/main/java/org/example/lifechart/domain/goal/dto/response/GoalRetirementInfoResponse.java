@@ -14,13 +14,13 @@ import org.example.lifechart.domain.goal.helper.GoalDateHelper;
 public class GoalRetirementInfoResponse implements GoalDetailInfoResponse{
 
     private LocalDate expectedDeathDate;
-    private Long MonthlyExpense;
+    private Long monthlyExpense;
     private RetirementType retirementType;
 
     public static GoalRetirementInfoResponse from(GoalRetirement goalRetirement) {
         return GoalRetirementInfoResponse.builder()
             .expectedDeathDate(goalRetirement.getExpectedDeathDate())
-            .MonthlyExpense(goalRetirement.getMonthlyExpense())
+            .monthlyExpense(goalRetirement.getMonthlyExpense())
             .retirementType(goalRetirement.getRetirementType())
             .build();
     }
