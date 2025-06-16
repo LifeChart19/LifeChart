@@ -4,6 +4,7 @@ import org.example.lifechart.common.entity.BaseEntity;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.user.entity.User;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,6 +32,7 @@ public class Comment extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(nullable = false, name = "goal_id")
 	private Goal goal;
+	@Column(nullable = false)
 	private String contents;
 
 	public static Comment createComment(User user, Goal goal, String contents) {
