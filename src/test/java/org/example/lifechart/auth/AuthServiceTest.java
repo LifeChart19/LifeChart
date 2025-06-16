@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -26,8 +25,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -69,24 +68,24 @@ class AuthServiceTest {
     void login_success() {
         LoginRequest request = new LoginRequest(email, password);
 
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
-        when(jwtUtil.createAccessToken(userId, email)).thenReturn(accessToken);
-        when(jwtUtil.createRefreshToken(userId, email)).thenReturn(refreshToken);
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(password, encodedPassword)).willReturn(true);
+        given(jwtUtil.createAccessToken(userId, email)).willReturn(accessToken);
+        given(jwtUtil.createRefreshToken(userId, email)).willReturn(refreshToken);
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
 
         var result = authService.login(request);
 
         assertThat(result.getAccessToken()).isEqualTo(accessToken);
         assertThat(result.getRefreshToken()).isEqualTo(refreshToken);
-        verify(redisTemplate.opsForValue(), times(1)).set("refresh:" + userId, refreshToken, 7, TimeUnit.DAYS);
+        then(redisTemplate.opsForValue()).should(times(1)).set("refresh:" + userId, refreshToken, 7, TimeUnit.DAYS);
     }
 
     @Test
     @DisplayName("로그인 실패 - 이메일 없음")
     void login_fail_email_not_found() {
         LoginRequest request = new LoginRequest(email, password);
-        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        given(userRepository.findByEmail(email)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(CustomException.class)
@@ -97,8 +96,8 @@ class AuthServiceTest {
     @DisplayName("로그인 실패 - 비밀번호 불일치")
     void login_fail_password_mismatch() {
         LoginRequest request = new LoginRequest(email, password);
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(password, encodedPassword)).thenReturn(false);
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(password, encodedPassword)).willReturn(false);
 
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(CustomException.class)
@@ -109,24 +108,25 @@ class AuthServiceTest {
     @DisplayName("리프레시 토큰 성공 테스트")
     void refreshToken_success() {
         TokenRefreshRequest request = new TokenRefreshRequest(refreshToken);
-        when(jwtUtil.validateToken(refreshToken)).thenReturn(true);
-        when(jwtUtil.getEmailFromToken(refreshToken)).thenReturn(email);
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("refresh:" + userId)).thenReturn(refreshToken);
-        when(jwtUtil.createAccessToken(userId, email)).thenReturn(accessToken);
-        when(jwtUtil.createRefreshToken(userId, email)).thenReturn("new-refresh");
+        given(jwtUtil.validateToken(refreshToken)).willReturn(true);
+        given(jwtUtil.getEmailFromToken(refreshToken)).willReturn(email);
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get("refresh:" + userId)).willReturn(refreshToken);
+        given(jwtUtil.createAccessToken(userId, email)).willReturn(accessToken);
+        given(jwtUtil.createRefreshToken(userId, email)).willReturn("new-refresh");
 
         TokenRefreshResponse response = authService.refresh(request);
 
         assertThat(response.getAccessToken()).isEqualTo(accessToken);
-        assertThat(response.getRefreshToken()).isEqualTo("new-refresh");    }
+        assertThat(response.getRefreshToken()).isEqualTo("new-refresh");
+    }
 
     @Test
     @DisplayName("리프레시 토큰 실패 - 유효하지 않은 토큰")
     void refreshToken_fail_invalid_token() {
         TokenRefreshRequest request = new TokenRefreshRequest(refreshToken);
-        when(jwtUtil.validateToken(refreshToken)).thenReturn(false);
+        given(jwtUtil.validateToken(refreshToken)).willReturn(false);
 
         assertThatThrownBy(() -> authService.refresh(request))
                 .isInstanceOf(CustomException.class)
@@ -136,13 +136,15 @@ class AuthServiceTest {
     @Test
     @DisplayName("로그아웃 성공 - 블랙리스트 등록")
     void logout_success_with_blacklist() {
-        when(jwtUtil.getClaims(accessToken)).thenReturn(mock(Claims.class));
-        when(jwtUtil.getClaims(accessToken).getExpiration()).thenReturn(new java.util.Date(System.currentTimeMillis() + 60000));
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        Claims claims = mock(Claims.class);
+        given(jwtUtil.getClaims(accessToken)).willReturn(claims);
+        given(claims.getExpiration()).willReturn(new java.util.Date(System.currentTimeMillis() + 60000));
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
 
         authService.logout(userId, accessToken);
 
-        verify(redisTemplate, times(1)).delete("refresh:" + userId);
-        verify(redisTemplate.opsForValue(), times(1)).set(startsWith("blacklist:"), eq("logout"), anyLong(), eq(TimeUnit.MILLISECONDS));
+        then(redisTemplate).should(times(1)).delete("refresh:" + userId);
+        then(redisTemplate.opsForValue()).should(times(1)).set(
+                startsWith("blacklist:"), eq("logout"), anyLong(), eq(TimeUnit.MILLISECONDS));
     }
 }
