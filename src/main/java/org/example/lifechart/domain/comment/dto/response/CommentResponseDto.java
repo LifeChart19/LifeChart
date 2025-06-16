@@ -15,4 +15,5 @@ public class CommentResponseDto {
 			.id(comment.getId())
 			.build();
 	}
+
 }
