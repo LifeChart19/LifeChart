@@ -36,7 +36,7 @@ public class GoalRetirementFetcherTest {
 	@DisplayName("카테고리가 RETIREMENT이면 true를 반환한다.")
 	void supports_목표_카테고리가_RETIREMENT이면_True를_반환한다() {
 		// given
-		Category category = Category.HOUSING;
+		Category category = Category.RETIREMENT;
 
 		// when & then
 		assertThat(goalRetirementFetcher.supports(category)).isEqualTo(true);
