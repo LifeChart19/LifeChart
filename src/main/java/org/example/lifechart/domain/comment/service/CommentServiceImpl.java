@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
+import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.comment.dto.request.CommentRequestDto;
 import org.example.lifechart.domain.comment.dto.response.CommentCursorResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentGetResponseDto;
@@ -27,6 +28,8 @@ public class CommentServiceImpl implements CommentService {
 	private final UserRepository userRepository;
 	private final GoalRepository goalRepository;
 
+	private final SendSqsPort sqsPort;
+
 	@Transactional
 	@Override
 	public CommentResponseDto createComment(Long authId, Long goalId, CommentRequestDto commentRequestDto) {
@@ -37,6 +40,9 @@ public class CommentServiceImpl implements CommentService {
 		String contents = commentRequestDto.getContents();
 		Comment comment = Comment.createComment(foundUser, foundGoal, contents);
 		Comment savedComment = commentRepository.save(comment);
+
+		sqsPort.sendNotification(foundGoal.getUser().getId(), "USER_NOTIFICATION", "New Comment", "댓글이 달렸습니다");
+
 		return CommentResponseDto.from(savedComment);
 	}
 
