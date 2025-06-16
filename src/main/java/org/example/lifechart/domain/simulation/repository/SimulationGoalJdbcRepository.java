@@ -37,5 +37,19 @@ public class SimulationGoalJdbcRepository {
 
         jdbcTemplate.batchUpdate(sql, batchArgs);
     }
+
+    public void deactivateSimulationGoals(Long simulationId) {
+        //AND is_active = true 는 is_active가 true인 row만 업데이트 현재 연결중인 row만 끊음.
+        String sql = """
+              UPDATE simulation_goal SET
+              is_active = false
+              unlinked_at = NOW()
+              WHERE simulation_id = ?
+              AND is_active = true
+              """;
+
+        jdbcTemplate.update(sql, simulationId);
+
+    }
 }
 

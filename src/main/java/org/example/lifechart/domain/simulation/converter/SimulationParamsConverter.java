@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import org.example.lifechart.domain.simulation.entity.SimulationParams;
+import org.example.lifechart.domain.simulation.dto.response.SimulationParams;
 
 import java.io.IOException;
 
@@ -31,5 +31,4 @@ public class SimulationParamsConverter implements AttributeConverter<SimulationP
         }
     }
 
-    //
 }

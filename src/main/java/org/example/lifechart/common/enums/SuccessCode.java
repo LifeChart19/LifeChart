@@ -25,7 +25,12 @@ public enum SuccessCode implements BaseCode {
 	GOAL_RETIREMENT_ESTIMATE_SUCCESS(HttpStatus.OK, "은퇴 목표 기본값 반환에 성공했습니다."),
 
 	// Simulation (Line#: 110~139)
-
+	SIMULATION_CREATE_SUCCESS(HttpStatus.CREATED, "시뮬레이션이 생성되었습니다."),
+	SIMULATION_CALCULATE_SUCCESS(HttpStatus.OK, "시뮬레이션이 업데이트되었습니다"),
+	SIMULATION_GET_LIST_SUCCESS(HttpStatus.OK,"시뮬레이션 목록을 조회합니다." ),
+	SIMULATION_GET_DELETED_LIST_SUCCESS(HttpStatus.OK,"삭제된 시뮬레이션 목록을 조회합니다."),
+	SIMULATION_SOFT_DELETE_SUCCESS(HttpStatus.OK,"시뮬레이션을 삭제합니다."),
+	SIMULATION_DELETE_SUCCESS(HttpStatus.NO_CONTENT,"시뮬레이션을 완전히 삭제합니다."),
 	// Follow (Line#: 140~169)
 	CREATE_FOLLOW_SUCCESS(HttpStatus.CREATED, "팔로우를 생성했습니다."),
 	GET_ALL_FOLLOWERS_SUCCESS(HttpStatus.OK, "대상의 팔로워 목록을 조회합니다."),
@@ -44,11 +49,10 @@ public enum SuccessCode implements BaseCode {
 	CREATE_LIKE_SUCCESS(HttpStatus.CREATED, "좋아요를 눌렀습니다."),
 	GET_ALL_LIKE_SUCCESS(HttpStatus.OK, "좋아요 목록을 조회합니다."),
 	GET_LIKE_SUCCESS(HttpStatus.OK, "좋아요를 조회합니다."),
-	DELETE_LIKE_SUCCESS(HttpStatus.NO_CONTENT, "좋아요을 취소합니다."),
+	DELETE_LIKE_SUCCESS(HttpStatus.NO_CONTENT, "좋아요을 취소합니다.");
 
 	// Notification (Line#: 230~259)
 
-	;
 
 	// 본 코드
 	private final HttpStatus httpStatus;
