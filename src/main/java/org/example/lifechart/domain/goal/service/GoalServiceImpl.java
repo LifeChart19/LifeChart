@@ -14,6 +14,7 @@ import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.entity.GoalRetirement;
+import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
@@ -21,7 +22,6 @@ import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
-import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class GoalServiceImpl {
+public class GoalServiceImpl implements GoalService {
 
 	private final GoalRepository goalRepository;
 	private final GoalRetirementRepository goalRetirementRepository;
@@ -41,9 +41,9 @@ public class GoalServiceImpl {
 	private final GoalDetailFetcherFactory goalDetailFetcherFactory;
 
 	@Transactional
+	@Override
 	public GoalResponse createGoal(GoalCreateRequest requestDto, Long userId) {
-		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+		User user = validUser(userId);
 
 		// Goal 저장
 		Goal newGoal = requestDto.toEntity(user);
@@ -53,6 +53,41 @@ public class GoalServiceImpl {
 		saveGoalDetail(detail, savedGoal, user);
 
 		return GoalResponse.from(savedGoal);
+	}
+
+	@Override
+	public GoalInfoResponse findGoal(Long goalId, Long userId) {
+		Goal goal = validGoal(goalId, userId);
+		GoalDetailInfoResponse goalDetail = goalDetailFetcherFactory.getDetail(goal);
+
+		return GoalInfoResponse.from(goal, goalDetail);
+	}
+
+	@Transactional
+	@Override
+	public void deleteGoal(Long goalId, Long userId) {
+		User user = validUser(userId);
+		Goal goal = validGoal(goalId, user.getId());
+		if (isDeleted(goal)) {
+			throw new CustomException(ErrorCode.GOAL_ALREADY_DELETED);
+		}
+		goal.delete();
+	}
+
+	private User validUser(Long userId) {
+		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+		return user;
+	}
+
+	private Goal validGoal(Long goalId, Long userId) {
+		Goal goal = goalRepository.findByIdAndUserId(goalId, userId).
+			orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
+		return goal;
+	}
+
+	private boolean isDeleted(Goal goal) {
+		return (goal.getStatus() == Status.DELETED);
 	}
 
 	private void saveGoalDetail(GoalDetailRequest detail, Goal savedGoal, User user) {
@@ -68,13 +103,5 @@ public class GoalServiceImpl {
 		} else {
 			throw new CustomException(ErrorCode.GOAL_INVALID_CATEGORY);
 		}
-	}
-
-	public GoalInfoResponse findGoal(Long goalId, Long userId) {
-		Goal goal = goalRepository.findByIdAndUserId(goalId, userId).
-				orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
-		GoalDetailInfoResponse goalDetail = goalDetailFetcherFactory.getDetail(goal);
-
-		return GoalInfoResponse.from(goal, goalDetail);
 	}
 }

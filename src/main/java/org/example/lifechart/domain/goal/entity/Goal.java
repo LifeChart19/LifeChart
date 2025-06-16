@@ -65,4 +65,7 @@ public class Goal extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Share share;
 
+	public void delete() {
+		this.status = Status.DELETED;
+	}
 }

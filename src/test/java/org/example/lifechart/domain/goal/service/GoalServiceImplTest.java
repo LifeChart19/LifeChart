@@ -26,6 +26,7 @@ import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.HousingType;
 import org.example.lifechart.domain.goal.enums.RetirementType;
 import org.example.lifechart.domain.goal.enums.Share;
+import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
@@ -274,5 +275,85 @@ public class GoalServiceImplTest {
 		// then
 		verify(goalRepository).findByIdAndUserId(goal.getId(), loginUser.getId());
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_NOT_FOUND);
+	}
+
+	@Test
+	@DisplayName("목표 삭제에 성공한다.")
+	void deleteGoal_목표_삭제에_성공한다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.build();
+		Goal goal = Goal.builder()
+			.id(1L)
+			.status(Status.ACTIVE)
+			.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(goal.getId(), user.getId())).willReturn(Optional.of(goal));
+
+		// when
+		goalService.deleteGoal(goal.getId(), user.getId());
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
+		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
+		assertThat(goal.getStatus()).isEqualTo(Status.DELETED);
+	}
+
+	@Test
+	@DisplayName("로그인한 유저가 생성한 목표가 아니면 예외를 반환한다.")
+	void deleteGoal_로그인한_유저가_생성한_목표가_아니면_GOAL_NOT_FOUND_예외를_던진다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.build();
+
+		User anotherUser = User.builder()
+			.id(2L)
+			.build();
+
+		Goal goal = Goal.builder()
+			.id(1L)
+			.user(anotherUser)
+			.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(goal.getId(), user.getId())).willReturn(Optional.empty());
+
+		// when
+		CustomException customException = assertThrows(CustomException.class, () ->
+			goalService.deleteGoal(goal.getId(), user.getId()));
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
+		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
+		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_NOT_FOUND);
+	}
+
+	@Test
+	@DisplayName("이미 삭제된 목표인 경우 예외를 던진다.")
+	void deteleGoal_이미_삭제된_목표인_경우_GOAL_ALREADY_DELETED_예외를_던진다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.build();
+		Goal goal = Goal.builder()
+			.id(1L)
+			.user(user)
+			.status(Status.DELETED)
+			.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(goal.getId(), user.getId())).willReturn(Optional.of(goal));
+
+		// when
+		CustomException customException = assertThrows(CustomException.class, () ->
+			goalService.deleteGoal(goal.getId(), user.getId()));
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
+		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
+		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_ALREADY_DELETED);
 	}
 }

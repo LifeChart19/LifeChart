@@ -102,4 +102,17 @@ public class GoalController {
 		return ApiResponse.onSuccess(SuccessCode.GOAL_GET_INFO_SUCCESS, response);
 	}
 
+	@Operation(
+		summary = "목표 삭제",
+		description = "개별 목표를 삭제합니다."
+	)
+	@DeleteMapping("/{goalId}")
+	public ResponseEntity<ApiResponse<Void>> deleteGoal(
+		@PathVariable Long goalId,
+		@AuthenticationPrincipal CustomUserPrincipal principal
+	) {
+		goalService.deleteGoal(goalId, principal.getUserId());
+		return ApiResponse.onSuccess(SuccessCode.GOAL_DELETE_SUCCESS, null);
+	}
+
 }
