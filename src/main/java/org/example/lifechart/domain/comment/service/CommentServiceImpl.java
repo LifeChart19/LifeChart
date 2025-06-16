@@ -31,11 +31,11 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public CommentResponseDto createComment(Long authId, Long goalId, CommentRequestDto commentRequestDto) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
+		User foundUser = validUser(authId);
 		// 목표 존재 여부 검증
-		Goal findedGoal = validGoal(goalId);
+		Goal foundGoal = validGoal(goalId);
 		String contents = commentRequestDto.getContents();
-		Comment comment = Comment.createComment(findedUser, findedGoal, contents);
+		Comment comment = Comment.createComment(foundUser, foundGoal, contents);
 		Comment savedComment = commentRepository.save(comment);
 		return CommentResponseDto.from(savedComment);
 	}
@@ -44,10 +44,10 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public CommentCursorResponseDto getComments(Long authId, Long goalId, Long cursorId, int size) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
+		User foundUser = validUser(authId);
 		// 목표 존재 여부 검증
-		Goal findedGoal = validGoal(goalId);
-		List<CommentGetResponseDto> list = commentRepository.findByIdAndCursor(findedGoal.getId(), cursorId, size)
+		Goal foundGoal = validGoal(goalId);
+		List<CommentGetResponseDto> list = commentRepository.findByIdAndCursor(foundGoal.getId(), cursorId, size)
 			.stream()
 			.map(CommentGetResponseDto::from)
 			.toList();
@@ -58,39 +58,39 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public CommentGetResponseDto getComment(Long authId, Long commentId) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
-		Comment findedComment = commentRepository.findById(commentId)
+		User foundUser = validUser(authId);
+		Comment foundComment = commentRepository.findById(commentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 
-		return CommentGetResponseDto.from(findedComment);
+		return CommentGetResponseDto.from(foundComment);
 	}
 
 	@Transactional
 	@Override
 	public CommentGetResponseDto updateComment(Long authId, Long commentId, CommentRequestDto commentRequestDto) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
-		Comment findedComment = commentRepository.findById(commentId)
+		User foundUser = validUser(authId);
+		Comment foundComment = commentRepository.findById(commentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-		if (findedUser.getId() != findedComment.getUser().getId()) {
+		if (foundUser.getId() != foundComment.getUser().getId()) {
 			throw new CustomException(ErrorCode.COMMENT_FORBIDDEN);
 		}
 		String updateContents = commentRequestDto.getContents();
-		findedComment.updateContents(updateContents);
-		return CommentGetResponseDto.from(findedComment);
+		foundComment.updateContents(updateContents);
+		return CommentGetResponseDto.from(foundComment);
 	}
 
 	@Transactional
 	@Override
 	public void deleteComment(Long authId, Long commentId) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
-		Comment findedComment = commentRepository.findById(commentId)
+		User foundUser = validUser(authId);
+		Comment foundComment = commentRepository.findById(commentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-		if (findedUser.getId() != findedComment.getUser().getId()) {
+		if (foundUser.getId() != foundComment.getUser().getId()) {
 			throw new CustomException(ErrorCode.COMMENT_FORBIDDEN);
 		}
-		commentRepository.delete(findedComment);
+		commentRepository.delete(foundComment);
 	}
 
 	private User validUser(Long userId) {

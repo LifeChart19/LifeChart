@@ -28,11 +28,11 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 		Long authId, Long cursorId, int size, Category category, Share share
 	) {
 
-		User findedUser = userRepository.findByIdAndDeletedAtIsNull(authId)
+		User foundUser = userRepository.findByIdAndDeletedAtIsNull(authId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		List<ShareGoalResponseDto> shareGoalList = goalRepository.findByAuthIdAndCursorAndFilters(
-			findedUser.getId(), cursorId, size, category, share
+				foundUser.getId(), cursorId, size, category, share
 			)
 			.stream()
 			.map(ShareGoalResponseDto::from)
@@ -45,12 +45,12 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 	@Override
 	public List<ShareGoalResponseDto> getShareGoalsToUser(Long authId, Long userId) {
 
-		User findedAuthUser = userRepository.findByIdAndDeletedAtIsNull(authId)
+		User foundAuthUser = userRepository.findByIdAndDeletedAtIsNull(authId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		User findedUser = userRepository.findByIdAndDeletedAtIsNull(userId)
+		User foundUser = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		return goalRepository.findByAuthIdAndUserId(findedAuthUser.getId(), findedUser.getId())
+		return goalRepository.findByAuthIdAndUserId(foundAuthUser.getId(), foundUser.getId())
 			.stream()
 			.map(ShareGoalResponseDto::from)
 			.toList();

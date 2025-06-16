@@ -30,13 +30,13 @@ public class LikeServiceImpl implements LikeService {
 	@Override
 	public LikeResponseDto plusLike(Long authId, Long goalId) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
+		User foundUser = validUser(authId);
 		// 목표 존재 여부 검증
-		Goal findedGoal = validGoal(goalId);
-		if (likeRepository.existsByUserIdAndGoalId(findedUser.getId(), findedGoal.getId())) {
+		Goal foundGoal = validGoal(goalId);
+		if (likeRepository.existsByUserIdAndGoalId(foundUser.getId(), foundGoal.getId())) {
 			throw new CustomException(ErrorCode.LIKE_CONFLICT);
 		}
-		Like like = Like.createLike(findedUser, findedGoal);
+		Like like = Like.createLike(foundUser, foundGoal);
 		Like savedLike = likeRepository.save(like);
 		return LikeResponseDto.from(savedLike);
 	}
@@ -45,34 +45,34 @@ public class LikeServiceImpl implements LikeService {
 	@Override
 	public Page<LikeGetResponseDto> getLikes(Long authId, Long goalId, int page, int size) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
+		User foundUser = validUser(authId);
 		// 목표 존재 여부 검증
-		Goal findedGoal = validGoal(goalId);
+		Goal foundGoal = validGoal(goalId);
 		Pageable pageable = PageRequest.of(page - 1, size);
-		return likeRepository.findByGoalId(findedGoal.getId(), pageable).map(LikeGetResponseDto::from);
+		return likeRepository.findByGoalId(foundGoal.getId(), pageable).map(LikeGetResponseDto::from);
 	}
 
 	@Transactional
 	@Override
 	public LikeGetResponseDto getLike(Long authId, Long likeId) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
-		Like findedLike = likeRepository.findById(likeId)
+		User foundUser = validUser(authId);
+		Like foundLike = likeRepository.findById(likeId)
 			.orElseThrow(() -> new CustomException(ErrorCode.LIKE_NOT_FOUND));
-		return LikeGetResponseDto.from(findedLike);
+		return LikeGetResponseDto.from(foundLike);
 	}
 
 	@Transactional
 	@Override
 	public void deleteLike(Long authId, Long likeId) {
 		// 로그인 유저 존재 여부 검증
-		User findedUser = validUser(authId);
-		Like findedLike = likeRepository.findById(likeId)
+		User foundUser = validUser(authId);
+		Like foundLike = likeRepository.findById(likeId)
 			.orElseThrow(() -> new CustomException(ErrorCode.LIKE_NOT_FOUND));
-		if (findedUser.getId() != findedLike.getUser().getId()) {
+		if (foundUser.getId() != foundLike.getUser().getId()) {
 			throw new CustomException(ErrorCode.LIKE_FORBIDDEN);
 		}
-		likeRepository.delete(findedLike);
+		likeRepository.delete(foundLike);
 	}
 
 	private User validUser(Long userId) {

@@ -68,9 +68,9 @@ public class FollowServiceImpl implements FollowService {
 	public FollowGetResponseDto getFollow(Long authId, Long followId) {
 		// 유저 검증
 		User authUser = validUser(authId);
-		Follow findedFollow = followRepository.findById(followId)
+		Follow foundFollow = followRepository.findById(followId)
 			.orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND));
-		return FollowGetResponseDto.from(findedFollow);
+		return FollowGetResponseDto.from(foundFollow);
 	}
 
 	@Transactional
@@ -79,9 +79,9 @@ public class FollowServiceImpl implements FollowService {
 		// 유저 검증
 		User authUser = validUser(authId);
 		User findUser = validUser(userId);
-		Follow findedFollow = followRepository.findByRequesterIdAndReceiverId(authUser.getId(), findUser.getId())
+		Follow foundFollow = followRepository.findByRequesterIdAndReceiverId(authUser.getId(), findUser.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND));
-		followRepository.delete(findedFollow);
+		followRepository.delete(foundFollow);
 	}
 
 	private User validUser(Long userId) {
