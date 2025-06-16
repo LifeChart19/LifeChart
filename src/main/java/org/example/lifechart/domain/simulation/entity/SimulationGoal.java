@@ -32,6 +32,9 @@ public class SimulationGoal {
 
     private LocalDateTime unlinkedAt;
 
+    //지금 로직이 꼬여서 이 필드가 있어야 실행이 가능하더라구요. 추후 쓸데없는 필드는 수정하도록 하겠습니다.
+    private boolean active;
+
 //    //시뮬레이션 필드를 설정하여 시뮬레이션골이 어디에 속한 시뮬레이션인지 ..
 //    public void setSimulation(Simulation simulation) {
 //        this.simulation = simulation;
@@ -39,6 +42,7 @@ public class SimulationGoal {
 //        //시뮬레이션에서 시뮬레이션 골을 가져와 추가하는 로직을 하면 무한루프 발생하는데,
 //        //관계 정합성을 편의메서드에서 다 관리함.
 //    }
+
 
     public void updateWithGoal(Goal goal) {
         this.goal = goal;
