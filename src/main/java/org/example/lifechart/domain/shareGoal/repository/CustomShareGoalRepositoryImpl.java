@@ -48,13 +48,13 @@ public class CustomShareGoalRepositoryImpl implements CustomShareGoalRepository 
 	}
 
 	@Override
-	public List<Goal> findByAuthIdAndUserId(Long authid, Long userId) {
+	public List<Goal> findByAuthIdAndUserId(Long authId, Long userId) {
 		QGoal goal = QGoal.goal;
 		QFollow follow = QFollow.follow;
 		return jpaQueryFactory
 			.selectFrom(goal)
 			.leftJoin(follow).on(
-				follow.receiver.id.eq(goal.user.id).and(follow.requester.id.eq(authid))
+				follow.receiver.id.eq(goal.user.id).and(follow.requester.id.eq(authId))
 			)
 			.where(
 				goal.user.id.eq(userId),
