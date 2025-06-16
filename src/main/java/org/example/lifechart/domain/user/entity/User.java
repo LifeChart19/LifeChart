@@ -59,10 +59,10 @@
         }
 
         public void updateProfile(String nickname, String gender, String job, String phoneNumber) {
-            this.nickname = nickname;
-            this.gender = gender;
-            this.job = job;
-            this.phoneNumber = phoneNumber;
+            if (nickname != null)this.nickname = nickname;
+            if (gender != null) this.gender = gender;
+            if (job != null) this.job = job;
+            if (phoneNumber != null) this.phoneNumber = phoneNumber;
         }
 
         @Builder.Default
