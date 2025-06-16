@@ -118,8 +118,7 @@ class AuthServiceTest {
         TokenRefreshResponse response = authService.refresh(request);
 
         assertThat(response.getAccessToken()).isEqualTo(accessToken);
-        assertThat(response.getRefreshToken()).isEqualTo(refreshToken); // 또는 new-refresh
-    }
+        assertThat(response.getRefreshToken()).isEqualTo("new-refresh");    }
 
     @Test
     @DisplayName("리프레시 토큰 실패 - 유효하지 않은 토큰")
