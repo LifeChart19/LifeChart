@@ -2,6 +2,9 @@
 name: Spring Boot CI/CD
 
 # 워크플로우 실행 조건: dev 브랜치에 push될 때 실행
+# paths의 경로에 변경사항이 있을때만 실행
+# srokflow_dispatch로 수동 실행 가능하게 만듬
+# 수동 배포 시 default 값 no 지만 yes 입력 시 수동 배포
 on:
   push:
     branches:
@@ -23,10 +26,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 저장소의 코드를 체크아웃 (runner에 복사)
+      # 저장소의 코드를 체크아웃 (runner server에 복사)
       - name: Checkout
         uses: actions/checkout@v3
 
+      # Gradle 캐시 설정 - 캐시 저장해 빌드 시간 단축
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
@@ -37,22 +41,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # 2. JDK 21 설치 (corretto 사용)
+      # JDK 21 설치 (corretto 사용)
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'corretto'
 
-      # 3. 권한 부여
+      # Gradlew 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 4. Gradle로 프로젝트 빌드
+      # Gradle로 프로젝트 빌드
       - name: Build with Gradle
         run: ./gradlew build -x test -x checkstyleMain -x checkstyleTest -x jacocoTestReport
 
-      # 5. Docker Hub에 로그인 (비밀번호는 GitHub Secrets에서 가져옴)
+      # Docker Hub에 로그인 (비밀번호는 GitHub Secrets에서 가져옴)
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           
@@ -77,23 +81,23 @@ jobs:
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app \
             --load .
 
-      # 7. Docker 이미지 푸시 (Docker Hub 업로드)
+      # Docker 이미지 푸시 (Docker Hub 업로드)
       - name: Push Docker Image
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app
 
-      # 8. EC2에 접속하기 위한 SSH 키 복사 및 권한 설정
+      # EC2에 접속하기 위한 SSH 키 복사 및 권한 설정
       - name: Copy SSH Key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
 
-        # 9. EC2 서버 호스트키 등록 (보안 강화를 위해 known_hosts에 추가)
+        # EC2 서버 호스트키 등록 (보안 강화를 위해 known_hosts에 추가)
       - name: Add EC2 Host to known_hosts
         run: |
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      # 10. EC2 서버에 접속해서 배포 작업 실행
+      # EC2 서버에 접속해서 배포 작업 실행
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/ec2_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
@@ -108,16 +112,10 @@ jobs:
             docker image prune -f
           EOF
           
-          # docker-compose.yml이 있는 경로
-          # 최신 이미지 pull
-          # 기존 컨테이너 중지 및 삭제
-          # 새로 실행
-          # 사용하지 않는 이미지 정리
-          
-          # 호스트 80번 포트를 컨테이너 8080번 포트와 연결
-          # EC2 재부팅 시 자동 재시작
-          # 환경변수로 Spring 프로파일 dev로 설정
-          # 헬스체크 명령어
-          # 30초마다 헬스체크 실행
-          # 헬스체크 타임아웃 10초
-          # 헬스체크 실패시 최대 3번 재시도
+        # SSH를 통해 EC2 인스턴스에 접속 (비공개 키, 사용자, 호스트 정보 사용)
+        # 애플리케이션이 위치한 디렉토리로 이동
+        # Docker Hub에서 docker-compose.yml에 명시된 최신 이미지 pull
+        # 현재 실행 중인 모든 컨테이너 중지 및 삭제
+        # 최신 이미지를 기반으로 컨테이너 재시작 (백그라운드 모드)
+        # 더 이상 사용되지 않는 Docker 이미지 강제 삭제 (디스크 공간 확보)
+        # EOF는 원래 ssh는 한 줄로 명령하지만 저렇게 사용하므로써 그 사이를 순차적으로 실행
