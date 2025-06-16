@@ -58,9 +58,6 @@ public class Goal extends BaseEntity {
 	private LocalDateTime endAt;
 
 	@Column(nullable = false)
-	private Float progressRate;
-
-	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
@@ -68,4 +65,7 @@ public class Goal extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Share share;
 
+	public void delete() {
+		this.status = Status.DELETED;
+	}
 }

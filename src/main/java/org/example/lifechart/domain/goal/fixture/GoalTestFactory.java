@@ -28,7 +28,6 @@ public class GoalTestFactory {
 			.targetAmount(1_000_000L)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusMonths(6))
-			.progressRate(0.0f)
 			.status(Status.ACTIVE)
 			.share(Share.PRIVATE);
 	}

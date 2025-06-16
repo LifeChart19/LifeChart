@@ -85,11 +85,10 @@ public enum ErrorCode implements BaseCode {
 	GOAL_LIFESPAN_DATA_NOT_EXIST(HttpStatus.UNPROCESSABLE_ENTITY, "성별과 연도에 해당하는 기대 수명 데이터가 존재하지 않습니다."),
 	GOAL_INIT_DATA_MISSING(HttpStatus.INTERNAL_SERVER_ERROR, "목표 데이터 파일을 찾을 수 없습니다."),
 	GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "목표가 존재하지 않습니다."),
-
-
-
-
-
+	GOAL_HOUSING_NOT_FOUND(HttpStatus.NOT_FOUND, "주거 목표가 존재하지 않습니다."),
+	GOAL_RETIREMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "은퇴 목표가 존재하지 않습니다."),
+	GOAL_ETC_NOT_FOUND(HttpStatus.NOT_FOUND, "기타 목표가 존재하지 않습니다."),
+	GOAL_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 목표입니다."),
 
 
 
