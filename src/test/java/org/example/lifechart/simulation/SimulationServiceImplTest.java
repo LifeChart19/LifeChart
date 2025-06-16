@@ -318,7 +318,6 @@ public class SimulationServiceImplTest {
                 .targetAmount(1_000_000L)
                 .startAt(LocalDateTime.now())
                 .endAt(LocalDateTime.now().plusMonths(6))
-                .progressRate(0f)
                 .status(Status.ACTIVE)
                 .share(Share.PRIVATE)
                 .build();
