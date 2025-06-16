@@ -25,15 +25,12 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponse>> signup(@Validated @RequestBody SignupRequest request) {
-
         User user = userService.signup(request);
-        SignupResponse response = new SignupResponse(user.getId());
-
-        return ApiResponse.onSuccess(SuccessCode.CREATE_USER_SUCCESS, response);
-    }
+        SignupResponse response = new SignupResponse(user.getId()); // DTO로 감싼다
+        return ApiResponse.onSuccess(SuccessCode.CREATE_USER_SUCCESS, response);    }
 
     @PutMapping("/me")
-    public ResponseEntity<ApiResponse<Object>> updateProfile(
+    public ResponseEntity<ApiResponse<Void>> updateProfile(
             @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
             @Valid @RequestBody UserUpdateRequest request
     ) {
@@ -41,12 +38,13 @@ public class UserController {
         return ApiResponse.onSuccess(SuccessCode.UPDATE_USER_SUCCESS, null);
     }
 
+
     @PatchMapping("/withdrawal")
-    public ResponseEntity<ApiResponse<Object>> withdraw(
+    public ResponseEntity<ApiResponse<Long>> withdraw(
             @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
             @RequestBody @Valid WithdrawalRequest request
     ) {
-        userService.withdraw(userPrincipal.getUserId(), request);
-        return ApiResponse.onSuccess(SuccessCode.DELETE_USER_SUCCESS, null);
+        Long userId = userService.withdraw(userPrincipal.getUserId(), request);
+        return ApiResponse.onSuccess(SuccessCode.DELETE_USER_SUCCESS, userId);
     }
 }

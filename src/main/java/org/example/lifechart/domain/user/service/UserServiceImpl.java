@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public void updateProfile(Long userId, UserUpdateRequest request) {
+    public Long updateProfile(Long userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -77,12 +77,14 @@ public class UserServiceImpl implements UserService{
                 request.getJob(),
                 request.getPhoneNumber()
         );
+
+        return user.getId();
     }
 
 
     @Override
     @Transactional
-    public void withdraw(Long userId, WithdrawalRequest request) {
+    public Long withdraw(Long userId, WithdrawalRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -91,6 +93,7 @@ public class UserServiceImpl implements UserService{
         }
 
         user.softDelete();
+        return user.getId();
     }
 
 }
