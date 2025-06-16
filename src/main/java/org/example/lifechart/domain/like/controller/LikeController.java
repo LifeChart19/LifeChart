@@ -31,7 +31,7 @@ public class LikeController {
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
 		@PathVariable Long goalId) {
 		return ApiResponse.onSuccess(SuccessCode.CREATE_LIKE_SUCCESS,
-			likeService.plusLike(customUserPrincipal.getUserId(),goalId));
+			likeService.plusLike(customUserPrincipal.getUserId(), goalId));
 	}
 
 	// 좋아요 목록 조회 (page)
