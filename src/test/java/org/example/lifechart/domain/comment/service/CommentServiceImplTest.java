@@ -147,6 +147,30 @@ class CommentServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("댓글 목록 조회 실패 - 로그인 유저 x")
+	void getComments_Fail() {
+		// given
+		given(userRepository.findByIdAndDeletedAtIsNull(me)).willReturn(Optional.empty());
+
+		// when then
+		CustomException exception = assertThrows(CustomException.class,
+			() -> commentService.getComments(me, goalId, null, 10));
+		assertEquals("유저를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+	}
+
+	@Test
+	@DisplayName("댓글 목록 조회 실패 - 목표 존재 x")
+	void getComments_Fail1() {
+		// given
+		given(userRepository.findByIdAndDeletedAtIsNull(me)).willReturn(Optional.of(authUser));
+		given(goalRepository.findByIdAndStatus(goalId, status)).willReturn(Optional.empty());
+		// when then
+		CustomException exception = assertThrows(CustomException.class,
+			() -> commentService.getComments(me, goalId, null, 10));
+		assertEquals("목표가 존재하지 않습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+	}
+
+	@Test
 	@DisplayName("댓글 단건 조회 성공")
 	void getComment_Ok() {
 		// given
