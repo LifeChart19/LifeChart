@@ -19,6 +19,8 @@ public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SendSqsPort sqsPort;
+
 
     @Override
     public User signup(SignupRequest request) {
@@ -40,6 +42,14 @@ public class UserServiceImpl implements UserService{
                 .role("USER")
                 .isDeleted(false)
                 .build();
+
+
+        sqsPort.sendNotification(
+                savedUser.getId(),
+                "USER_NOTIFICATION",
+                "회원가입 축하!",
+                savedUser.getNickname() + "님, 회원가입을 환영합니다!"
+        );
 
         return userRepository.save(user);
     }
