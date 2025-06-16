@@ -228,8 +228,8 @@ public enum ErrorCode implements BaseCode {
 
 
 	// Notification (Line#: 230~259)
-
-
+	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
+	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
 
 
 
