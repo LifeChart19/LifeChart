@@ -1,11 +1,15 @@
 package org.example.lifechart.domain.user.dto;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
 
+@Builder
 @Getter
+@AllArgsConstructor
 public class SignupRequest {
 
     @Email(message = "이메일 형식이 아닙니다.")

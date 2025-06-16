@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.notification.entity.Notification;
 import org.example.lifechart.domain.user.dto.SignupRequest;
+import org.example.lifechart.domain.user.dto.UserUpdateRequest;
 import org.example.lifechart.domain.user.dto.WithdrawalRequest;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
@@ -66,23 +67,40 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
-	@Override
-	@Transactional
-	public void withdraw(Long userId, WithdrawalRequest request) {
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-			throw new CustomException(ErrorCode.NOT_MATCH_PASSWORD);
-		}
+    @Override
+    @Transactional
+    public Long updateProfile(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		user.softDelete();
-	}
+        if (!user.getNickname().equals(request.getNickname()) &&
+                userRepository.existsByNickname(request.getNickname())) {
+            throw new CustomException(ErrorCode.EXIST_SAME_NICKNAME);
+        }
 
-	@Override
-	public User findByIdAndIsDeletedFalse(Long id) {
-		return userRepository.findById(id)
-			.filter(user -> !Boolean.TRUE.equals(user.getIsDeleted()))
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-	}
+        user.updateProfile(
+                request.getNickname(),
+                request.getGender(),
+                request.getJob(),
+                request.getPhoneNumber()
+        );
+
+        return user.getId();
+    }
+
+
+    @Override
+    @Transactional
+    public Long withdraw(Long userId, WithdrawalRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new CustomException(ErrorCode.NOT_MATCH_PASSWORD);
+        }
+
+        user.softDelete();
+        return user.getId();
+    }
 }
