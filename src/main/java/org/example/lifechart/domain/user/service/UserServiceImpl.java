@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService{
 
         User savedUser = userRepository.save(user);
 
-        sqsPort.sendNotification(savedUser.getId(), "USER_NOTIFICATION", "Welcome!", "가입을 축하합니다!    ");
+        sqsPort.sendNotification(savedUser.getId(), "USER_NOTIFICATION", "Welcome!", "가입을 축하합니다!");
 
         return savedUser;
     }
