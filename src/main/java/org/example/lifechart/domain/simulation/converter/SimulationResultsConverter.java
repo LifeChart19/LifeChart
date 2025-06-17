@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import org.example.lifechart.domain.simulation.entity.SimulationResults;
+import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
 
 import java.io.IOException;
 

@@ -111,9 +111,10 @@ public enum ErrorCode implements BaseCode {
 	SIMULATION_NOT_FOUND(HttpStatus.NOT_FOUND, "시뮬레이션을 찾을 수 없습니다."),
 	SIMULATION_GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 목표가 존재하지 않습니다."),
 	SIMULATION_PARAM_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "시뮬레이션 파라미터 유효성 검증에 실패했습니다."),
-	SIMULATION_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "시뮬레이션 저장 중 오류가 발생했습니다."),
-	SIMULATION_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "시뮬레이션 업데이트 중 오류가 발생했습니다."),
-	SIMULATION_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "시뮬레이션 삭제 중 오류가 발생했습니다."),
+	SIMULATION_SAVE_FAILED(HttpStatus.BAD_REQUEST, "시뮬레이션 저장 중 오류가 발생했습니다."),
+	SIMULATION_UPDATE_FAILED(HttpStatus.BAD_REQUEST, "시뮬레이션 업데이트 중 오류가 발생했습니다."),
+	SIMULATION_DELETE_FAILED(HttpStatus.BAD_REQUEST, "삭제할 수 없는 시뮬레이션입니다."),
+	SIMULATION_LINKED_ENTITY_EXISTS(HttpStatus.BAD_REQUEST, "연결된 목표가 있는 시뮬레이션은 삭제할 수 없습니다."),
 	INVALID_GOAL_CATEGORY(HttpStatus.BAD_REQUEST,"지원하지 않는 카테고리입니다."),
 
 

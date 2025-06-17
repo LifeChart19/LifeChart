@@ -1,11 +1,7 @@
 package org.example.lifechart.domain.simulation.dto.response;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import lombok.*;
-import org.example.lifechart.domain.simulation.converter.SimulationParamsConverter;
 import org.example.lifechart.domain.simulation.entity.Simulation;
-import org.example.lifechart.domain.simulation.entity.SimulationResults;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,20 +26,20 @@ public class BaseSimulationResponseDto {
     //기준일 사용자 설정 가능
     private LocalDate baseDate;
 
-    //시뮬레이션을 2개이상 돌리는 경우
-    //아무 값 주지 않은 경우 빈 리스트 default
+
+    //아무 값 주지 않은 경우 빈 리스트 default설젇
     @Builder.Default
     List<Long> goalIds = new ArrayList<>();
 
-    //시뮬레이션을 돌릴 때 사용자가 입력하거나, 시스템이 자동으로 구성한 입력값들이라 현재 Object로 남겨놓으신거 맞은지
-    @Convert(converter = SimulationParamsConverter.class)
-    @Column(columnDefinition = "json")
-    private SimulationParams params;
+     //계산에 필요한 필드
+//    @Convert(converter = SimulationParamsConverter.class)
+//    @Column(columnDefinition = "json")
+//    private SimulationParams params;
 
     //계산결과
-    @Convert(converter = SimulationParamsConverter.class)
-    @Column(columnDefinition = "json")
-    private SimulationResults results;
+//    @Convert(converter = SimulationParamsConverter.class)
+//    @Column(columnDefinition = "json")
+//    private SimulationResults results;
 
     //앞으로 모아야 할 금액
     private Long requiredAmount;
@@ -60,6 +56,7 @@ public class BaseSimulationResponseDto {
     //매달 자산 가격 변화
     private List<MonthlyAssetDto> monthlyAssets;
 
+    //시뮬레이션 생성에 필요한 정적팩토리메서드
     public static BaseSimulationResponseDto of(
             Simulation simulation,
             List<Long> goalIds,
@@ -71,7 +68,6 @@ public class BaseSimulationResponseDto {
                 .title(simulation.getTitle())
                 .baseDate(simulation.getBaseDate())
                 .goalIds(goalIds)
-                .params(simulation.getParams())
                 .requiredAmount(results.getRequiredAmount())
                 .monthsToGoal(results.getMonthsToGoal())
                 .currentAchievementRate(results.getCurrentAchievementRate())
@@ -79,6 +75,8 @@ public class BaseSimulationResponseDto {
                 .monthlyAssets(results.getMonthlyAssets())
                 .build();
     }
+
+    //이건 조회할 때 필요.
     public static BaseSimulationResponseDto dto(
             Simulation simulation,
             SimulationResults results
@@ -88,7 +86,6 @@ public class BaseSimulationResponseDto {
                 .userNickname(simulation.getUser().getNickname())
                 .title(simulation.getTitle())
                 .baseDate(simulation.getBaseDate())
-                .params(simulation.getParams())
                 .requiredAmount(results.getRequiredAmount())
                 .monthsToGoal(results.getMonthsToGoal())
                 .currentAchievementRate(results.getCurrentAchievementRate())

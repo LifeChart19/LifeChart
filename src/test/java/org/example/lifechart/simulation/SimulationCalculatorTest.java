@@ -80,10 +80,10 @@ public class SimulationCalculatorTest {
         List<MonthlyAssetDto> result = SimulationCalculator.simulateMonthlyAssetsWithInterest(
                 1000000,  // 초기 자산
                 3000000,  // 월 소득
-                2000_000,  // 월 지출
-                6.0,         // 연 이율 (%)
-                5 ,           // 개월 수
+                2000_000,
+                4,
                 baseMonth
+
         );
 
         result.stream().limit(12).forEach(asset -> System.out.println("단리 적금 기준 매달 자산 변화 :"  + asset));

@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import java.time.YearMonth;
 
+//월과 모은 자산을 반환하기 위한 dto
 @Embeddable
 @Getter
 @AllArgsConstructor

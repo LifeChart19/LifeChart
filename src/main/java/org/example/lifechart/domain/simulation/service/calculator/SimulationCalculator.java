@@ -13,6 +13,15 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class SimulationCalculator {
+    //단리  정기적금
+    private static double calculateAccumulatedAssetWithSimpleInterest(
+            double monthlySaving,
+            double annualInterestRate,
+            int monthIndex
+    ) {
+        double interest = monthlySaving * ((monthIndex - 1) * monthIndex / 2.0) * (annualInterestRate / 100.0) / 12.0;
+        return monthlySaving * monthIndex + interest;
+    }
 
     // 1. 앞으로 모아야 하는 금액
     public long calculateRequiredAmount(long initialAsset, List<Goal> selectedGoals) {
@@ -79,45 +88,53 @@ public class SimulationCalculator {
             double annualInterestRate,
             double targetAmount,
             int totalMonths,
-            YearMonth baseMonth // 기준 월 필요
+            YearMonth baseMonth
     ) {
         List<MonthlyAchievement> progressList = new ArrayList<>();
+        double accumulated = 0.0;
+        double monthlyRate = (annualInterestRate / 100.0) / 12.0;
 
-        for (int m = 1; m <= totalMonths; m++) {
-            double accumulated = monthlySaving * m
-                    + monthlySaving * m * (m + 1) / 2.0 * (annualInterestRate / 100.0) / 12.0;
+        //단리 적금 (리펙토링으로 메서드 가져와서 사용할 것.)
+        for (int monthIndex = 1; monthIndex <= totalMonths; monthIndex++) {
 
-            double progressRate = (accumulated / targetAmount) * 100.0;
+            double interest = monthlySaving * monthlyRate * (totalMonths - monthIndex + 1);
+            accumulated += monthlySaving + interest;
 
-            YearMonth month = baseMonth.plusMonths(m - 1); // m개월 차 → baseMonth + (m - 1)
+            double progressRate = (targetAmount == 0) ? 100.0 : (accumulated / targetAmount) * 100.0;
 
-            progressList.add(new MonthlyAchievement(month, (float) progressRate));
+            if (!Double.isFinite(progressRate)) {
+                progressRate = 0.0;
+            }
+
+            progressList.add(new MonthlyAchievement(
+                    baseMonth.plusMonths(monthIndex - 1),
+                    (float) Math.min(progressRate, 100.0)
+            ));
+
+            if (progressRate >= 100.0) {
+                break;
+            }
         }
 
         return progressList;
     }
 
     // 5. 매달 자산 변화 시뮬레이션 (자산 금액, 매달 변화)
-// 초기 자산부터 시작하여, 매월 (소득 - 지출)을 반영하고 수익률을 적용
     public static List<MonthlyAssetDto> simulateMonthlyAssetsWithInterest(
             long initialAsset,
-            long monthlyIncome,
-            long monthlyExpense,
+            long monthlySaving,
             double annualInterestRate,
             int totalMonths,
             YearMonth baseMonth
     ) {
         List<MonthlyAssetDto> assets = new ArrayList<>();
-        double currentAsset = initialAsset;
-        double monthlySaving = monthlyIncome - monthlyExpense;
-        double monthlyRate = annualInterestRate / 12.0 / 100.0;
 
-        for (int m = 1; m <= totalMonths; m++) {
-            double interest = monthlySaving * m * monthlyRate;
-            currentAsset = currentAsset + monthlySaving + interest;
+        for (int monthIndex = 1; monthIndex <= totalMonths; monthIndex++) {
+            double accumulated = calculateAccumulatedAssetWithSimpleInterest(monthlySaving, annualInterestRate, monthIndex);
+            long totalAsset = Math.round(initialAsset + accumulated); // 초기 자산 포함
 
-            YearMonth currentMonth = baseMonth.plusMonths(m - 1); // 월 단위로 증가
-            assets.add(new MonthlyAssetDto(currentMonth, Math.round(currentAsset)));
+            YearMonth currentMonth = baseMonth.plusMonths(monthIndex - 1);
+            assets.add(new MonthlyAssetDto(currentMonth, totalAsset));
         }
 
         return assets;

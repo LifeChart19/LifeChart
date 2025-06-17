@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.YearMonth;
 
+//연/월 정보와 달성률을 반환하기 위한 dto
 //embeddable db에 저장되길 원한다면 필요.
 @Embeddable
 @NoArgsConstructor

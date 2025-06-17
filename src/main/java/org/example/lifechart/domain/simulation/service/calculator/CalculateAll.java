@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
-import org.example.lifechart.domain.simulation.entity.SimulationResults;
+import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -58,7 +58,7 @@ public class CalculateAll {
 
         //매달 자산 추이
         List<MonthlyAssetDto> monthlyAssets = SimulationCalculator.simulateMonthlyAssetsWithInterest(
-                initialAsset, monthlyIncome, monthlyExpense, annualInterestRate, totalMonths, baseMonth
+                initialAsset, monthlySaving, annualInterestRate, totalMonths, baseMonth
         );
 
         return SimulationResults.builder()

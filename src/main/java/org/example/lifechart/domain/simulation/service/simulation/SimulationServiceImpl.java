@@ -8,12 +8,12 @@ import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
-import org.example.lifechart.domain.simulation.dto.response.BaseSimulationResponseDto;
+import org.example.lifechart.domain.simulation.dto.response.CreateSimulationResponseDto;
 import org.example.lifechart.domain.simulation.dto.response.DeletedSimulationResponseDto;
+import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
 import org.example.lifechart.domain.simulation.dto.response.SimulationSummaryDto;
 import org.example.lifechart.domain.simulation.entity.Simulation;
 import org.example.lifechart.domain.simulation.entity.SimulationGoal;
-import org.example.lifechart.domain.simulation.entity.SimulationResults;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalJdbcRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationRepository;
@@ -44,10 +44,15 @@ public class SimulationServiceImpl implements SimulationService {
 
     //사용자가 목표는 그대로 두고, 시뮬레이션만 새로운 파라미터로 돌림
     @Transactional
-    public BaseSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, User user, List<Long> goalIds) {
+    public CreateSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, Long userId, List<Long> goalIds) {
 
-        // 1. Goal 목록 조회
-        List<Goal> goals = goalRepository.findAllById(goalIds);
+        //0. 소프트딜리트된 유저도 simulation생성 못하도록
+        User user = userRepository.findById(userId)
+                .filter(u -> !u.getIsDeleted())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 1. Goal 목록 조회하면서 user도 같이 갖고옴.
+        List<Goal> goals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId);
 
 
         // 2. 존재하지 않는 goalId 검증
@@ -78,26 +83,7 @@ public class SimulationServiceImpl implements SimulationService {
         //-현재 달성률 계산
         //-매달 예상 달성률 리스트 반환
         //-매달 자산 변화
-        //현재 많은 필드를 반환하고 있어서 어떤 필드만 골라서 반환할지 고민해볼 필요o
-        //근데 이렇게 resutls로해서 dto가 제대로 반환이 되는지 모르겠음. test는 성공
-        Simulation simulation = Simulation.builder()
-                .title(dto.getTitle())
-                .baseDate(dto.getBaseDate())
-                .initialAsset(dto.getInitialAsset())
-                .monthlyIncome(dto.getMonthlyIncome())
-                .monthlyExpense(dto.getMonthlyExpense())
-                .monthlySaving(dto.getMonthlySaving())
-                .annualInterestRate(dto.getAnnualInterestRate())
-                .elapsedMonths(dto.getElapsedMonths())
-                .totalMonths(dto.getTotalMonths())
-                .params(dto.getParams())
-                .requiredAmount(results.getRequiredAmount())
-                .monthsToGoal(results.getMonthsToGoal())
-                .currentAchievementRate(results.getCurrentAchievementRate())
-                .monthlyAchievements(results.getMonthlyAchievements())
-                .monthlyAssets(results.getMonthlyAssets())
-                .user(user) // 반드시 build 전에 와야 함
-                .build();
+        Simulation simulation = Simulation.createSimulation(dto, results, user);
 
 
         //6. simulationGoal생성시 simulation.getId가 필요
@@ -117,7 +103,7 @@ public class SimulationServiceImpl implements SimulationService {
                     return SimulationGoal.builder()
                             .simulation(simulation)
                             .goal(goalMap.get(goalId))
-                            .isActive(true)
+                            .active(true)
                             .linkedAt(LocalDateTime.now())
                             .build();
                 })
@@ -129,7 +115,7 @@ public class SimulationServiceImpl implements SimulationService {
         //8. 배치인서트로 insert
         simulationGoalJdbcRepository.batchInsertSimulationGoals(simulationGoals);
 
-        return BaseSimulationResponseDto.of(simulation, goalIds, results);
+        return CreateSimulationResponseDto.from(simulation);
     }
 
     //모든 정보가 아니라 어떤 목록이 있는지 id와 title만
@@ -137,6 +123,7 @@ public class SimulationServiceImpl implements SimulationService {
     public List<SimulationSummaryDto> findAllSimulationsByUserId(Long userId) {
 
         User user = userRepository.findById(userId)
+                .filter(u -> !u.getIsDeleted())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return simulationRepository.findAllByUser(user)
@@ -145,7 +132,6 @@ public class SimulationServiceImpl implements SimulationService {
                 .collect(Collectors.toList());
 
     }
-
 
 
 //    //id에 해당하는 단건 조회. 어떤 필드만 보여줘야할지 dto를 다시 세팅해야 할듯.
@@ -165,15 +151,15 @@ public class SimulationServiceImpl implements SimulationService {
 //        return BaseSimulationResponseDto.dto(simulation, results);
 //    }
 
-    @Transactional(readOnly = true)
-    public List<DeletedSimulationResponseDto> findAllSoftDeletedSimulations(Long userId) {
-
-        List<Simulation> deletedSimulations = simulationRepository.findAllByUserIdAndIsDeletedTrue(userId);
-
-        return deletedSimulations.stream()
-                .map(DeletedSimulationResponseDto::toDto)
-                .collect(Collectors.toList());
-    }
+//    @Transactional(readOnly = true)
+//    public List<DeletedSimulationResponseDto> findAllSoftDeletedSimulations(Long userId) {
+//
+//        List<Simulation> deletedSimulations = simulationRepository.findAllByUserIdAndIsDeletedTrue(userId);
+//
+//        return deletedSimulations.stream()
+//                .map(DeletedSimulationResponseDto::toDto)
+//                .collect(Collectors.toList());
+//    }
 
 //    수정로직
 //    @Transactional
@@ -210,7 +196,7 @@ public class SimulationServiceImpl implements SimulationService {
 //    어떤 목표랑 연결되어있는지, 시뮬레이션 하나에 복수 목표를 가지고 있지 않은지 판단하는 로직 필요.
 
 
-    //소프트딜리트용
+//    소프트딜리트용
     @Transactional
     public DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId) {
 
@@ -230,16 +216,16 @@ public class SimulationServiceImpl implements SimulationService {
         List<SimulationGoal> activeSimulationGoals = simulationGoalRepository.findBySimulationIdAndActiveTrue(simulationId);
 
         if (!activeSimulationGoals.isEmpty()) {
-            throw new CustomException(ErrorCode.SIMULATION_DELETE_FAILED);
+            throw new CustomException(ErrorCode.SIMULATION_LINKED_ENTITY_EXISTS);
         }
+
         simulation.softDelete();
-        simulationRepository.save(simulation);
 
         return DeletedSimulationResponseDto.toDto(simulation);
 
     }
 
-    //
+
     @Transactional
     public void deleteSimulation(Long userId, Long simulationId) {
 

@@ -23,11 +23,13 @@ public interface SimulationGoalRepository extends CrudRepository<SimulationGoal,
     SELECT COUNT(sg)
     FROM SimulationGoal sg
     WHERE sg.simulation.id = :simulationId
-      AND sg.isActive = true
+      AND sg.active = true
 """)
     long countActiveGoalsBySimulationId(@Param("simulationId") Long simulationId);
 
     List<SimulationGoal> findBySimulationIdAndActiveTrue(Long simulationId);
+
+
 }
 
 //→ GoalId로만 필터링 → 자동으로 해당 Goal과 연결된 Simulation들이 다 조회됨 → 별도 로직 불필요.

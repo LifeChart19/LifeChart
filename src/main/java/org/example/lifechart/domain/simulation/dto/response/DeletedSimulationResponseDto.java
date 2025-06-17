@@ -5,6 +5,7 @@ import org.example.lifechart.domain.simulation.entity.Simulation;
 
 import java.time.LocalDateTime;
 
+//소프트 딜리트된 목록을 조회할 때 필요한 dto
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder

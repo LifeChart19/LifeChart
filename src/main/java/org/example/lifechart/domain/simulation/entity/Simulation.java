@@ -3,11 +3,10 @@ package org.example.lifechart.domain.simulation.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.lifechart.common.entity.BaseEntity;
-import org.example.lifechart.domain.simulation.converter.SimulationParamsConverter;
-import org.example.lifechart.domain.simulation.converter.SimulationResultsConverter;
+import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
-import org.example.lifechart.domain.simulation.dto.response.SimulationParams;
+import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
 import org.example.lifechart.domain.user.entity.User;
 
 import java.time.LocalDate;
@@ -56,21 +55,21 @@ public class Simulation extends BaseEntity {
     @OneToMany(mappedBy = "simulation", cascade = CascadeType.ALL, orphanRemoval = true )
     private List<SimulationGoal> simulationGoals = new ArrayList<>();
 
-    //JPA가 해당 필드를 DB에 저장하거나 읽을 때 사용할 변환 로직
+    //JPA가 해당 필드를 DB에 저장하거나 읽을 때 사용할 변환 로직(추후 수정예정)
     //파람은 복합객체라 이것을 직렬화, 역직렬화 해야 함.
-    @Convert(converter = SimulationParamsConverter.class)
-    @Column(columnDefinition = "json")
-    private SimulationParams params;
-
-    @Convert(converter = SimulationResultsConverter.class)
-    @Column(columnDefinition = "json")
-    private SimulationResults results;
+//    @Convert(converter = SimulationParamsConverter.class)
+//    @Column(columnDefinition = "json")
+//    private SimulationParams params;
+//
+//    @Convert(converter = SimulationResultsConverter.class)
+//    @Column(columnDefinition = "json")
+//    private SimulationResults results;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(nullable = true)
     private boolean isDeleted = false;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime deletedAt;
 
     //사용자 입력 연이율
@@ -116,7 +115,7 @@ public class Simulation extends BaseEntity {
         }
     }
 
-    // 기존 시뮬레이션 연결 끊고 전체 새로 연결.
+    // 기존 시뮬레이션 연결 끊고 전체 새로 연결. 업데이트할 때 필요함.
     public void addSimulationGoals(List<SimulationGoal> simulationGoals) {
         // 기존 SimulationGoal 들과 연결 끊기
         for (SimulationGoal simulationGoal : this.simulationGoals) {
@@ -144,6 +143,25 @@ public class Simulation extends BaseEntity {
         }
     }
 
+    public static Simulation createSimulation(BaseCreateSimulationRequestDto dto, SimulationResults results, User user) {
+        return Simulation.builder()
+                .title(dto.getTitle())
+                .baseDate(dto.getBaseDate())
+                .initialAsset(dto.getInitialAsset())
+                .monthlyIncome(dto.getMonthlyIncome())
+                .monthlyExpense(dto.getMonthlyExpense())
+                .monthlySaving(dto.getMonthlySaving())
+                .annualInterestRate(dto.getAnnualInterestRate())
+                .elapsedMonths(dto.getElapsedMonths())
+                .totalMonths(dto.getTotalMonths())
+                .requiredAmount(results.getRequiredAmount())
+                .monthsToGoal(results.getMonthsToGoal())
+                .currentAchievementRate(results.getCurrentAchievementRate())
+                .monthlyAchievements(results.getMonthlyAchievements())
+                .monthlyAssets(results.getMonthlyAssets())
+                .user(user)
+                .build();
+    }
 
 
 }
