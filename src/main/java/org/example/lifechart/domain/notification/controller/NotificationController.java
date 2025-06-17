@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.response.ApiResponse;
+import org.example.lifechart.domain.notification.dto.NotificationCreateRequestDto;
 import org.example.lifechart.domain.notification.dto.NotificationResponseDto;
+import org.example.lifechart.domain.notification.service.NotificationCreateService;
 import org.example.lifechart.domain.notification.service.NotificationService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +29,7 @@ public class NotificationController {
 
 
 	private final NotificationService notificationService;
+	private final NotificationCreateService notificationCreateService;
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<List<NotificationResponseDto>>> getList(
@@ -64,5 +69,17 @@ public class NotificationController {
 		return ApiResponse.onSuccess(SuccessCode.PATCH_NOTIFICATION_SUCCESS,
 			null);
 	}
+
+	@PostMapping()
+	public ResponseEntity<ApiResponse<Void>> create(
+		@AuthenticationPrincipal CustomUserPrincipal userDetails,
+		@RequestBody NotificationCreateRequestDto dto
+	){
+
+		notificationCreateService.create(dto);
+
+		return null;
+	}
+
 
 }
