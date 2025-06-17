@@ -26,11 +26,27 @@ public class SimulationGoal {
     @JoinColumn(name = "goal_id")
     private Goal goal;
 
-    private boolean isActive;
-
     private LocalDateTime linkedAt;
 
     private LocalDateTime unlinkedAt;
+
+    @Setter(AccessLevel.PROTECTED)
+    private boolean active;
+
+    public void setActive(boolean active) {
+        this.active = active;
+
+        if (active) {
+            if (this.linkedAt == null) {
+                this.linkedAt = LocalDateTime.now();
+            }
+            this.unlinkedAt = null;
+        } else {
+            this.unlinkedAt = LocalDateTime.now();
+            this.linkedAt = null;
+        }
+    }
+
 
 //    //시뮬레이션 필드를 설정하여 시뮬레이션골이 어디에 속한 시뮬레이션인지 ..
 //    public void setSimulation(Simulation simulation) {
@@ -40,16 +56,17 @@ public class SimulationGoal {
 //        //관계 정합성을 편의메서드에서 다 관리함.
 //    }
 
-    public void updateWithGoal(Goal goal) {
-        this.goal = goal;
-        this.linkedAt = LocalDateTime.now();
-        this.isActive = true;
 
-    }
-
-    public void inactive() {
-        this.isActive = false;
-        this.unlinkedAt = LocalDateTime.now();
-    }
+//    public void updateWithGoal(Goal goal) {
+//        this.goal = goal;
+//        this.linkedAt = LocalDateTime.now();
+//        this.isActive = true;
+//
+//    }
+//
+//    public void inactive() {
+//        this.isActive = false;
+//        this.unlinkedAt = LocalDateTime.now();
+//    }
 
 }
