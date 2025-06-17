@@ -40,7 +40,7 @@ public class SimulationCalculatorTest {
     @Test
     void testEstimateAchieveMonth() {
         YearMonth baseMonth = YearMonth.of(2025, 6);
-        YearMonth result = SimulationCalculator.estimateAchieveMonth(5000000, 6, 10000000, baseMonth);
+        YearMonth result = SimulationCalculator.estimateAchieveMonth(5000000, 6, 10000000, 100000, baseMonth);
         System.out.println("목표 달성까지 예상 월" +  result);
 
     }

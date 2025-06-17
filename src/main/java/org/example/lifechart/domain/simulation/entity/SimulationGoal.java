@@ -30,6 +30,7 @@ public class SimulationGoal {
 
     private LocalDateTime unlinkedAt;
 
+    @Setter(AccessLevel.PROTECTED)
     private boolean active;
 
 //    //시뮬레이션 필드를 설정하여 시뮬레이션골이 어디에 속한 시뮬레이션인지 ..

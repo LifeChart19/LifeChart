@@ -36,6 +36,7 @@ public class SimulationCalculator {
             double monthlySaving,
             double annualInterestRate,
             double targetAmount,
+            double initialAsset,
             YearMonth baseMonth
     ) {
         // a = C * r연 / 2400
@@ -45,7 +46,7 @@ public class SimulationCalculator {
         double b = monthlySaving * (1 + (annualInterestRate / 2400));
 
         // c = -B
-        double c = -targetAmount;
+        double c = -(targetAmount - initialAsset);
 
         // 판별식
         double discriminant = Math.pow(b, 2) - 4 * a * c;

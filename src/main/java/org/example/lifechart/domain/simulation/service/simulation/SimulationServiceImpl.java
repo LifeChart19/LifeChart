@@ -36,7 +36,6 @@ public class SimulationServiceImpl implements SimulationService {
 
     private final SimulationRepository simulationRepository;
     private final GoalRepository goalRepository;
-    private final SimulationValidator simulationValidator;
     private final SimulationGoalJdbcRepository simulationGoalJdbcRepository;
     private final UserRepository userRepository;
     private final SimulationGoalRepository simulationGoalRepository;

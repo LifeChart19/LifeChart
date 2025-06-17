@@ -40,7 +40,7 @@ public class CalculateAll {
 
         //목표달성시점을 예측
         YearMonth targetMonth = SimulationCalculator.estimateAchieveMonth(
-                saving, annualInterestRate, requiredAmount, baseMonth
+                saving, annualInterestRate, requiredAmount, initialAsset, baseMonth
         );
         //baseMonth부터 targetMonth까지의 개월 수 계산
         //baseMonth, targetMonth가 usermont타입이라 temporalunit 형태로 사용 -
@@ -51,9 +51,9 @@ public class CalculateAll {
                 initialAsset, saving, elapsedMonths, annualInterestRate, requiredAmount
         );
 
-        //매달 달성률 계싼
+        //매달 달성률 계산
         List<MonthlyAchievement> monthlyAchievements = SimulationCalculator.calculateMonthlyProgressRates(
-                saving, annualInterestRate, requiredAmount, totalMonths,baseMonth
+                saving, annualInterestRate, requiredAmount, totalMonths, baseMonth
         );
 
         //매달 자산 추이

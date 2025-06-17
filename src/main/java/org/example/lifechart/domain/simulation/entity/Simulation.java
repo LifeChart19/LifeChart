@@ -119,7 +119,7 @@ public class Simulation extends BaseEntity {
     public void addSimulationGoals(List<SimulationGoal> simulationGoals) {
         // 기존 SimulationGoal 들과 연결 끊기
         for (SimulationGoal simulationGoal : this.simulationGoals) {
-            simulationGoal.setSimulation(null);
+            simulationGoal.setActive(false);
         }
         this.simulationGoals.clear();
 

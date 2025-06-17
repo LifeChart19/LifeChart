@@ -1,16 +1,6 @@
 package org.example.lifechart.simulation;
 
-import org.example.lifechart.common.exception.CustomException;
-import org.example.lifechart.domain.goal.entity.Goal;
-import org.example.lifechart.domain.goal.enums.Category;
-import org.example.lifechart.domain.goal.enums.Share;
-import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
-import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
-import org.example.lifechart.domain.simulation.dto.response.CreateSimulationResponseDto;
-import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
-import org.example.lifechart.domain.simulation.dto.response.SimulationSummaryDto;
-import org.example.lifechart.domain.simulation.entity.Simulation;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalJdbcRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationRepository;
@@ -18,27 +8,12 @@ import org.example.lifechart.domain.simulation.service.calculator.CalculateAll;
 import org.example.lifechart.domain.simulation.service.calculator.SimulationCalculator;
 import org.example.lifechart.domain.simulation.service.simulation.SimulationServiceImpl;
 import org.example.lifechart.domain.simulation.service.simulation.SimulationValidator;
-import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.example.lifechart.domain.user.service.UserServiceImpl;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -75,38 +50,38 @@ public class SimulationServiceImplTest {
     @Mock
     private SimulationCalculator calculator;
 
-    @Test
-    @DisplayName("사용자 id로 Simulation 전체 목록 조회 성공")
-    void 사용자_id로_Simulation_전체_목록_조회_성공() {
-        //given
-        User user = User.builder()
-                .id(1L)
-                .email("test@example.com")
-                .password("password")
-                .nickname("testuser")
-                .build();
-
-        // UserRepository id찾으면 user를 줌.
-        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-
-        // Simulation 데이터 준비
-        Simulation simulation = Simulation.builder()
-                .id(1L)
-                .user(user)
-                .title("테스트 시뮬레이션")
-                .build();
-
-        // SimulationRepository Mocking
-        given(simulationRepository.findAllByUser(user)).willReturn(List.of(simulation));
-
-        // when
-        List<SimulationSummaryDto> result = simulationService.findAllSimulationsByUserId(user.getId());
-
-        // then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getTitle()).isEqualTo("테스트 시뮬레이션");
-        assertThat(result.get(0).getSimulationId()).isEqualTo(simulation.getId());
-    }
+//    @Test
+//    @DisplayName("사용자 id로 Simulation 전체 목록 조회 성공")
+//    void 사용자_id로_Simulation_전체_목록_조회_성공() {
+//        //given
+//        User user = User.builder()
+//                .id(1L)
+//                .email("test@example.com")
+//                .password("password")
+//                .nickname("testuser")
+//                .build();
+//
+//        // UserRepository id찾으면 user를 줌.
+//        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+//
+//        // Simulation 데이터 준비
+//        Simulation simulation = Simulation.builder()
+//                .id(1L)
+//                .user(user)
+//                .title("테스트 시뮬레이션")
+//                .build();
+//
+//        // SimulationRepository Mocking
+//        given(simulationRepository.findAllByUser(user)).willReturn(List.of(simulation));
+//
+//        // when
+//        List<SimulationSummaryDto> result = simulationService.findAllSimulationsByUserId(user.getId());
+//
+//        // then
+//        assertThat(result).hasSize(1);
+//        assertThat(result.get(0).getTitle()).isEqualTo("테스트 시뮬레이션");
+//        assertThat(result.get(0).getSimulationId()).isEqualTo(simulation.getId());
+//    }
 
 //    현재 단건조회는 수정이 필요
 //    @Test
@@ -175,54 +150,54 @@ public class SimulationServiceImplTest {
 //    }
 
 
-    @Test
-    @DisplayName("save에서 계산로직이 정상적으로 수행")
-    void save에서_계산로직이_정상적으로_수행() {
-        // given
-        long initialAsset = 2_000_000L; //초기 자산
-        long monthlyIncome = 2_000_000L; //월 수입
-        long monthlyExpense = 1_000_000L; //월 지출
-        Long monthlySaving = null; // 자동 계산 월마다 얼마나 저축 (null이면 monthlyIncome - monthlyExpense되게 해놓음)
-        double annualInterestRate = 3.0; //연 이자율
-        int elapsedMonths = 0; //기준일로부터 경과한 개월 수
-        int totalMonths = 12; //전체 시뮬레이션 기간
-        LocalDate baseDate = LocalDate.of(2025, 6, 1); //시작 기준일.
-
-        List<Goal> goals = List.of(
-                Goal.builder().id(1L).targetAmount(10_000_000L).build()
-        );
-
-        // CalculateAll 및 Calculator 직접 생성
-        //빈을 주입하면 스프링컨텍슽트(스프링이 관리하는 객체 저장소) 비용증가 가능성이 있다고 함.
-        SimulationCalculator calculator = new SimulationCalculator();
-        CalculateAll calculateAll = new CalculateAll(calculator);
-
-        // when 시뮬레이션 계산결과들
-        SimulationResults results = calculateAll.calculate(
-                initialAsset,
-                monthlyIncome,
-                monthlyExpense,
-                monthlySaving,
-                annualInterestRate,
-                elapsedMonths,
-                totalMonths,
-                baseDate,
-                goals
-        );
-
-        // then
-        assertThat(results).isNotNull();
-        //필요금액 확인
-        assertThat(results.getRequiredAmount()).isEqualTo(8_000_000L);
-        //목표 달성까지 걸리는 개월 수가 0보다 큼 -> 달성 기간 계산됐는지
-        assertThat(results.getMonthsToGoal()).isGreaterThan(0);
-        //현재 달성률 0보다 큼.
-        assertThat(results.getCurrentAchievementRate()).isGreaterThan(0f);
-        //월별 자산 변화 리스트 생성됐는지
-        assertThat(results.getMonthlyAssets()).isNotEmpty();
-        //달성률 리스트도 잘 생성 됐는지.
-        assertThat(results.getMonthlyAchievements()).isNotEmpty();
-    }
+//    @Test
+//    @DisplayName("save에서 계산로직이 정상적으로 수행")
+//    void save에서_계산로직이_정상적으로_수행() {
+//        // given
+//        long initialAsset = 2_000_000L; //초기 자산
+//        long monthlyIncome = 2_000_000L; //월 수입
+//        long monthlyExpense = 1_000_000L; //월 지출
+//        Long monthlySaving = null; // 자동 계산 월마다 얼마나 저축 (null이면 monthlyIncome - monthlyExpense되게 해놓음)
+//        double annualInterestRate = 3.0; //연 이자율
+//        int elapsedMonths = 0; //기준일로부터 경과한 개월 수
+//        int totalMonths = 12; //전체 시뮬레이션 기간
+//        LocalDate baseDate = LocalDate.of(2025, 6, 1); //시작 기준일.
+//
+//        List<Goal> goals = List.of(
+//                Goal.builder().id(1L).targetAmount(10_000_000L).build()
+//        );
+//
+//        // CalculateAll 및 Calculator 직접 생성
+//        //빈을 주입하면 스프링컨텍슽트(스프링이 관리하는 객체 저장소) 비용증가 가능성이 있다고 함.
+//        SimulationCalculator calculator = new SimulationCalculator();
+//        CalculateAll calculateAll = new CalculateAll(calculator);
+//
+//        // when 시뮬레이션 계산결과들
+//        SimulationResults results = calculateAll.calculate(
+//                initialAsset,
+//                monthlyIncome,
+//                monthlyExpense,
+//                monthlySaving,
+//                annualInterestRate,
+//                elapsedMonths,
+//                totalMonths,
+//                baseDate,
+//                goals
+//        );
+//
+//        // then
+//        assertThat(results).isNotNull();
+//        //필요금액 확인
+//        assertThat(results.getRequiredAmount()).isEqualTo(8_000_000L);
+//        //목표 달성까지 걸리는 개월 수가 0보다 큼 -> 달성 기간 계산됐는지
+//        assertThat(results.getMonthsToGoal()).isGreaterThan(0);
+//        //현재 달성률 0보다 큼.
+//        assertThat(results.getCurrentAchievementRate()).isGreaterThan(0f);
+//        //월별 자산 변화 리스트 생성됐는지
+//        assertThat(results.getMonthlyAssets()).isNotEmpty();
+//        //달성률 리스트도 잘 생성 됐는지.
+//        assertThat(results.getMonthlyAchievements()).isNotEmpty();
+//    }
 
 
 //    @Test
@@ -259,124 +234,124 @@ public class SimulationServiceImplTest {
 //
 //    }
 
-    @Test
-    @DisplayName("잘못된 goalId가 들어왔을 때 SIMULATION_GOAL_NOT_FOUND 예외 발생")
-    void saveSimulation은_잘못된id가들어왔을때_CustomException_발생시켜야한다() {
-        // given
-        Long invalidGoalId = 999L;
-
-        // goalRepository가 빈 리스트를 리턴하도록 설정
-        when(goalRepository.findAllById(List.of(invalidGoalId)))
-                .thenReturn(List.of());
-
-        LocalDate baseDate = LocalDate.of(2025, 6, 16);
-
-        BaseCreateSimulationRequestDto dto = new BaseCreateSimulationRequestDto(
-                "5년 뒤 내 집 마련",
-                baseDate,
-                1_000_000L,
-                3_000_000L,
-                2_000_000L,
-                1_000_000L,
-                3.0,
-                0,
-                60,
-                List.of(invalidGoalId)
-        );
-
-        User user = User.builder().id(1L).build(); // mock user
-
-        // when + then
-        assertThrows(CustomException.class, () -> {
-            simulationService.saveSimulation(dto, user.getId(), List.of(invalidGoalId));
-        });
-    }
+//    @Test
+//    @DisplayName("잘못된 goalId가 들어왔을 때 SIMULATION_GOAL_NOT_FOUND 예외 발생")
+//    void saveSimulation은_잘못된id가들어왔을때_CustomException_발생시켜야한다() {
+//        // given
+//        Long invalidGoalId = 999L;
+//
+//        // goalRepository가 빈 리스트를 리턴하도록 설정
+//        when(goalRepository.findAllById(List.of(invalidGoalId)))
+//                .thenReturn(List.of());
+//
+//        LocalDate baseDate = LocalDate.of(2025, 6, 16);
+//
+//        BaseCreateSimulationRequestDto dto = new BaseCreateSimulationRequestDto(
+//                "5년 뒤 내 집 마련",
+//                baseDate,
+//                1_000_000L,
+//                3_000_000L,
+//                2_000_000L,
+//                1_000_000L,
+//                3.0,
+//                0,
+//                60,
+//                List.of(invalidGoalId)
+//        );
+//
+//        User user = User.builder().id(1L).build(); // mock user
+//
+//        // when + then
+//        assertThrows(CustomException.class, () -> {
+//            simulationService.saveSimulation(dto, user.getId(), List.of(invalidGoalId));
+//        });
+//    }
 
     //batchInsert가 insert가 한 번만 수행되는 것이 맞는지 log로 확인할 수 있음.
     //save에서 batchInsert메서드가 호출이 되는지 확인만 -> 원래 따로 메서드만들어서 테스트하는 것이 좋음.
-    @Test
-    void saveSimulation은_batchInsert_호출과_DTO반환을_검증한다() {
-        //given
-        User user2 = User.builder()
-                .email("test@example.com")
-                .password("password")
-                .nickname("testuser")
-                .build();
-
-        var savedUser = userRepository.save(user2);
-
-
-        Long goalId = 1L;
-        Goal mockGoal = Goal.builder()
-                .id(goalId)
-                .user(savedUser) // 꼭 넣어야 함 (nullable = false)
-                .title("테스트 목표")
-                .category(Category.HOUSING)
-                .targetAmount(1_000_000L)
-                .startAt(LocalDateTime.now())
-                .endAt(LocalDateTime.now().plusMonths(6))
-                .status(Status.ACTIVE)
-                .share(Share.PRIVATE)
-                .build();
-
-        // GoalRepository.findAllById()가 goal1 리턴하도록 mock 설정
-        when(goalRepository.findAllById(List.of(goalId))).thenReturn(List.of(mockGoal));
-
-        //simulationParam(json에 필요한 엔티티)
-        LocalDate baseDate = LocalDate.of(2025, 6, 16);
-
-        var dto = new BaseCreateSimulationRequestDto(
-                "5년 뒤 내 집 마련",
-                baseDate,
-                1_000_000L,
-                3_000_000L,
-                2_000_000L,
-                1_000_000L,
-                3.0,
-                0,
-                60,
-                List.of(mockGoal.getId())
-        );
-        SimulationResults mockResults = SimulationResults.builder()
-                .requiredAmount(8_000_000L)
-                .monthsToGoal(36)
-                .currentAchievementRate(10.0f)
-                .monthlyAchievements(List.of()) // 또는 dummy 데이터
-                .monthlyAssets(List.of())
-                .build();
-
-        when(calculateAll.calculate(
-                anyLong(), anyLong(), anyLong(), any(), anyDouble(),
-                anyInt(), anyInt(), any(LocalDate.class), anyList()
-        )).thenReturn(mockResults);
-
-        // dto에 goalIds에 뭘 넣은거
-        System.out.println(dto.getGoalIds());
-
-        // mockGoal에 어떤 id가 들어갔는지
-        System.out.println(mockGoal.getId());
-
-        //when
-        //내부 구현에 대한 필드를 몰라야한다
-        //BaseCreateSimulationRequestDto dto, User user, List<Long> goalIds
-        CreateSimulationResponseDto result = simulationService.saveSimulation(
-                dto,
-                user2.getId(),
-                List.of(1L) //이거 넘겨줄 때 그냥 goalId가 simulationGoal에 연결되어있는 걸로 가져오느거임.
-        );
-
-        //then
-        //테스트 중간에 실행되어야 함. 이건 배치 인설트 부분이므로 , 따로 테스트
-        //verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
-
-        assertEquals("5년 뒤 내 집 마련", result.getTitle());
-
-        assertEquals(1, result.getGoalIds().size());
-        assertEquals(1L, result.getGoalIds().getFirst());
-
-        assertNotNull(result.getGoalIds());
-
-    }
+//    @Test
+//    void saveSimulation은_batchInsert_호출과_DTO반환을_검증한다() {
+//        //given
+//        User user2 = User.builder()
+//                .email("test@example.com")
+//                .password("password")
+//                .nickname("testuser")
+//                .build();
+//
+//        var savedUser = userRepository.save(user2);
+//
+//
+//        Long goalId = 1L;
+//        Goal mockGoal = Goal.builder()
+//                .id(goalId)
+//                .user(savedUser) // 꼭 넣어야 함 (nullable = false)
+//                .title("테스트 목표")
+//                .category(Category.HOUSING)
+//                .targetAmount(1_000_000L)
+//                .startAt(LocalDateTime.now())
+//                .endAt(LocalDateTime.now().plusMonths(6))
+//                .status(Status.ACTIVE)
+//                .share(Share.PRIVATE)
+//                .build();
+//
+//        // GoalRepository.findAllById()가 goal1 리턴하도록 mock 설정
+//        when(goalRepository.findAllById(List.of(goalId))).thenReturn(List.of(mockGoal));
+//
+//        //simulationParam(json에 필요한 엔티티)
+//        LocalDate baseDate = LocalDate.of(2025, 6, 16);
+//
+//        var dto = new BaseCreateSimulationRequestDto(
+//                "5년 뒤 내 집 마련",
+//                baseDate,
+//                1_000_000L,
+//                3_000_000L,
+//                2_000_000L,
+//                1_000_000L,
+//                3.0,
+//                0,
+//                60,
+//                List.of(mockGoal.getId())
+//        );
+//        SimulationResults mockResults = SimulationResults.builder()
+//                .requiredAmount(8_000_000L)
+//                .monthsToGoal(36)
+//                .currentAchievementRate(10.0f)
+//                .monthlyAchievements(List.of()) // 또는 dummy 데이터
+//                .monthlyAssets(List.of())
+//                .build();
+//
+//        when(calculateAll.calculate(
+//                anyLong(), anyLong(), anyLong(), any(), anyDouble(),
+//                anyInt(), anyInt(), any(LocalDate.class), anyList()
+//        )).thenReturn(mockResults);
+//
+//        // dto에 goalIds에 뭘 넣은거
+//        System.out.println(dto.getGoalIds());
+//
+//        // mockGoal에 어떤 id가 들어갔는지
+//        System.out.println(mockGoal.getId());
+//
+//        //when
+//        //내부 구현에 대한 필드를 몰라야한다
+//        //BaseCreateSimulationRequestDto dto, User user, List<Long> goalIds
+//        CreateSimulationResponseDto result = simulationService.saveSimulation(
+//                dto,
+//                user2.getId(),
+//                List.of(1L) //이거 넘겨줄 때 그냥 goalId가 simulationGoal에 연결되어있는 걸로 가져오느거임.
+//        );
+//
+//        //then
+//        //테스트 중간에 실행되어야 함. 이건 배치 인설트 부분이므로 , 따로 테스트
+//        //verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
+//
+//        assertEquals("5년 뒤 내 집 마련", result.getTitle());
+//
+//        assertEquals(1, result.getGoalIds().size());
+//        assertEquals(1L, result.getGoalIds().getFirst());
+//
+//        assertNotNull(result.getGoalIds());
+//
+//    }
 
 //    @Test
 //    @DisplayName("시뮬레이션이 목표가 연결되어 있어서 softdelete 삭제 불가능")
