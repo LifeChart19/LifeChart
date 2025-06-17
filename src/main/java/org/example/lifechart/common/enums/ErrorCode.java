@@ -204,7 +204,7 @@ public enum ErrorCode implements BaseCode {
 	// Like (Line#: 200~229)
 	LIKE_CONFLICT(HttpStatus.CONFLICT, "좋아요를 이미 눌렀습니다."),
 	LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 찾을 수 없습니다."),
-	LIKE_FORBIDDEN(HttpStatus.FORBIDDEN, "좋아요 취소는 본인만 가능합니다.");
+	LIKE_FORBIDDEN(HttpStatus.FORBIDDEN, "좋아요 취소는 본인만 가능합니다."),
 
 
 
@@ -233,7 +233,7 @@ public enum ErrorCode implements BaseCode {
 
 	// Notification (Line#: 230~259)
 	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
-	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
+	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다.");
 
 	// 본 코드
 	private final HttpStatus httpStatus;
