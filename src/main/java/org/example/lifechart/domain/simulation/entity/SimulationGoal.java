@@ -26,13 +26,13 @@ public class SimulationGoal {
     @JoinColumn(name = "goal_id")
     private Goal goal;
 
-    private boolean isActive;
-
     private LocalDateTime linkedAt;
 
     private LocalDateTime unlinkedAt;
 
-    //지금 로직이 꼬여서 이 필드가 있어야 실행이 가능하더라구요. 추후 쓸데없는 필드는 수정하도록 하겠습니다.
+    private boolean isActive;
+    //boolean 타입의 필드명을 isActive로 만들어놓으면 JPA나 Lombok에서 getter 이름이 isIsActive()라고 생성됨
+    //그래서 active로 설정하는 것이 좋을듯 현재 이 필드가 없으면 오류남.
     private boolean active;
 
 //    //시뮬레이션 필드를 설정하여 시뮬레이션골이 어디에 속한 시뮬레이션인지 ..
