@@ -1,6 +1,7 @@
 package org.example.lifechart.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lifechart.common.port.AccountEventPublisherPort;
 import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.user.dto.*;
 import org.example.lifechart.domain.user.entity.User;
@@ -19,6 +20,7 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SendSqsPort sqsPort;
+    private final AccountEventPublisherPort accountEventPublisherPort;
 
 
     @Override
@@ -42,11 +44,16 @@ public class UserServiceImpl implements UserService{
                 .isDeleted(false)
                 .build();
 
+        accountEventPublisherPort.publishAccountCreatedEvent(
+                new AccountCreatedEvent(user.getId(), user.getEmail(), user.getNickname(), user.getCreatedAt().toString())
+        );
+
         User savedUser = userRepository.save(user);
 
         sqsPort.sendNotification(savedUser.getId(), "USER_NOTIFICATION", "Welcome!", "가입을 축하합니다!");
 
         return savedUser;
+
     }
 
     private void validateEmailDuplication(String email) {
