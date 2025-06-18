@@ -17,15 +17,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Like", description = "좋아요 API")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class LikeController {
 	private final LikeService likeService;
 
-	// 좋아요++
+	@Operation(
+		summary = "좋아요 ++ API",
+		description = "인증된 유저가 목표에 좋아요를 누릅니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@PostMapping("/goals/{goalId}/likes")
 	public ResponseEntity<ApiResponse<LikeResponseDto>> plusLike(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -34,7 +42,11 @@ public class LikeController {
 			likeService.plusLike(customUserPrincipal.getUserId(), goalId));
 	}
 
-	// 좋아요 목록 조회 (page)
+	@Operation(
+		summary = "좋아요 목록 조회 API",
+		description = "인증된 유저가 목표의 좋아요 목록을 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping("/goals/{goalId}/likes")
 	public ResponseEntity<ApiResponse<Page<LikeGetResponseDto>>> getLikes(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -45,7 +57,11 @@ public class LikeController {
 			likeService.getLikes(customUserPrincipal.getUserId(), goalId, page, size));
 	}
 
-	// 좋아요 단건 조회
+	@Operation(
+		summary = "좋아요 단건 조회 API",
+		description = "인증된 유저가 좋아요 정보를 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping("/likes/{likeId}")
 	public ResponseEntity<ApiResponse<LikeGetResponseDto>> getLike(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -54,7 +70,11 @@ public class LikeController {
 			likeService.getLike(customUserPrincipal.getUserId(), likeId));
 	}
 
-	// 좋아요 취소
+	@Operation(
+		summary = "좋아요 취소 API",
+		description = "인증된 유저가 좋아요를 취소합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@DeleteMapping("/likes/{likeId}")
 	public ResponseEntity<ApiResponse<Void>> deleteLike(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,

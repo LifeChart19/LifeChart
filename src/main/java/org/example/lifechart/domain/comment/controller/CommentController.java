@@ -20,25 +20,38 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Comment", description = "댓글 API")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class CommentController {
 	public final CommentService commentService;
 
-	// 댓글 생성
+	@Operation(
+		summary = "댓글 생성 API",
+		description = "인증된 유저가 댓글을 생성합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@PostMapping("/goals/{goalId}/comments")
 	public ResponseEntity<ApiResponse<CommentResponseDto>> createComment(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
 		@PathVariable Long goalId,
-		@RequestBody CommentRequestDto commentRequestDto) {
+		@Valid @RequestBody CommentRequestDto commentRequestDto) {
 		return ApiResponse.onSuccess(SuccessCode.CREATE_COMMENT_SUCCESS,
 			commentService.createComment(customUserPrincipal.getUserId(), goalId, commentRequestDto));
 	}
 
-	// 댓글 목록 조회 (cursor 기반 QueryDSL)
+	@Operation(
+		summary = "댓글 다건 조회 API",
+		description = "인증된 유저가 목표의 댓글 목록을 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping("/goals/{goalId}/comments")
 	public ResponseEntity<ApiResponse<CommentCursorResponseDto>> getComments(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -49,7 +62,11 @@ public class CommentController {
 			commentService.getComments(customUserPrincipal.getUserId(), goalId, cursorId, size));
 	}
 
-	// 댓글 단건 조회
+	@Operation(
+		summary = "댓글 단건 조회 API",
+		description = "인증된 유저가 댓글 정보를 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping("/comments/{commentId}")
 	public ResponseEntity<ApiResponse<CommentGetResponseDto>> getComment(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -58,7 +75,11 @@ public class CommentController {
 			commentService.getComment(customUserPrincipal.getUserId(), commentId));
 	}
 
-	// 댓글 수정
+	@Operation(
+		summary = "댓글 수정 API",
+		description = "인증된 유저가 댓글을 수정합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@PutMapping("/comments/{commentId}")
 	public ResponseEntity<ApiResponse<CommentGetResponseDto>> updateComment(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -68,7 +89,11 @@ public class CommentController {
 			commentService.updateComment(customUserPrincipal.getUserId(), commentId, commentRequestDto));
 	}
 
-	// 댓글 삭제
+	@Operation(
+		summary = "댓글 삭제 API",
+		description = "인증된 유저가 댓글을 삭제합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@DeleteMapping("/comments/{commentId}")
 	public ResponseEntity<ApiResponse<Void>> deleteComment(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,

@@ -17,15 +17,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "ShareGoal", description = "공유 목표 API")
 @RestController
 @RequestMapping("/api/share-goals")
 @RequiredArgsConstructor
 public class ShareGoalController {
 	private final ShareGoalService shareGoalService;
 
-	// 공유 목표 조회
+	@Operation(
+		summary = "공유 목표 조회 API",
+		description = "인증된 유저가 공유 목표를 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping
 	public ResponseEntity<ApiResponse<ShareGoalCursorResponseDto>> getShareGoals(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -38,7 +46,11 @@ public class ShareGoalController {
 			shareGoalService.getShareGoals(customUserPrincipal.getUserId(), cursorId, size, category, share));
 	}
 
-	// 특정 유저 공유 목표 조회
+	@Operation(
+		summary = "특정 유저의 공유 목표 조회 API",
+		description = "인증된 유저가 특정 유저의 공유 목표를 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping("/to-user")
 	public ResponseEntity<ApiResponse<List<ShareGoalResponseDto>>> getShareGoalsToUser(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
