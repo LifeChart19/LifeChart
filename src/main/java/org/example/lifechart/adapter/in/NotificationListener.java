@@ -87,12 +87,15 @@ public class NotificationListener {
 
 		var map = message.messageAttributes();
 
-		String body = message.body();
+		if (!map.containsKey("queueId")) {
+			log.warn("SQS 메시지에 'queueId' attribute 없음. 메시지 ID: {}", message.messageId());
+			return; // 무시하거나 fallback 처리
+		}
+
 		String queueId = map.get("queueId").stringValue();
 		log.info(queueId);
 
-		service.create(parse(queueId, body));
-
+		service.create(parse(queueId, message.body()));
 	}
 
 	private void deleteMessage(Message message) {

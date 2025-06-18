@@ -11,5 +11,6 @@ public class AccountCreatedEvent {
     private Long userId;
     private String email;
     private String nickname;
+    private String userName;
     private String createdAt;
 }

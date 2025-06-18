@@ -50,6 +50,7 @@ public class UserServiceImpl implements UserService {
                         savedUser.getId(),
                         savedUser.getEmail(),
                         savedUser.getNickname(),
+                        savedUser.getName(),
                         savedUser.getCreatedAt().toString()
                 )
         );
