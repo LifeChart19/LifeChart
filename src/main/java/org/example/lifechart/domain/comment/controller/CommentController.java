@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Comment", description = "댓글 API")
@@ -41,7 +42,7 @@ public class CommentController {
 	public ResponseEntity<ApiResponse<CommentResponseDto>> createComment(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
 		@PathVariable Long goalId,
-		@RequestBody CommentRequestDto commentRequestDto) {
+		@Valid @RequestBody CommentRequestDto commentRequestDto) {
 		return ApiResponse.onSuccess(SuccessCode.CREATE_COMMENT_SUCCESS,
 			commentService.createComment(customUserPrincipal.getUserId(), goalId, commentRequestDto));
 	}
