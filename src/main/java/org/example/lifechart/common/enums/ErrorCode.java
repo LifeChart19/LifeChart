@@ -87,6 +87,7 @@ public enum ErrorCode implements BaseCode {
 	GOAL_RETIREMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "은퇴 목표가 존재하지 않습니다."),
 	GOAL_ETC_NOT_FOUND(HttpStatus.NOT_FOUND, "기타 목표가 존재하지 않습니다."),
 	GOAL_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 목표입니다."),
+	GOAL_CATEGORY_DETAIL_MISMATCH(HttpStatus.BAD_REQUEST, "카테고리와 카테고리 입력 필드가 일치하지 않습니다."),
 
 
 

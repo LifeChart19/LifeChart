@@ -1,6 +1,7 @@
 package org.example.lifechart.domain.goal.entity;
 
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,4 +37,9 @@ public class GoalEtc extends BaseEntity {
 
 	@Column(nullable = false)
 	private Long expectedPrice;
+
+	public void update(GoalEtcRequest request) {
+		this.theme = request.getTheme();
+		this.expectedPrice = request.getExpectedPrice();;
+	}
 }

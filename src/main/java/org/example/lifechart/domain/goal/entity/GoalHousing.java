@@ -1,6 +1,7 @@
 package org.example.lifechart.domain.goal.entity;
 
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
 import org.example.lifechart.domain.goal.enums.HousingType;
 
 import jakarta.persistence.Column;
@@ -45,4 +46,11 @@ public class GoalHousing extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	private HousingType housingType;
+
+	public void update(GoalHousingRequest request) {
+		this.region = request.getRegion();
+		this.subregion = request.getSubregion();
+		this.area = request.getArea();
+		this.housingType = request.getHousingType();
+	}
 }
