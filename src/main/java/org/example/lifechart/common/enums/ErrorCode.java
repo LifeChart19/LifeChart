@@ -1,11 +1,9 @@
 package org.example.lifechart.common.enums;
 
-import org.example.lifechart.common.response.ReasonDto;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
-import org.springframework.http.HttpStatus;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.example.lifechart.common.response.ReasonDto;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
@@ -107,9 +105,17 @@ public enum ErrorCode implements BaseCode {
 
 
 	// Simulation (Line#: 110~139)
-
-
-
+	// Simulation (Line#: 110~...)
+	SIMULATION_BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+	SIMULATION_INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
+	SIMULATION_NOT_FOUND(HttpStatus.NOT_FOUND, "시뮬레이션을 찾을 수 없습니다."),
+	SIMULATION_GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 목표가 존재하지 않습니다."),
+	SIMULATION_PARAM_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "시뮬레이션 파라미터 유효성 검증에 실패했습니다."),
+	SIMULATION_SAVE_FAILED(HttpStatus.BAD_REQUEST, "시뮬레이션 저장 중 오류가 발생했습니다."),
+	SIMULATION_UPDATE_FAILED(HttpStatus.BAD_REQUEST, "시뮬레이션 업데이트 중 오류가 발생했습니다."),
+	SIMULATION_DELETE_FAILED(HttpStatus.BAD_REQUEST, "삭제할 수 없는 시뮬레이션입니다."),
+	SIMULATION_LINKED_ENTITY_EXISTS(HttpStatus.BAD_REQUEST, "연결된 목표가 있는 시뮬레이션은 삭제할 수 없습니다."),
+	INVALID_GOAL_CATEGORY(HttpStatus.BAD_REQUEST,"지원하지 않는 카테고리입니다."),
 
 
 
@@ -228,35 +234,7 @@ public enum ErrorCode implements BaseCode {
 
 	// Notification (Line#: 230~259)
 	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
-	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	;
+	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다.");
 
 	// 본 코드
 	private final HttpStatus httpStatus;

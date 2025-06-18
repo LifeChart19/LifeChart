@@ -1,13 +1,13 @@
 package org.example.lifechart.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lifechart.common.enums.ErrorCode;
+import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.common.port.AccountEventPublisherPort;
 import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.user.dto.*;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
-import org.example.lifechart.common.exception.CustomException;
-import org.example.lifechart.common.enums.ErrorCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,23 +15,20 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SendSqsPort sqsPort;
     private final AccountEventPublisherPort accountEventPublisherPort;
 
-
     @Override
     public User signup(SignupRequest request) {
-
         validateEmailDuplication(request.getEmail());
         validateNicknameDuplication(request.getNickname());
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // 유저 생성 및 저장
         User user = User.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
@@ -44,16 +41,27 @@ public class UserServiceImpl implements UserService{
                 .isDeleted(false)
                 .build();
 
-        accountEventPublisherPort.publishAccountCreatedEvent(
-                new AccountCreatedEvent(user.getId(), user.getEmail(), user.getNickname(), user.getCreatedAt().toString())
-        );
-
         User savedUser = userRepository.save(user);
 
-        sqsPort.sendNotification(savedUser.getId(), "USER_NOTIFICATION", "Welcome!", "가입을 축하합니다!");
+        // SNS 발행
+        accountEventPublisherPort.publishAccountCreatedEvent(
+                new AccountCreatedEvent(
+                        savedUser.getId(),
+                        savedUser.getEmail(),
+                        savedUser.getNickname(),
+                        savedUser.getCreatedAt().toString()
+                )
+        );
+
+        // 알림 SQS 전송
+        sqsPort.sendNotification(
+                savedUser.getId(),
+                "USER_NOTIFICATION",
+                "Welcome!",
+                "가입을 축하합니다!"
+        );
 
         return savedUser;
-
     }
 
     private void validateEmailDuplication(String email) {
@@ -61,7 +69,7 @@ public class UserServiceImpl implements UserService{
             throw new CustomException(ErrorCode.EXIST_SAME_EMAIL);
         }
         if (userRepository.existsByEmailAndIsDeletedTrue(email)) {
-            throw new CustomException(ErrorCode.DELETED_USER_EXISTS);  // 탈퇴 중 이메일 예외
+            throw new CustomException(ErrorCode.DELETED_USER_EXISTS);
         }
     }
 
@@ -71,9 +79,7 @@ public class UserServiceImpl implements UserService{
         }
     }
 
-
     @Override
-    @Transactional
     public Long updateProfile(Long userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -107,9 +113,7 @@ public class UserServiceImpl implements UserService{
         return new UserPublicProfileResponse(user);
     }
 
-
     @Override
-    @Transactional
     public Long withdraw(Long userId, WithdrawalRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -121,5 +125,4 @@ public class UserServiceImpl implements UserService{
         user.softDelete();
         return user.getId();
     }
-
 }

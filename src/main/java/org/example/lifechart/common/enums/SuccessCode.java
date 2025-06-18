@@ -111,7 +111,11 @@ public enum SuccessCode implements BaseCode {
 
 
 	// Simulation (Line#: 110~139)
-
+	SIMULATION_CREATE_SUCCESS(HttpStatus.CREATED, "시뮬레이션이 성공적으로 생성되었습니다."),
+	SIMULATION_GET_LIST_SUCCESS(HttpStatus.OK, "시뮬레이션 목록을 성공적으로 조회하였습니다."),
+	SIMULATION_GET_DELETED_LIST_SUCCESS(HttpStatus.OK, "삭제된 시뮬레이션 목록을 성공적으로 조회하였습니다."),
+	SIMULATION_SOFT_DELETE_SUCCESS(HttpStatus.OK, "시뮬레이션을 성공적으로 소프트 삭제하였습니다."),
+	SIMULATION_DELETE_SUCCESS(HttpStatus.OK, "시뮬레이션을 성공적으로 완전 삭제하였습니다."),
 
 
 

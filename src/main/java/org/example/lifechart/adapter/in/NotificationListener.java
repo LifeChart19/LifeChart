@@ -33,6 +33,8 @@ public class NotificationListener {
 
 	@PostConstruct
 	public void startPolling() {
+
+		log.info("aws SQS Listener : {}", URL_SQS);
 		Executors.newSingleThreadExecutor().submit(() -> {
 			while (true) {
 				try {

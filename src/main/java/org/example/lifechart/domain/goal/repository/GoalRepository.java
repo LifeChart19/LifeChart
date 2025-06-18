@@ -1,13 +1,13 @@
 package org.example.lifechart.domain.goal.repository;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.shareGoal.repository.CustomShareGoalRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long>, CustomShareGoalRepository {
