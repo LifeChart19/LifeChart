@@ -4,6 +4,8 @@ import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.shareGoal.repository.CustomShareGoalRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,5 +21,10 @@ public interface GoalRepository extends JpaRepository<Goal, Long>, CustomShareGo
     // 추가적인 쿼리 메서드가 필요하면 여기에 선언하시면 됩니다.
     Optional<Goal> findByIdAndStatus(Long id, Status status);
 
-    List<Goal> findAllWithUserByIdAndUserId(List<Long> goalIds, Long userId);
+    @Query("""
+    SELECT g FROM Goal g
+    JOIN FETCH g.user
+    WHERE g.id IN :goalIds AND g.user.id = :userId
+    """)
+    List<Goal> findAllWithUserByIdAndUserId(@Param("goalIds") List<Long> goalIds, @Param("userId") Long userId);
 }
