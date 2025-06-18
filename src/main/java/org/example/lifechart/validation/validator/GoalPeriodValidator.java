@@ -26,7 +26,7 @@ public class GoalPeriodValidator implements ConstraintValidator<ValidGoalPeriod,
 			return false;
 		}
 
-		if (dto.getStartAt() != null && dto.getStartAt().isAfter(now)) {
+		if (dto.getStartAt() != null && dto.getStartAt().isBefore(now)) {
 			context.disableDefaultConstraintViolation();
 			context.buildConstraintViolationWithTemplate("시작일은 현재 시점 이후여야 합니다.")
 				.addPropertyNode("startAt")
