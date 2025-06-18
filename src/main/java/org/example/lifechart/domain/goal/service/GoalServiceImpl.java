@@ -7,6 +7,7 @@ import org.example.lifechart.domain.goal.dto.request.GoalDetailRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
 import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
@@ -14,6 +15,7 @@ import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.entity.GoalRetirement;
+import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
@@ -45,11 +47,13 @@ public class GoalServiceImpl implements GoalService {
 	public GoalResponse createGoal(GoalCreateRequest requestDto, Long userId) {
 		User user = validUser(userId);
 
-		// Goal 저장
+		// Goal Entity 반환
 		Goal newGoal = requestDto.toEntity(user);
-		Goal savedGoal = goalRepository.save(newGoal);
 
 		GoalDetailRequest detail = requestDto.getDetail();
+		validateCategoryAndDetail(newGoal.getCategory(), detail);
+
+		Goal savedGoal = goalRepository.save(newGoal);
 		saveGoalDetail(detail, savedGoal, user);
 
 		return GoalResponse.from(savedGoal);
@@ -74,6 +78,24 @@ public class GoalServiceImpl implements GoalService {
 		goal.delete();
 	}
 
+	// @Transactional
+	// @Override
+	// public GoalResponse updateGoal(GoalUpdateRequest request, Long goalId, Long userId) {
+	// 	User user = validUser(userId);
+	// 	Goal savedGoal = validGoal(goalId, userId);
+	// 	if (isDeleted(savedGoal)) {
+	// 		throw new CustomException(ErrorCode.GOAL_ALREADY_DELETED);
+	// 	}
+	//
+	// 	GoalDetailRequest detail = request.getDetail();
+	// 	validateCategoryAndDetail(savedGoal.getCategory(), detail);
+	//
+	// 	savedGoal.update(request);
+	// 	updateGoalDetail(detail, savedGoal.getId(), user);
+	//
+	// 	return GoalResponse.from(savedGoal);
+	// }
+
 	private User validUser(Long userId) {
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -84,6 +106,18 @@ public class GoalServiceImpl implements GoalService {
 		Goal goal = goalRepository.findByIdAndUserId(goalId, userId).
 			orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
 		return goal;
+	}
+
+	private void validateCategoryAndDetail(Category category, GoalDetailRequest detail) {
+		boolean isValid = switch (category) {
+			case HOUSING -> detail instanceof GoalHousingRequest;
+			case RETIREMENT -> detail instanceof GoalRetirementRequest;
+			case ETC -> detail instanceof GoalEtcRequest;
+		};
+
+		if (!isValid) {
+			throw new CustomException(ErrorCode.GOAL_CATEGORY_DETAIL_MISMATCH);
+		}
 	}
 
 	private boolean isDeleted(Goal goal) {
@@ -104,4 +138,20 @@ public class GoalServiceImpl implements GoalService {
 			throw new CustomException(ErrorCode.GOAL_INVALID_CATEGORY);
 		}
 	}
+
+	// private void updateGoalDetail(GoalDetailRequest detail, Long goalId, User user) {
+	// 	if (detail instanceof GoalRetirementRequest retirementDetail) {
+	// 		GoalRetirement goalRetirement = goalRetirementRepository.findByGoalId(goalId)
+	// 			.orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
+	// 		goalRetirement.update(retirementDetail, user.getBirthDate().getYear());
+	// 	} else if (detail instanceof GoalHousingRequest housingDetail) {
+	// 		GoalHousing goalHousing = goalHousingRepository.findByGoalId(goalId)
+	// 			.orElseThrow(() -> new CustomException(ErrorCode.GOAL_HOUSING_NOT_FOUND));
+	// 		goalHousing.update(housingDetail);
+	// 	} else if (detail instanceof GoalEtcRequest etcDetail) {
+	// 		GoalEtc goalEtc = goalEtcRepository.findByGoalId(goalId)
+	// 			.orElseThrow(() -> new CustomException(ErrorCode.GOAL_ETC_NOT_FOUND));
+	// 		goalEtc.update(etcDetail);
+	// 	}
+	// }
 }

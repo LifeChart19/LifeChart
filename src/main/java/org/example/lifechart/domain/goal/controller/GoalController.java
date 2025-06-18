@@ -7,6 +7,7 @@ import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingCalculateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementCalculateRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalRetirementEstimateResponse;
@@ -20,6 +21,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +39,8 @@ public class GoalController {
 
 	@Operation(
 		summary = "은퇴 목표 기본 설정값(estimate) 반환 API",
-		description = "유저의 정보를 바탕으로 은퇴 목표의 기본 설정값을 반환합니다."
+		description = "유저의 정보를 바탕으로 은퇴 목표의 기본 설정값을 반환합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
 	)
 	@GetMapping("/retirement/estimate")
 	public ResponseEntity<ApiResponse<GoalRetirementEstimateResponse>> getEstimateRetirementGoal(
@@ -50,7 +53,8 @@ public class GoalController {
 
 	@Operation(
 		summary = "은퇴 목표 금액 계산 API",
-		description = "은퇴 목표 입력값을 바탕으로 목표 금액을 계산합니다."
+		description = "은퇴 목표 입력값을 바탕으로 목표 금액을 계산합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
 	)
 	// 은퇴 목표 금액 계산 API (값 입력 후 프론트에서 '계산' 버튼 클릭 시 호출됩니다.)
 	@PostMapping("/retirement/calculate")
@@ -64,7 +68,8 @@ public class GoalController {
 
 	@Operation(
 		summary = "주거 목표 금액 계산 API",
-		description = "주거 목표 입력값을 바탕으로 목표 금액을 계산합니다."
+		description = "주거 목표 입력값을 바탕으로 목표 금액을 계산합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
 	)
 	@PostMapping("/housing/calculate")
 	public ResponseEntity<ApiResponse<Long>> calculateHousingTargetAmount(
@@ -76,8 +81,9 @@ public class GoalController {
 	}
 
 	@Operation(
-		summary = "목표 생성",
-		description = "새로운 목표를 생성합니다."
+		summary = "목표 생성 API",
+		description = "새로운 목표를 생성합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
 	)
 	@PostMapping
 	public ResponseEntity<ApiResponse<GoalResponse>> createGoal(
@@ -90,8 +96,9 @@ public class GoalController {
 	}
 
 	@Operation(
-			summary = "목표 개별 조회",
-			description = "개별 목표를 조회합니다."
+		summary = "목표 개별 조회 API",
+		description = "개별 목표를 조회합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
 	)
 	@GetMapping("/{goalId}")
 	public ResponseEntity<ApiResponse<GoalInfoResponse>> getGoalInfo(
@@ -104,7 +111,8 @@ public class GoalController {
 
 	@Operation(
 		summary = "목표 삭제",
-		description = "개별 목표를 삭제합니다."
+		description = "개별 목표를 삭제합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
 	)
 	@DeleteMapping("/{goalId}")
 	public ResponseEntity<ApiResponse<Void>> deleteGoal(
@@ -114,5 +122,21 @@ public class GoalController {
 		goalService.deleteGoal(goalId, principal.getUserId());
 		return ApiResponse.onSuccess(SuccessCode.GOAL_DELETE_SUCCESS, null);
 	}
+
+	// @Operation(
+	// 	summary = "목표 수정 API",
+	// 	description = "개별 목표를 수정합니다.",
+	// 	security = @SecurityRequirement(name="bearerAuth")
+	// )
+	// @PatchMapping("/{goalId}")
+	// public ResponseEntity<ApiResponse<GoalResponse>> updateGoal(
+	// 	@PathVariable Long goalId,
+	// 	@AuthenticationPrincipal CustomUserPrincipal principal,
+	// 	@RequestBody GoalUpdateRequest request
+	// ) {
+	// 	GoalResponse response = goalService.updateGoal(request, goalId, principal.getUserId());
+	// 	return ApiResponse.onSuccess(SuccessCode.GOAL_UPDATE_SUCCESS, response);
+	// }
+
 
 }
