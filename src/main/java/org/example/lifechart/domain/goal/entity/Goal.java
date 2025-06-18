@@ -1,14 +1,30 @@
 package org.example.lifechart.domain.goal.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.time.LocalDateTime;
+
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
 import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.user.entity.User;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -52,5 +68,13 @@ public class Goal extends BaseEntity {
 
 	public void delete() {
 		this.status = Status.DELETED;
+	}
+
+	public void update(GoalUpdateRequest request) {
+		title = request.getTitle();
+		targetAmount = request.getTargetAmount();
+		startAt = request.getStartAt();
+		endAt = request.getEndAt();
+		share = request.getShare();
 	}
 }

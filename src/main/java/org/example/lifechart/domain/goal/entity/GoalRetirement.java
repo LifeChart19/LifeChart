@@ -3,7 +3,9 @@ package org.example.lifechart.domain.goal.entity;
 import java.time.LocalDate;
 
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
 import org.example.lifechart.domain.goal.enums.RetirementType;
+import org.example.lifechart.domain.goal.helper.GoalDateHelper;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,4 +47,10 @@ public class GoalRetirement extends BaseEntity {
 
 	@Column(nullable = false)
 	private Long monthlyExpense;
+
+	public void update(GoalRetirementRequest request, int birthYear) {
+		this.retirementType = request.getRetirementType();
+		this.expectedDeathDate = GoalDateHelper.toExpectedDeathDate(request.getExpectedLifespan(), birthYear);
+		this.monthlyExpense = request.getMonthlyExpense();
+	}
 }
