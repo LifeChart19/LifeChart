@@ -19,15 +19,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Follow", description = "팔로우 API")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class FollowController {
 	private final FollowService followService;
 
-	// 팔로우 요청
+	@Operation(
+		summary = "팔로우 요청 API",
+		description = "인증된 유저가 대상 유저에 팔로우 요청을 보냅니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@PostMapping("/users/{userId}/follow")
 	public ResponseEntity<ApiResponse<FollowRequestResponseDto>> followRequest(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -36,7 +44,11 @@ public class FollowController {
 			customUserPrincipal.getUserId(), userId));
 	}
 
-	// 대상의 팔로워 조회
+	@Operation(
+		summary = "대상의 팔로워 조회 API",
+		description = "인증된 유저가 대상 유저의 팔로워(팔로우 요청 보낸 유저) 목록을 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping("/users/{userId}/followers")
 	public ResponseEntity<ApiResponse<Page<FollowGetFollowersResponseDto>>> getFollowers(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -48,7 +60,11 @@ public class FollowController {
 			followService.getFollowers(customUserPrincipal.getUserId(), userId, page, size));
 	}
 
-	// 대상의 팔로잉 조회
+	@Operation(
+		summary = "대상의 팔로잉 조회 API",
+		description = "인증된 유저가 대상 유저가 팔로우 요청 보낸 유저 목록을 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping("/users/{userId}/following")
 	public ResponseEntity<ApiResponse<Page<FollowGetFollowingResponseDto>>> getFollowing(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -59,7 +75,11 @@ public class FollowController {
 			followService.getFollowing(customUserPrincipal.getUserId(), userId, page, size));
 	}
 
-	// 팔로우 단건 조회
+	@Operation(
+		summary = "팔로우 단건 조회 API",
+		description = "인증된 유저가 팔로우 정보를 조회합니다.",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
 	@GetMapping("/follow/{followId}")
 	public ResponseEntity<ApiResponse<FollowGetResponseDto>> getFollow(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
@@ -68,7 +88,11 @@ public class FollowController {
 			followService.getFollow(customUserPrincipal.getUserId(), followId));
 	}
 
-	// 팔로우 취소
+	@Operation(
+		summary = "팔로우 취소 API",
+		description = "인증된 유저가 대상 유저를 팔로우 취소합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
+	)
 	@DeleteMapping("/users/{userId}/follow")
 	public ResponseEntity<ApiResponse<Void>> followCancel(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
