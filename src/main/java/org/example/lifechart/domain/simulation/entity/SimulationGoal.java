@@ -33,21 +33,6 @@ public class SimulationGoal {
     @Setter(AccessLevel.PROTECTED)
     private boolean active;
 
-    public void setActive(boolean active) {
-        this.active = active;
-
-        if (active) {
-            if (this.linkedAt == null) {
-                this.linkedAt = LocalDateTime.now();
-            }
-            this.unlinkedAt = null;
-        } else {
-            this.unlinkedAt = LocalDateTime.now();
-            this.linkedAt = null;
-        }
-    }
-
-
 //    //시뮬레이션 필드를 설정하여 시뮬레이션골이 어디에 속한 시뮬레이션인지 ..
 //    public void setSimulation(Simulation simulation) {
 //        this.simulation = simulation;
