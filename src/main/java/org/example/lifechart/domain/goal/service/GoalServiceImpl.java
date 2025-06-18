@@ -46,13 +46,12 @@ public class GoalServiceImpl implements GoalService {
 	@Override
 	public GoalResponse createGoal(GoalCreateRequest requestDto, Long userId) {
 		User user = validUser(userId);
+		GoalDetailRequest detail = requestDto.getDetail();
+
+		validateCategoryAndDetail(requestDto.getCategory(), detail);
 
 		// Goal Entity 반환
 		Goal newGoal = requestDto.toEntity(user);
-
-		GoalDetailRequest detail = requestDto.getDetail();
-		validateCategoryAndDetail(newGoal.getCategory(), detail);
-
 		Goal savedGoal = goalRepository.save(newGoal);
 		saveGoalDetail(detail, savedGoal, user);
 
