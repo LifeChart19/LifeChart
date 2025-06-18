@@ -3,6 +3,7 @@ package org.example.lifechart.domain.notification.controller;
 import java.util.List;
 
 import org.example.lifechart.common.enums.SuccessCode;
+import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.notification.dto.NotificationCreateRequestDto;
 import org.example.lifechart.domain.notification.dto.NotificationResponseDto;
@@ -29,16 +30,18 @@ public class NotificationController {
 
 
 	private final NotificationService notificationService;
-	private final NotificationCreateService notificationCreateService;
+	private final SendSqsPort sqsPort;
+
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<List<NotificationResponseDto>>> getList(
-		@RequestParam(defaultValue = "0") Long cursor,
-		@AuthenticationPrincipal CustomUserPrincipal userDetails
+		@AuthenticationPrincipal CustomUserPrincipal userDetails,
+		@RequestParam(required = false) Long cursor,
+		@RequestParam(defaultValue = "5") int size
 	){
 
 		return ApiResponse.onSuccess(SuccessCode.GET_NOTIFICATIONS_SUCCESS,
-			notificationService.getList(cursor, userDetails.getUserId()));
+			notificationService.getList(userDetails.getUserId(), cursor, size));
 	}
 
 	@PatchMapping
@@ -76,7 +79,12 @@ public class NotificationController {
 		@RequestBody NotificationCreateRequestDto dto
 	){
 
-		notificationCreateService.create(dto);
+		sqsPort.sendNotification(
+			userDetails.getUserId(),
+			dto.getType(),
+			dto.getTitle(),
+			dto.getMessage()
+		);
 
 		return null;
 	}
