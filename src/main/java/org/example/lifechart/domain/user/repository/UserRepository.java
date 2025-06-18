@@ -14,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmailAndIsDeletedTrue(String email);
     List<User> findAllByIsDeletedTrueAndDeletedAtBefore(LocalDateTime deadline);// 30일 넘은 soft deleted 유저 찾기
     Optional<User> findByIdAndDeletedAtIsNull(Long userId);
+    Optional<User> findByEmailAndIsDeletedFalse(String email);
+
 }
