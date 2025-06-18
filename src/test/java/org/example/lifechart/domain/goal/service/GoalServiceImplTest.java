@@ -216,11 +216,15 @@ public class GoalServiceImplTest {
 		assertThat(response.getGoalId()).isEqualTo(1L);
 	}
 
-	// @Test // to do
-	// @DisplayName("목표의 category와 detail의 입력 양식이 다르면 예외를 던진다.")
-	// void createGoal_목표의_category와_detail의_양식이_다르면_GOAL_DETAIL_MISMATCH_예외를_던진다() {
-	//
-	// }
+	@Test // to do
+	@DisplayName("목표의 category와 detail의 입력 양식이 다르면 예외를 던진다.")
+	void createGoal_목표의_category와_detail의_양식이_다르면_GOAL_DETAIL_MISMATCH_예외를_던진다() {
+		// given
+
+		// when
+
+		// then
+	}
 
 	@Test
 	@DisplayName("목표 개별 조회에 성공한다")
@@ -363,26 +367,26 @@ public class GoalServiceImplTest {
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_ALREADY_DELETED);
 	}
 
-	// @Test // to do
-	// @DisplayName("주거 목표 수정에 성공한다.")
-	// void updateGoal_주거_목표_수정에_성공한다() {
-	//
-	// }
-	//
-	// @Test // to do
-	// @DisplayName("은퇴 목표 수정에 성공한다.")
-	// void updateGoal_은퇴_목표_수정에_성공한다() {
-	//
-	// }
-	//
-	// @Test // to do
-	// @DisplayName("기타 목표 수정에 성공한다.")
-	// void updateGoal_기타_목표_수정에_성공한다() {
-	// }
-	//
-	// @Test // to do
-	// @DisplayName("조회한 목표의 category와 detail이 다르면 예외를 던진다.")
-	// void updateGoal_조회한_목표의_category와_detail이_다르면_GOAL_DETAIL_MISMATCH_예외를_던진다() {
-	//
-	// }
+	@Test // to do
+	@DisplayName("주거 목표 수정에 성공한다.")
+	void updateGoal_주거_목표_수정에_성공한다() {
+
+	}
+
+	@Test // to do
+	@DisplayName("은퇴 목표 수정에 성공한다.")
+	void updateGoal_은퇴_목표_수정에_성공한다() {
+
+	}
+
+	@Test // to do
+	@DisplayName("기타 목표 수정에 성공한다.")
+	void updateGoal_기타_목표_수정에_성공한다() {
+	}
+
+	@Test // to do
+	@DisplayName("조회한 목표의 category와 detail이 다르면 예외를 던진다.")
+	void updateGoal_조회한_목표의_category와_detail이_다르면_GOAL_DETAIL_MISMATCH_예외를_던진다() {
+
+	}
 }

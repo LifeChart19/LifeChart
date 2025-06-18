@@ -34,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse login(LoginRequest request) {
 
         // 이메일로 유저 조회, 실패 시 예외 처리
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmailAndIsDeletedFalse(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.EMAIL_NOT_FOUND));
 
         // 비밀번호 검증

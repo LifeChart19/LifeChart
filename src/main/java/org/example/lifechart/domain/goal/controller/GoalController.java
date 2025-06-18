@@ -123,20 +123,20 @@ public class GoalController {
 		return ApiResponse.onSuccess(SuccessCode.GOAL_DELETE_SUCCESS, null);
 	}
 
-	// @Operation(
-	// 	summary = "목표 수정 API",
-	// 	description = "개별 목표를 수정합니다.",
-	// 	security = @SecurityRequirement(name="bearerAuth")
-	// )
-	// @PatchMapping("/{goalId}")
-	// public ResponseEntity<ApiResponse<GoalResponse>> updateGoal(
-	// 	@PathVariable Long goalId,
-	// 	@AuthenticationPrincipal CustomUserPrincipal principal,
-	// 	@RequestBody GoalUpdateRequest request
-	// ) {
-	// 	GoalResponse response = goalService.updateGoal(request, goalId, principal.getUserId());
-	// 	return ApiResponse.onSuccess(SuccessCode.GOAL_UPDATE_SUCCESS, response);
-	// }
+	@Operation(
+		summary = "목표 수정 API",
+		description = "개별 목표를 수정합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
+	)
+	@PatchMapping("/{goalId}")
+	public ResponseEntity<ApiResponse<GoalResponse>> updateGoal(
+		@PathVariable Long goalId,
+		@AuthenticationPrincipal CustomUserPrincipal principal,
+		@RequestBody GoalUpdateRequest request
+	) {
+		GoalResponse response = goalService.updateGoal(request, goalId, principal.getUserId());
+		return ApiResponse.onSuccess(SuccessCode.GOAL_UPDATE_SUCCESS, response);
+	}
 
 
 }
