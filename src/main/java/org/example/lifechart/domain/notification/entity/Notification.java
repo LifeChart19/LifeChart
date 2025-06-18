@@ -29,9 +29,6 @@ public class Notification {
 	@Enumerated(EnumType.STRING)
 	private Type type;
 
-	@Enumerated(EnumType.STRING)
-	private Status status;
-
 	private String title;
 
 	private String message;
@@ -52,7 +49,6 @@ public class Notification {
 		this.title = dto.getTitle();
 		this.message = dto.getMessage();
 		this.processedAt = LocalDateTime.now();
-		this.status = Status.UNREAD;
 	}
 
 	public String getEventId() {
@@ -66,7 +62,4 @@ public class Notification {
 		NOTICE, EMAIL, USER_NOTIFICATION
 	}
 
-	public enum Status {
-		FAILED, UNREAD, READ
-	}
 }
