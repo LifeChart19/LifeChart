@@ -1,5 +1,8 @@
 package org.example.lifechart.domain.goal.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
@@ -11,6 +14,7 @@ import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
 import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalSummaryResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
@@ -22,6 +26,8 @@ import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
+import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.entity.SimulationGoal;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -66,6 +72,15 @@ public class GoalServiceImpl implements GoalService {
 		return GoalInfoResponse.from(goal, goalDetail);
 	}
 
+	@Override
+	public List<GoalSummaryResponse> findMyGoals(Long userId) {
+		User user = validUser(userId);
+		return goalRepository.findAllByUserId(user.getId())
+			.stream()
+			.map(GoalSummaryResponse::from)
+			.collect(Collectors.toList());
+	}
+
 	@Transactional
 	@Override
 	public void deleteGoal(Long goalId, Long userId) {
@@ -89,8 +104,8 @@ public class GoalServiceImpl implements GoalService {
 		GoalDetailRequest detail = request.getDetail();
 		validateCategoryAndDetail(savedGoal.getCategory(), detail);
 
-		savedGoal.update(request);
-		updateGoalDetail(detail, savedGoal.getId(), user);
+		savedGoal.update(request); // 목표 수정 Entity 반영 > DB 갱신
+		updateGoalDetail(detail, savedGoal.getId(), user); // 목표 상세 수정 Entity > DB 갱신
 
 		return GoalResponse.from(savedGoal);
 	}

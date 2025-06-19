@@ -1,6 +1,7 @@
 package org.example.lifechart.domain.goal.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.response.ApiResponse;
@@ -11,6 +12,7 @@ import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalRetirementEstimateResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalSummaryResponse;
 import org.example.lifechart.domain.goal.service.GoalHousingCalculateService;
 import org.example.lifechart.domain.goal.service.GoalRetirementCalculateService;
 import org.example.lifechart.domain.goal.service.GoalServiceImpl;
@@ -96,8 +98,8 @@ public class GoalController {
 	}
 
 	@Operation(
-		summary = "목표 개별 조회 API",
-		description = "개별 목표를 조회합니다.",
+		summary = "목표 개별 상세 조회 API",
+		description = "개별 목표의 상세 내역을 조회합니다.",
 		security = @SecurityRequirement(name="bearerAuth")
 	)
 	@GetMapping("/{goalId}")
@@ -107,6 +109,18 @@ public class GoalController {
 	) {
 		GoalInfoResponse response = goalService.findGoal(goalId, principal.getUserId());
 		return ApiResponse.onSuccess(SuccessCode.GOAL_GET_INFO_SUCCESS, response);
+	}
+
+	@Operation(
+		summary = "내 목표 전체 조회 API",
+		description = "내가 생성한 목표 전체를 조회합니다.",
+		security = @SecurityRequirement(name="bearerAuth")
+	)
+	public ResponseEntity<ApiResponse<List<GoalSummaryResponse>>> getMyGoals(
+		@AuthenticationPrincipal CustomUserPrincipal principal
+	) {
+		List<GoalSummaryResponse> response = goalService.findMyGoals(principal.getUserId());
+		return ApiResponse.onSuccess(SuccessCode.GOAL_GET_LIST_SUCCESS, response);
 	}
 
 	@Operation(
