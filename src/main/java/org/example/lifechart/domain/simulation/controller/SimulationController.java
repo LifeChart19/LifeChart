@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.dto.response.BaseSimulationResponseDto;
 import org.example.lifechart.domain.simulation.dto.response.CreateSimulationResponseDto;
 import org.example.lifechart.domain.simulation.dto.response.DeletedSimulationResponseDto;
 import org.example.lifechart.domain.simulation.dto.response.SimulationSummaryDto;
@@ -49,20 +50,20 @@ public class SimulationController {
     }
 
     //시뮬레이션 상세 조회 로직
-//    @Operation(summary = "시뮬레이션 상세 조회", description = "시뮬레이션 ID로 상세 정보를 조회합니다.", security = @SecurityRequirement(name = "bearerAuth"))
-//    @GetMapping("/simulations/{simulationId}")
-//    public ResponseEntity<BaseSimulationResponseDto> getSimulation(@AuthenticationPrincipal CustomUserPrincipal principal,@PathVariable Long simulationId) {
-//        BaseSimulationResponseDto simulation = simulationService.findSimulationById(principal, simulationId);
-//        return ResponseEntity.ok(simulation);
-//    }
-//
+    @Operation(summary = "시뮬레이션 상세 조회", description = "시뮬레이션 ID로 상세 정보를 조회합니다.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/simulations/{simulationId}")
+    public ResponseEntity<BaseSimulationResponseDto> getSimulation(@AuthenticationPrincipal CustomUserPrincipal principal, @PathVariable Long simulationId) {
+        BaseSimulationResponseDto simulation = simulationService.findSimulationById(principal.getUserId(), simulationId);
+        return ResponseEntity.ok(simulation);
+    }
+
     //시뮬레이션 softdelete내역 조회 로직
-//    @Operation(summary = "시뮬레이션 softdelete 삭제된 내역들 조회", description = "시뮬레이션 ID로 삭제된 정보를 조회합니다.", security = @SecurityRequirement(name = "bearerAuth"))
-//    @GetMapping("/simulations/deleted")
-//    public ResponseEntity<ApiResponse<List<DeletedSimulationResponseDto>>> getSoftSimulation(@AuthenticationPrincipal CustomUserPrincipal principal) {
-//        List<DeletedSimulationResponseDto> simulations = simulationService.findAllSoftDeletedSimulations(principal.getUserId());
-//        return ApiResponse.onSuccess(SuccessCode.SIMULATION_GET_DELETED_LIST_SUCCESS, simulations);
-//    }
+    @Operation(summary = "시뮬레이션 softdelete 삭제된 내역들 조회", description = "시뮬레이션 ID로 삭제된 정보를 조회합니다.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/simulations/deleted")
+    public ResponseEntity<ApiResponse<List<DeletedSimulationResponseDto>>> getSoftSimulation(@AuthenticationPrincipal CustomUserPrincipal principal) {
+        List<DeletedSimulationResponseDto> simulations = simulationService.findAllSoftDeletedSimulations(principal.getUserId());
+        return ApiResponse.onSuccess(SuccessCode.SIMULATION_GET_DELETED_LIST_SUCCESS, simulations);
+    }
 
     //업데이트 로직은 컨트롤러 추후 수정필요.
 //    @Operation(summary = "시뮬레이션 업데이트", description = "시뮬레이션을 업데이트합니다.", security = @SecurityRequirement(name = "bearerAuth"))
