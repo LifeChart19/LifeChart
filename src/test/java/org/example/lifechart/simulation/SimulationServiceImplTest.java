@@ -11,6 +11,7 @@ import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationR
 import org.example.lifechart.domain.simulation.dto.response.*;
 import org.example.lifechart.domain.simulation.entity.Simulation;
 import org.example.lifechart.domain.simulation.entity.SimulationGoal;
+import org.example.lifechart.domain.simulation.repository.SimulationGoalJdbcRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationRepository;
 import org.example.lifechart.domain.simulation.service.calculator.CalculateAll;
@@ -60,6 +61,9 @@ public class SimulationServiceImplTest {
 
     @Mock
     private SimulationGoalRepository simulationGoalRepository;
+
+    @Mock
+    private SimulationGoalJdbcRepository simulationGoalJdbcRepository;
 
     @Mock
     private SimulationValidator simulationValidator;
@@ -312,8 +316,8 @@ public class SimulationServiceImplTest {
     }
 
     @Test
-    @DisplayName("시뮬레이션 조회 수행")
-    void 시뮬레이션은_조회를_수행() {
+    @DisplayName("시뮬레이션 단건 조회 수행")
+    void 시뮬레이션은_단건_조회를_수행() {
 
         User user2 = User.builder()
                 .id(1L)
