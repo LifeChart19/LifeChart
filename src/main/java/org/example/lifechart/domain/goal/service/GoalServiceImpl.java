@@ -46,13 +46,12 @@ public class GoalServiceImpl implements GoalService {
 	@Override
 	public GoalResponse createGoal(GoalCreateRequest requestDto, Long userId) {
 		User user = validUser(userId);
+		GoalDetailRequest detail = requestDto.getDetail();
+
+		validateCategoryAndDetail(requestDto.getCategory(), detail);
 
 		// Goal Entity 반환
 		Goal newGoal = requestDto.toEntity(user);
-
-		GoalDetailRequest detail = requestDto.getDetail();
-		validateCategoryAndDetail(newGoal.getCategory(), detail);
-
 		Goal savedGoal = goalRepository.save(newGoal);
 		saveGoalDetail(detail, savedGoal, user);
 
@@ -78,23 +77,23 @@ public class GoalServiceImpl implements GoalService {
 		goal.delete();
 	}
 
-	// @Transactional
-	// @Override
-	// public GoalResponse updateGoal(GoalUpdateRequest request, Long goalId, Long userId) {
-	// 	User user = validUser(userId);
-	// 	Goal savedGoal = validGoal(goalId, userId);
-	// 	if (isDeleted(savedGoal)) {
-	// 		throw new CustomException(ErrorCode.GOAL_ALREADY_DELETED);
-	// 	}
-	//
-	// 	GoalDetailRequest detail = request.getDetail();
-	// 	validateCategoryAndDetail(savedGoal.getCategory(), detail);
-	//
-	// 	savedGoal.update(request);
-	// 	updateGoalDetail(detail, savedGoal.getId(), user);
-	//
-	// 	return GoalResponse.from(savedGoal);
-	// }
+	@Transactional
+	@Override
+	public GoalResponse updateGoal(GoalUpdateRequest request, Long goalId, Long userId) {
+		User user = validUser(userId);
+		Goal savedGoal = validGoal(goalId, userId);
+		if (isDeleted(savedGoal)) {
+			throw new CustomException(ErrorCode.GOAL_ALREADY_DELETED);
+		}
+
+		GoalDetailRequest detail = request.getDetail();
+		validateCategoryAndDetail(savedGoal.getCategory(), detail);
+
+		savedGoal.update(request);
+		updateGoalDetail(detail, savedGoal.getId(), user);
+
+		return GoalResponse.from(savedGoal);
+	}
 
 	private User validUser(Long userId) {
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
@@ -139,19 +138,19 @@ public class GoalServiceImpl implements GoalService {
 		}
 	}
 
-	// private void updateGoalDetail(GoalDetailRequest detail, Long goalId, User user) {
-	// 	if (detail instanceof GoalRetirementRequest retirementDetail) {
-	// 		GoalRetirement goalRetirement = goalRetirementRepository.findByGoalId(goalId)
-	// 			.orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
-	// 		goalRetirement.update(retirementDetail, user.getBirthDate().getYear());
-	// 	} else if (detail instanceof GoalHousingRequest housingDetail) {
-	// 		GoalHousing goalHousing = goalHousingRepository.findByGoalId(goalId)
-	// 			.orElseThrow(() -> new CustomException(ErrorCode.GOAL_HOUSING_NOT_FOUND));
-	// 		goalHousing.update(housingDetail);
-	// 	} else if (detail instanceof GoalEtcRequest etcDetail) {
-	// 		GoalEtc goalEtc = goalEtcRepository.findByGoalId(goalId)
-	// 			.orElseThrow(() -> new CustomException(ErrorCode.GOAL_ETC_NOT_FOUND));
-	// 		goalEtc.update(etcDetail);
-	// 	}
-	// }
+	private void updateGoalDetail(GoalDetailRequest detail, Long goalId, User user) {
+		if (detail instanceof GoalRetirementRequest retirementDetail) {
+			GoalRetirement goalRetirement = goalRetirementRepository.findByGoalId(goalId)
+				.orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
+			goalRetirement.update(retirementDetail, user.getBirthDate().getYear());
+		} else if (detail instanceof GoalHousingRequest housingDetail) {
+			GoalHousing goalHousing = goalHousingRepository.findByGoalId(goalId)
+				.orElseThrow(() -> new CustomException(ErrorCode.GOAL_HOUSING_NOT_FOUND));
+			goalHousing.update(housingDetail);
+		} else if (detail instanceof GoalEtcRequest etcDetail) {
+			GoalEtc goalEtc = goalEtcRepository.findByGoalId(goalId)
+				.orElseThrow(() -> new CustomException(ErrorCode.GOAL_ETC_NOT_FOUND));
+			goalEtc.update(etcDetail);
+		}
+	}
 }
