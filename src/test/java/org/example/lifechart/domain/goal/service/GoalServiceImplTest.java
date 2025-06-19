@@ -10,10 +10,7 @@ import java.util.Optional;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
-import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
-import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
-import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
-import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
+import org.example.lifechart.domain.goal.dto.request.*;
 import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalEtcInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
@@ -137,7 +134,7 @@ public class GoalServiceImplTest {
 
 		GoalCreateRequest request = GoalCreateRequest.builder()
 			.title("여의도 집 사기")
-			.category(Category.RETIREMENT)
+			.category(Category.HOUSING)
 			.startAt(currentTime)
 			.endAt(currentTime.plusMonths(6))
 			.detail(detail)
@@ -216,11 +213,46 @@ public class GoalServiceImplTest {
 		assertThat(response.getGoalId()).isEqualTo(1L);
 	}
 
-	// @Test // to do
-	// @DisplayName("목표의 category와 detail의 입력 양식이 다르면 예외를 던진다.")
-	// void createGoal_목표의_category와_detail의_양식이_다르면_GOAL_DETAIL_MISMATCH_예외를_던진다() {
-	//
-	// }
+	@Test // to do
+	@DisplayName("목표의 category와 detail의 입력 양식이 다르면 예외를 던진다.")
+	void createGoal_목표의_category와_detail의_양식이_다르면_GOAL_CATEGORY_DETAIL_MISMATCH_예외를_던진다() {
+		// given
+		User user = User.builder()
+				.id(1L)
+				.gender("male")
+				.birthDate(LocalDate.of(1990,01,01))
+				.isDeleted(false)
+				.build();
+
+		GoalHousingRequest detail = GoalHousingRequest.builder()
+				.region("서울")
+				.subregion("서남권")
+				.housingType(HousingType.APARTMENT)
+				.area(100L)
+				.build();
+
+		LocalDateTime currentTime = LocalDateTime.now();
+
+		GoalCreateRequest request = GoalCreateRequest.builder()
+				.title("여의도 집 사기")
+				.category(Category.RETIREMENT)
+				.startAt(currentTime)
+				.endAt(currentTime.plusMonths(6))
+				.detail(detail)
+				.targetAmount(1_432_100_000L)
+				.share(Share.PRIVATE)
+				.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(user));
+
+		// when
+		CustomException customException = assertThrows(CustomException.class, () ->
+						goalService.createGoal(request, user.getId()));
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
+		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_CATEGORY_DETAIL_MISMATCH);
+	}
 
 	@Test
 	@DisplayName("목표 개별 조회에 성공한다")
@@ -363,26 +395,242 @@ public class GoalServiceImplTest {
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_ALREADY_DELETED);
 	}
 
-	// @Test // to do
-	// @DisplayName("주거 목표 수정에 성공한다.")
-	// void updateGoal_주거_목표_수정에_성공한다() {
-	//
-	// }
-	//
-	// @Test // to do
-	// @DisplayName("은퇴 목표 수정에 성공한다.")
-	// void updateGoal_은퇴_목표_수정에_성공한다() {
-	//
-	// }
-	//
-	// @Test // to do
-	// @DisplayName("기타 목표 수정에 성공한다.")
-	// void updateGoal_기타_목표_수정에_성공한다() {
-	// }
-	//
-	// @Test // to do
-	// @DisplayName("조회한 목표의 category와 detail이 다르면 예외를 던진다.")
-	// void updateGoal_조회한_목표의_category와_detail이_다르면_GOAL_DETAIL_MISMATCH_예외를_던진다() {
-	//
-	// }
+	@Test // to do
+	@DisplayName("주거 목표 수정에 성공한다.")
+	void updateGoal_주거_목표_수정에_성공한다() {
+		// given
+		User user = User.builder()
+				.id(1L)
+				.build();
+
+		Goal goal = Goal.builder()
+				.id(1L)
+				.user(user)
+				.title("목표명")
+				.category(Category.HOUSING)
+				.targetAmount(1000L)
+				.startAt(LocalDateTime.now())
+				.endAt(LocalDateTime.now().plusMonths(6))
+				.status(Status.ACTIVE)
+				.share(Share.ALL)
+				.build();
+
+		GoalHousing goalHousing = GoalHousing.builder()
+				.id(1L)
+				.goal(goal)
+				.region("서울")
+				.subregion("서북권")
+				.housingType(HousingType.APARTMENT)
+				.area(84L)
+				.build();
+
+		GoalHousingRequest detail = GoalHousingRequest.builder()
+				.region("서울")
+				.subregion("서남권")
+				.housingType(HousingType.APARTMENT)
+				.area(100L)
+				.build();
+
+		LocalDateTime currentTime = LocalDateTime.now();
+
+		GoalUpdateRequest request = GoalUpdateRequest.builder()
+				.title("여의도 집 사기")
+				.startAt(currentTime)
+				.endAt(currentTime.plusMonths(6))
+				.detail(detail)
+				.targetAmount(1_432_100_000L)
+				.share(Share.PRIVATE)
+				.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(1L, 1L)).willReturn(Optional.of(goal));
+		given(goalHousingRepository.findByGoalId(1L)).willReturn(Optional.of(goalHousing));
+
+		// when
+		GoalResponse response = goalService.updateGoal(request, goal.getId(), user.getId());
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
+		verify(goalRepository).findByIdAndUserId(1L, 1L);
+		verify(goalHousingRepository).findByGoalId(1L);
+		assertThat(response.getGoalId()).isEqualTo(1L);
+		assertThat(goal.getTitle()).isEqualTo("여의도 집 사기");
+		assertThat(goalHousing.getArea()).isEqualTo(100L);
+	}
+
+	@Test // to do
+	@DisplayName("은퇴 목표 수정에 성공한다.")
+	void updateGoal_은퇴_목표_수정에_성공한다() {
+		// given
+		User user = User.builder()
+				.id(1L)
+				.gender("male")
+				.birthDate(LocalDate.of(1990,01,01))
+				.isDeleted(false)
+				.build();
+
+		Goal goal = Goal.builder()
+				.id(1L)
+				.user(user)
+				.title("목표명")
+				.category(Category.RETIREMENT)
+				.targetAmount(1_000_000_000L)
+				.startAt(LocalDateTime.now())
+				.endAt(LocalDateTime.now().plusMonths(6))
+				.status(Status.ACTIVE)
+				.share(Share.ALL)
+				.build();
+
+		GoalRetirement goalRetirement = GoalRetirement.builder()
+				.id(1L)
+				.goal(goal)
+				.expectedDeathDate(LocalDate.now().plusYears(50))
+				.monthlyExpense(5_000_000L)
+				.build();
+
+		GoalRetirementRequest detail = GoalRetirementRequest.builder()
+				.expectedLifespan(90L)
+				.monthlyExpense(3_000_000L)
+				.retirementType(RetirementType.COUPLE)
+				.build();
+
+		LocalDateTime currentTime = LocalDateTime.now();
+
+		GoalUpdateRequest request = GoalUpdateRequest.builder()
+				.title("젊은 한량 되기")
+				.startAt(currentTime)
+				.endAt(currentTime.plusMonths(6))
+				.detail(detail)
+				.targetAmount(502_000_000L)
+				.share(Share.PRIVATE)
+				.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(1L, 1L)).willReturn(Optional.of(goal));
+		given(goalRetirementRepository.findByGoalId(1L)).willReturn(Optional.of(goalRetirement));
+
+		// when
+		GoalResponse response = goalService.updateGoal(request, goal.getId(), user.getId());
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
+		verify(goalRepository).findByIdAndUserId(1L, 1L);
+		verify(goalRetirementRepository).findByGoalId(1L);
+		assertThat(response.getGoalId()).isEqualTo(1L);
+		assertThat(goal.getTitle()).isEqualTo("젊은 한량 되기");
+		assertThat(goalRetirement.getMonthlyExpense()).isEqualTo(3_000_000L);
+	}
+
+	@Test // to do
+	@DisplayName("기타 목표 수정에 성공한다.")
+	void updateGoal_기타_목표_수정에_성공한다() {
+		// given
+		User user = User.builder()
+				.id(1L)
+				.gender("male")
+				.birthDate(LocalDate.of(1990,01,01))
+				.isDeleted(false)
+				.build();
+
+		Goal goal = Goal.builder()
+				.id(1L)
+				.user(user)
+				.title("목표명")
+				.category(Category.ETC)
+				.targetAmount(1_000_000_000L)
+				.startAt(LocalDateTime.now())
+				.endAt(LocalDateTime.now().plusMonths(6))
+				.status(Status.ACTIVE)
+				.share(Share.ALL)
+				.build();
+
+		GoalEtc goalEtc = GoalEtc.builder()
+				.id(1L)
+				.goal(goal)
+				.theme("여행")
+				.expectedPrice(5_000_000L)
+				.build();
+
+
+		GoalEtcRequest detail = GoalEtcRequest.builder()
+				.theme("여행")
+				.expectedPrice(30_000_000L)
+				.build();
+
+		LocalDateTime currentTime = LocalDateTime.now();
+
+		GoalUpdateRequest request = GoalUpdateRequest.builder()
+				.title("30일 크루즈 세계일주")
+				.startAt(currentTime)
+				.endAt(currentTime.plusYears(4))
+				.detail(detail)
+				.targetAmount(30_000_000L)
+				.share(Share.PRIVATE)
+				.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(1L, 1L)).willReturn(Optional.of(goal));
+		given(goalEtcRepository.findByGoalId(1L)).willReturn(Optional.of(goalEtc));
+
+		// when
+		GoalResponse response = goalService.updateGoal(request, goal.getId(), user.getId());
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
+		verify(goalRepository).findByIdAndUserId(1L, 1L);
+		verify(goalEtcRepository).findByGoalId(1L);
+		assertThat(response.getGoalId()).isEqualTo(1L);
+		assertThat(goal.getTitle()).isEqualTo("30일 크루즈 세계일주");
+		assertThat(goalEtc.getTheme()).isEqualTo("여행");
+
+	}
+
+	@Test // to do
+	@DisplayName("조회한 목표의 category와 detail이 다르면 예외를 던진다.")
+	void updateGoal_조회한_목표의_category와_detail이_다르면_GOAL_CATEGORY_DETAIL_MISMATCH_예외를_던진다() {
+		// given
+		User user = User.builder()
+				.id(1L)
+				.build();
+
+		Goal goal = Goal.builder()
+				.id(1L)
+				.user(user)
+				.title("목표명")
+				.category(Category.HOUSING)
+				.build();
+
+		GoalHousing goalHousing = GoalHousing.builder()
+				.id(1L)
+				.goal(goal)
+				.build();
+
+		GoalEtcRequest detail = GoalEtcRequest.builder()
+				.theme("여행")
+				.expectedPrice(30_000_000L)
+				.build();
+
+		LocalDateTime currentTime = LocalDateTime.now();
+
+		GoalUpdateRequest request = GoalUpdateRequest.builder()
+				.title("30일 크루즈 세계일주")
+				.startAt(currentTime)
+				.endAt(currentTime.plusYears(4))
+				.detail(detail)
+				.targetAmount(30_000_000L)
+				.share(Share.PRIVATE)
+				.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(1L, 1L)).willReturn(Optional.of(goal));
+
+		// when
+		CustomException customException = assertThrows(CustomException.class, () ->
+				goalService.updateGoal(request, 1L, 1L));
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
+		verify(goalRepository).findByIdAndUserId(1L, 1L);
+		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_CATEGORY_DETAIL_MISMATCH);
+	}
 }

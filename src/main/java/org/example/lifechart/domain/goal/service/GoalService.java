@@ -9,5 +9,5 @@ public interface GoalService {
 	GoalResponse createGoal(GoalCreateRequest request, Long userId);
 	GoalInfoResponse findGoal(Long goalId, Long userId);
 	void deleteGoal(Long goalId, Long userId);
-	// GoalResponse updateGoal(GoalUpdateRequest request, Long goalId, Long UserId);
+	GoalResponse updateGoal(GoalUpdateRequest request, Long goalId, Long UserId);
 }
