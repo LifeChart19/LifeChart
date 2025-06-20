@@ -52,7 +52,7 @@ public class Simulation extends BaseEntity {
 
     //simulation이 save될 때 연결된 SimulationGoal도 자동으로 save됨.
     @Builder.Default
-    @OneToMany(mappedBy = "simulation", cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "simulation", orphanRemoval = true)
     private List<SimulationGoal> simulationGoals = new ArrayList<>();
 
     //JPA가 해당 필드를 DB에 저장하거나 읽을 때 사용할 변환 로직(추후 수정예정)
