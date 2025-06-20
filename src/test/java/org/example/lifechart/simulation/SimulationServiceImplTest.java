@@ -88,7 +88,7 @@ public class SimulationServiceImplTest {
                 .build();
 
         // UserRepository id찾으면 user를 줌.
-        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
 
         // Simulation 데이터 준비
         Simulation simulation = Simulation.builder()
@@ -160,39 +160,40 @@ public class SimulationServiceImplTest {
     }
 
 
-//    @Test
-//    @DisplayName("사용자가 선택한 simulationId에 해당하는 시뮬레이션 softdelete시뮬레이션 목록 조회 성공")
-//    void softdelete시뮬레이션_조회가_성공한다() {
-//
-//        //given
-//        User user = User.builder()
-//                .id(1L)
-//                .email("test@example.com")
-//                .password("password")
-//                .nickname("testuser")
-//                .build();
-//
-//        // Simulation 데이터 준비
-//        Simulation deletedSimulation = Simulation.builder()
-//                .id(1L)
-//                .user(user)
-//                .title("테스트 시뮬레이션")
-//                .build();
-//
-//        deletedSimulation.softDelete();
-//
-//        // SimulationRepository
-//        when(simulationRepository.findAllByUserIdAndIsDeletedTrue(user.getId()))
-//                .thenReturn(List.of(deletedSimulation));
-//
-//        //when
-//        List<DeletedSimulationResponseDto> result = simulationService.findAllSoftDeletedSimulations(user.getId());
-//
-//        assertThat(result).hasSize(1);
-//        assertThat(result.get(0).getDeletedAt()).isNotNull();
-//        assertThat(result.get(0).getSimulationId()).isEqualTo(deletedSimulation.getId());
-//
-//    }
+    @Test
+    @DisplayName("사용자가 선택한 simulationId에 해당하는 시뮬레이션 softdelete시뮬레이션 목록 조회 성공")
+    void softdelete시뮬레이션_조회가_성공한다() {
+
+        //given
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("password")
+                .isDeleted(false)
+                .nickname("testuser")
+                .build();
+
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+
+        // Simulation 데이터 준비
+        Simulation deletedSimulation = Simulation.builder()
+                .id(1L)
+                .user(user)
+                .title("테스트 시뮬레이션")
+                .isDeleted(true)
+                .deletedAt(LocalDateTime.now())
+                .build();
+
+        given(simulationRepository.findAllByUserIdAndIsDeletedTrue(user.getId())).willReturn(List.of(deletedSimulation));
+
+        //when
+        List<DeletedSimulationResponseDto> result = simulationService.findAllSoftDeletedSimulations(user.getId());
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getDeletedAt()).isNotNull();
+        assertThat(result.get(0).getSimulationId()).isEqualTo(deletedSimulation.getId());
+
+    }
 
     @Test
     @DisplayName("잘못된 goalId가 들어왔을 때 SIMULATION_GOAL_NOT_FOUND 예외 발생")
@@ -209,7 +210,7 @@ public class SimulationServiceImplTest {
 
         ReflectionTestUtils.setField(user2, "id", 1L);
 
-        given(userRepository.findById(user2.getId()))
+        given(userRepository.findByIdAndDeletedAtIsNull(user2.getId()))
                 .willReturn(Optional.of(user2));
 
         given(goalRepository.findAllWithUserByIdAndUserId(List.of(invalidGoalId), user2.getId()))
@@ -248,7 +249,7 @@ public class SimulationServiceImplTest {
                 .isDeleted(false)
                 .build();
 
-        given(userRepository.findById(user2.getId())).willReturn(Optional.of(user2));
+        given(userRepository.findByIdAndDeletedAtIsNull(user2.getId())).willReturn(Optional.of(user2));
 
         Long goalId = 1L;
         Goal mockGoal = Goal.builder()
@@ -325,7 +326,7 @@ public class SimulationServiceImplTest {
                 .isDeleted(false)
                 .build();
 
-        given(userRepository.findById(user2.getId())).willReturn(Optional.of(user2));
+        given(userRepository.findByIdAndDeletedAtIsNull(user2.getId())).willReturn(Optional.of(user2));
 
         Simulation simulation = Simulation.builder()
                 .id(1L)
@@ -337,7 +338,7 @@ public class SimulationServiceImplTest {
         given(simulationRepository.findById(1L)).willReturn(Optional.of(simulation));
 
         //유저랑 simulationId랑 같은지 확인하는 것은 예외 검증테스트 로직으로 관리해야 함.
-        BaseSimulationResponseDto simulationResponseDto = simulationService.findSimulationById(user2.getId(), simulation.getId());
+        BaseSimulationResponseDto simulationResponseDto = simulationService.findSimulationByUsserIdAndSimulationId(user2.getId(), simulation.getId());
 
         //검증은 값이 잘 조회되는지 나오는지.
         assertThat(simulationResponseDto).isNotNull();
@@ -362,11 +363,11 @@ public class SimulationServiceImplTest {
                 .user(user2)
                 .build();
 
-        given(userRepository.findById(userId)).willReturn(Optional.of(user1));
+        given(userRepository.findByIdAndDeletedAtIsNull(userId)).willReturn(Optional.of(user1));
         given(simulationRepository.findById(simulationId)).willReturn(Optional.of(simulation));
 
         CustomException ex = assertThrows(CustomException.class, () -> {
-            simulationService.findSimulationById(userId, simulationId);
+            simulationService.findSimulationByUsserIdAndSimulationId(userId, simulationId);
         });
 
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.SIMULATION_BAD_REQUEST);
@@ -385,6 +386,7 @@ public class SimulationServiceImplTest {
                 .email("test@example.com")
                 .isDeleted(false)
                 .build();
+        given(userRepository.findByIdAndDeletedAtIsNull(userId)).willReturn(Optional.of(user));
 
         Simulation simulation = Simulation.builder()
                 .id(simulationId)
@@ -414,13 +416,17 @@ public class SimulationServiceImplTest {
         User user = User.builder().email("test@example.com").build();
         ReflectionTestUtils.setField(user, "id", 1L);
 
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+
+        Goal goal = Goal.builder().user(user).title("테스트 목표").build();
+
         Simulation simulation = Simulation.builder()
                 .user(user)
                 .title("simulation")
                 .build();
         ReflectionTestUtils.setField(simulation, "id", 10L);
 
-        Goal goal = goalRepository.save(Goal.builder().user(user).title("테스트 목표").build());
+        given(simulationRepository.findById(10L)).willReturn(Optional.of(simulation));
 
         SimulationGoal simulationGoal = SimulationGoal.builder()
                 .simulation(simulation)
@@ -429,7 +435,8 @@ public class SimulationServiceImplTest {
                 .linkedAt(LocalDateTime.now())
                 .build();
 
-        simulationGoalRepository.save(simulationGoal);
+        given(simulationGoalRepository.findBySimulationIdAndActiveTrue(10L))
+                .willReturn(List.of(simulationGoal));
 
         assertThrows(CustomException.class, () -> {
             simulationService.softDeleteSimulation(user.getId(), simulation.getId());
@@ -458,7 +465,7 @@ public class SimulationServiceImplTest {
                 .build();
 
         given(simulationRepository.findById(simulationId)).willReturn(Optional.of(simulation));
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(userRepository.findByIdAndDeletedAtIsNull(userId)).willReturn(Optional.of(user));
 
         // when
         simulationService.deleteSimulation(userId, simulationId);

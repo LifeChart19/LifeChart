@@ -52,9 +52,9 @@ public class SimulationController {
     //시뮬레이션 상세 조회 로직
     @Operation(summary = "시뮬레이션 상세 조회", description = "시뮬레이션 ID로 상세 정보를 조회합니다.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/simulations/{simulationId}")
-    public ResponseEntity<BaseSimulationResponseDto> getSimulation(@AuthenticationPrincipal CustomUserPrincipal principal, @PathVariable Long simulationId) {
-        BaseSimulationResponseDto simulation = simulationService.findSimulationById(principal.getUserId(), simulationId);
-        return ResponseEntity.ok(simulation);
+    public ResponseEntity<ApiResponse<BaseSimulationResponseDto>> getSimulation(@AuthenticationPrincipal CustomUserPrincipal principal, @PathVariable Long simulationId) {
+        BaseSimulationResponseDto simulation = simulationService.findSimulationByUsserIdAndSimulationId(principal.getUserId(), simulationId);
+        return ApiResponse.onSuccess(SuccessCode.SIMULATION_GET_LIST_SUCCESS, simulation);
     }
 
     //시뮬레이션 softdelete내역 조회 로직

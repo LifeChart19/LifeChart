@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
-import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.service.GoalService;
@@ -46,22 +45,17 @@ public class SimulationServiceImpl implements SimulationService {
     @Transactional
     public CreateSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, Long userId, List<Long> goalIds) {
 
-        //0. 소프트딜리트된 유저도 simulation생성 못하도록
-        User user = userRepository.findById(userId)
-                .filter(u -> !u.getIsDeleted())
+        //1. 소프트딜리트된 유저도 simulation생성 못하도록
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 1. Goal 목록 조회하면서 user도 같이 갖고옴.
+        //2. Goal 목록 조회하면서 user도 같이 갖고옴.
         List<Goal> goals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId);
 
-        // 2. 존재하지 않는 goalId 검증
+        //3. 존재하지 않는 goalId 검증
         if (goals.size() != goalIds.size()) {
             throw new CustomException(ErrorCode.SIMULATION_GOAL_NOT_FOUND);
         }
-
-        //3. 유효성 검증 로직 웬만한건 valid로 처리 복잡성높아지고 테스트 검증로직이 너무 늘어날 것 같아서 보류.
-        //simulationValidator.validateSimulationParams(dto);
-        //   수식 -> monthlyIncome, monthlyExpense 음수 여부, 최소값, initialAsset null여부
 
         //4. 계산로직 수행 -> 더 효율적인 방법 고민 필요
         SimulationResults results = calculateAll.calculate(
@@ -93,7 +87,7 @@ public class SimulationServiceImpl implements SimulationService {
         Map<Long, Goal> goalMap = goals.stream()
                 .collect(Collectors.toMap(Goal::getId, Function.identity()));
 
-        //. simulationGoal 목표랑 연결되기 위한 필드 목록
+        //8. simulationGoal 목표랑 연결되기 위한 필드 목록
         //unlinked는 null이 됨.
         List<SimulationGoal> simulationGoals = goalIds.stream()
                 .map(goalId -> {
@@ -106,10 +100,10 @@ public class SimulationServiceImpl implements SimulationService {
                 })
                 .toList();
 
-        //7. entity저장
+        //8. entity저장
         simulation.addSimulationGoalList(simulationGoals);
 
-        //8. 배치인서트로 insert
+        //10. 배치인서트로 insert
         simulationGoalJdbcRepository.batchInsertSimulationGoals(simulationGoals);
 
         return CreateSimulationResponseDto.from(simulation);
@@ -119,8 +113,7 @@ public class SimulationServiceImpl implements SimulationService {
     @Transactional(readOnly = true)
     public List<SimulationSummaryDto> findAllSimulationsByUserId(Long userId) {
 
-        User user = userRepository.findById(userId)
-                .filter(u -> !u.getIsDeleted())
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return simulationRepository.findAllByUser(user)
@@ -132,10 +125,9 @@ public class SimulationServiceImpl implements SimulationService {
 
     //id에 해당하는 단건 조회.
     @Transactional(readOnly = true)
-    public BaseSimulationResponseDto findSimulationById(Long userId, Long simulationId) {
+    public BaseSimulationResponseDto findSimulationByUsserIdAndSimulationId(Long userId, Long simulationId) {
 
-        User user = userRepository.findById(userId)
-                .filter(u -> !u.getIsDeleted())
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Simulation simulation = simulationRepository.findById(simulationId)
@@ -148,11 +140,11 @@ public class SimulationServiceImpl implements SimulationService {
         return BaseSimulationResponseDto.dto(simulation);
     }
 
-
+    //소프트딜리트 조회
     @Transactional(readOnly = true)
     public List<DeletedSimulationResponseDto> findAllSoftDeletedSimulations(Long userId) {
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (user.getIsDeleted()) {
@@ -188,26 +180,22 @@ public class SimulationServiceImpl implements SimulationService {
         //기존 목표 연결 비활성화
 
         // 1. goal이 목표 수정했는지  -> 목표가 수정되면 목표 ID를 확보함. 업데이트된 골을 service메서드에서 dto값을 가져옴.
-        GoalResponse updatedGoalResponse = goalService.updateGoal(goalUpdateRequest, goalId, userId);
-
-        Long updatedGoalId = updatedGoalResponse.getGoalId();
-
-        //2. 수정된 목표가 연결된 시뮬레이션 조회 goalId에 연결된 시뮬레이션이 여러개일 수도 있음 -> 가져올 때 중복 제거
-        List<Simulation> simulations = simulationGoalRepository.findDistinctSimulationsByGoalId(goalId);
-
-        //3. 수정된 Goal엔티티 조회
-        Goal updateGoal = goalRepository.findById(updatedGoalId)
-                .orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
-        List<Goal> updateGoals = List.of(updateGoal);
-
-
-
-
-
-        //4. 각 시뮬레이션에 대해 재계산
-        //수정: Goal리스트를 Map으로 변환하고 key는 goalid, value는 goal객체 자체.
-        Map<Long, Goal> goalMap = updateGoals.stream()
-                .collect(Collectors.toMap(Goal::getId, Function.identity()));
+//        GoalResponse updatedGoalResponse = goalService.updateGoal(goalUpdateRequest, goalId, userId);
+//
+//        Long updatedGoalId = updatedGoalResponse.getGoalId();
+//
+//        //2. 수정된 목표가 연결된 시뮬레이션 조회 goalId에 연결된 시뮬레이션이 여러개일 수도 있음 -> 가져올 때 중복 제거
+//        List<Simulation> simulations = simulationGoalRepository.findDistinctSimulationsByGoalId(goalId);
+//
+//        //3. 수정된 Goal엔티티 조회
+//        Goal updateGoal = goalRepository.findById(updatedGoalId)
+//                .orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
+//        List<Goal> updateGoals = List.of(updateGoal);
+//
+//        //4. 각 시뮬레이션에 대해 재계산
+//        //수정: Goal리스트를 Map으로 변환하고 key는 goalid, value는 goal객체 자체.
+//        Map<Long, Goal> goalMap = updateGoals.stream()
+//                .collect(Collectors.toMap(Goal::getId, Function.identity()));
 
         //
             //5. 시뮬레이션과 시뮬레이션 골 사이의 연관관계 재설정.
@@ -238,10 +226,13 @@ public class SimulationServiceImpl implements SimulationService {
     @Transactional
     public DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId) {
 
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         Simulation simulation = simulationRepository.findById(simulationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SIMULATION_NOT_FOUND));
 
-        if (!simulation.getUser().getId().equals(userId)) {
+        if (!simulation.getUser().getId().equals(user.getId())) {
             throw new CustomException(ErrorCode.SIMULATION_BAD_REQUEST);
         }
 
@@ -267,8 +258,7 @@ public class SimulationServiceImpl implements SimulationService {
     @Transactional
     public void deleteSimulation(Long userId, Long simulationId) {
 
-        User user = userRepository.findById(userId)
-                .filter(u -> !u.getIsDeleted())
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Simulation simulation = simulationRepository.findById(simulationId)
