@@ -3,6 +3,7 @@
     import jakarta.persistence.*;
     import lombok.*;
     import org.example.lifechart.common.entity.BaseEntity;
+    import org.example.lifechart.domain.user.dto.SignupRequest;
 
     import java.time.LocalDate;
     import java.time.LocalDateTime;
@@ -47,6 +48,21 @@
 
         @Column(nullable = false)
         private LocalDate birthDate;
+
+        public static User createFromSignupRequest(SignupRequest request, String encodedPassword) {
+            return User.builder()
+                    .email(request.getEmail())
+                    .password(encodedPassword)
+                    .name(request.getName())
+                    .nickname(request.getNickname())
+                    .birthDate(request.getBirthDate())
+                    .gender(request.getGender())
+                    .job(request.getJob())
+                    .phoneNumber(request.getPhoneNumber())
+                    .role("USER")
+                    .isDeleted(false)
+                    .build();
+        }
 
         public int getAge() {
             if (birthDate == null) return 0; // birthDate가 null일 수 있는 흐름을 대비해서 방어 코드

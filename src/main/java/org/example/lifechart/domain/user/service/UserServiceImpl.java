@@ -28,19 +28,7 @@ public class UserServiceImpl implements UserService {
         validateNicknameDuplication(request.getNickname());
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(encodedPassword)
-                .name(request.getName())
-                .nickname(request.getNickname())
-                .birthDate(request.getBirthDate())
-                .gender(request.getGender())
-                .job(request.getJob())
-                .phoneNumber(request.getPhoneNumber())
-                .role("USER")
-                .isDeleted(false)
-                .build();
+        User user = User.createFromSignupRequest(request, encodedPassword);
 
         User savedUser = userRepository.save(user);
 
