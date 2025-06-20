@@ -13,7 +13,7 @@ import java.util.List;
 public interface SimulationService {
      CreateSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, Long userId, List<Long> goalIds);
      List<SimulationSummaryDto> findAllSimulationsByUserId(Long userId);
-     BaseSimulationResponseDto findSimulationByUsserIdAndSimulationId(Long userId, Long simulationId);
+     BaseSimulationResponseDto findSimulationByUserIdAndSimulationId(Long userId, Long simulationId);
      List<DeletedSimulationResponseDto> findAllSoftDeletedSimulations(Long userId);
       DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId);
       void deleteSimulation(Long userId, Long simulationId);

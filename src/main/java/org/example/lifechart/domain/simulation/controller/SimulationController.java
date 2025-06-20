@@ -53,7 +53,7 @@ public class SimulationController {
     @Operation(summary = "시뮬레이션 상세 조회", description = "시뮬레이션 ID로 상세 정보를 조회합니다.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/simulations/{simulationId}")
     public ResponseEntity<ApiResponse<BaseSimulationResponseDto>> getSimulation(@AuthenticationPrincipal CustomUserPrincipal principal, @PathVariable Long simulationId) {
-        BaseSimulationResponseDto simulation = simulationService.findSimulationByUsserIdAndSimulationId(principal.getUserId(), simulationId);
+        BaseSimulationResponseDto simulation = simulationService.findSimulationByUserIdAndSimulationId(principal.getUserId(), simulationId);
         return ApiResponse.onSuccess(SuccessCode.SIMULATION_GET_LIST_SUCCESS, simulation);
     }
 

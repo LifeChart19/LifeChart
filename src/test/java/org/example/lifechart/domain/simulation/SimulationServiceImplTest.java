@@ -1,4 +1,4 @@
-package org.example.lifechart.simulation;
+package org.example.lifechart.domain.simulation;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
@@ -338,7 +338,7 @@ public class SimulationServiceImplTest {
         given(simulationRepository.findById(1L)).willReturn(Optional.of(simulation));
 
         //유저랑 simulationId랑 같은지 확인하는 것은 예외 검증테스트 로직으로 관리해야 함.
-        BaseSimulationResponseDto simulationResponseDto = simulationService.findSimulationByUsserIdAndSimulationId(user2.getId(), simulation.getId());
+        BaseSimulationResponseDto simulationResponseDto = simulationService.findSimulationByUserIdAndSimulationId(user2.getId(), simulation.getId());
 
         //검증은 값이 잘 조회되는지 나오는지.
         assertThat(simulationResponseDto).isNotNull();
@@ -367,7 +367,7 @@ public class SimulationServiceImplTest {
         given(simulationRepository.findById(simulationId)).willReturn(Optional.of(simulation));
 
         CustomException ex = assertThrows(CustomException.class, () -> {
-            simulationService.findSimulationByUsserIdAndSimulationId(userId, simulationId);
+            simulationService.findSimulationByUserIdAndSimulationId(userId, simulationId);
         });
 
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.SIMULATION_BAD_REQUEST);

@@ -125,7 +125,7 @@ public class SimulationServiceImpl implements SimulationService {
 
     //id에 해당하는 단건 조회.
     @Transactional(readOnly = true)
-    public BaseSimulationResponseDto findSimulationByUsserIdAndSimulationId(Long userId, Long simulationId) {
+    public BaseSimulationResponseDto findSimulationByUserIdAndSimulationId(Long userId, Long simulationId) {
 
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
