@@ -4,10 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.response.ApiResponse;
-import org.example.lifechart.domain.user.dto.SignupRequest;
-import org.example.lifechart.domain.user.dto.SignupResponse;
-import org.example.lifechart.domain.user.dto.UserUpdateRequest;
-import org.example.lifechart.domain.user.dto.WithdrawalRequest;
+import org.example.lifechart.domain.user.dto.*;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.service.UserService;
 import org.example.lifechart.security.CustomUserPrincipal;
@@ -36,6 +33,25 @@ public class UserController {
     ) {
         userService.updateProfile(userPrincipal.getUserId(), request);
         return ApiResponse.onSuccess(SuccessCode.UPDATE_USER_SUCCESS, null);
+    }
+
+
+    // 내 프로필 조회
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile(
+            @AuthenticationPrincipal CustomUserPrincipal userPrincipal
+    ) {
+        UserProfileResponse response = userService.getProfile(userPrincipal.getUserId());
+        return ApiResponse.onSuccess(SuccessCode.GET_USER_INFO_SUCCESS, response);
+    }
+
+    // 타인 프로필 조회 (id로)
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<UserPublicProfileResponse>> getUserProfile(
+            @PathVariable Long userId
+    ) {
+        UserPublicProfileResponse response = userService.getUserById(userId);
+        return ApiResponse.onSuccess(SuccessCode.GET_USER_INFO_SUCCESS, response);
     }
 
 

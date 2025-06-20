@@ -56,7 +56,7 @@ public class NotificationAdapter implements NotificationPort {
                     .build();
 
             sqsClient.deleteMessage(deleteRequest);
-            
+
         }
 
         return dto;
