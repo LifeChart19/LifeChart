@@ -11,6 +11,7 @@ import java.time.LocalDate;
 public class UserProfileResponse {
     private Long id;
     private String email;
+    private String username;
     private String nickname;
     private String gender;
     private String job;
@@ -20,6 +21,7 @@ public class UserProfileResponse {
     public UserProfileResponse(User user) {
         this.id = user.getId();
         this.email = user.getEmail();
+        this.username = user.getName();
         this.nickname = user.getNickname();
         this.gender = user.getGender();
         this.job = user.getJob();
