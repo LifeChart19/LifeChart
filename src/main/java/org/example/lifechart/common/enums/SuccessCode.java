@@ -47,6 +47,7 @@ public enum SuccessCode implements BaseCode {
 
 
 
+
 	// Auth (Line#: 50~79)
 	SUCCESS_USER_LOGIN(HttpStatus.OK, "로그인을 성공하였습니다."),
 	SUCCESS_USER_LOGOUT(HttpStatus.OK, "로그아웃 되었습니다."),
@@ -84,7 +85,7 @@ public enum SuccessCode implements BaseCode {
 	GOAL_GET_INFO_SUCCESS(HttpStatus.OK, "개별 목표 조회에 성공했습니다."),
 	GOAL_DELETE_SUCCESS(HttpStatus.OK, "목표를 삭제했습니다."),
 	GOAL_UPDATE_SUCCESS(HttpStatus.OK, "목표를 수정했습니다."),
-
+	GOAL_GET_LIST_SUCCESS(HttpStatus.OK, "목표 리스트를 조회했습니다."),
 
 
 

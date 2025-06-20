@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.example.lifechart.common.enums.ErrorCode;
@@ -15,6 +16,7 @@ import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalEtcInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalSummaryResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
 import org.example.lifechart.domain.goal.entity.GoalHousing;
@@ -371,7 +373,7 @@ public class GoalServiceImplTest {
 
 	@Test
 	@DisplayName("이미 삭제된 목표인 경우 예외를 던진다.")
-	void deteleGoal_이미_삭제된_목표인_경우_GOAL_ALREADY_DELETED_예외를_던진다() {
+	void deleteGoal_이미_삭제된_목표인_경우_GOAL_ALREADY_DELETED_예외를_던진다() {
 		// given
 		User user = User.builder()
 			.id(1L)
@@ -632,5 +634,67 @@ public class GoalServiceImplTest {
 		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
 		verify(goalRepository).findByIdAndUserId(1L, 1L);
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_CATEGORY_DETAIL_MISMATCH);
+	}
+
+	@Test
+	@DisplayName("내 목표 전체 조회에 성공한다.")
+	void findMyGoals_내_목표_전체_조회에_성공한다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.build();
+
+		Goal firstGoal = Goal.builder()
+			.id(1L)
+			.user(user)
+			.targetAmount(1L)
+			.build();
+
+		Goal secondGoal = Goal.builder()
+			.id(2L)
+			.user(user)
+			.targetAmount(2L)
+			.build();
+
+		List<Goal> myGoals = List.of(firstGoal, secondGoal);
+
+		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(user));
+		given(goalRepository.findAllByUserId(1L)).willReturn(myGoals);
+
+		// when
+		List<GoalSummaryResponse> response = goalService.findMyGoals(1L);
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
+		verify(goalRepository).findAllByUserId(1L);
+		assertThat(response.size()).isEqualTo(2);
+		assertThat(response.getFirst().getTargetAmount()).isEqualTo(1L);
+	}
+
+	@Test
+	@DisplayName("유효한 유저가 아닌 경우 예외를 던진다.")
+	void findMyGoals_유효한_유저가_아닌_경우_USER_NOT_FOUND_예외를_던진다() {
+		// given
+		User loginUser = User.builder()
+			.id(1L)
+			.deletedAt(LocalDateTime.now())
+			.build();
+
+		Goal goal = Goal.builder()
+			.id(1L)
+			.user(loginUser)
+			.build();
+
+		List<Goal> goals = List.of(goal);
+
+		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
+
+		// when
+		CustomException customException = assertThrows(CustomException.class, () ->
+			goalService.findMyGoals(1L));
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
+		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
 	}
 }
