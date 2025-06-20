@@ -1,4 +1,4 @@
-package org.example.lifechart.common.port;
+package org.example.lifechart.domain.user.port;
 
 import org.example.lifechart.domain.user.dto.AccountCreatedEvent;
 

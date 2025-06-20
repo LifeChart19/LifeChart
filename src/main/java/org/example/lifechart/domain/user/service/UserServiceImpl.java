@@ -3,7 +3,7 @@ package org.example.lifechart.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
-import org.example.lifechart.common.port.AccountEventPublisherPort;
+import org.example.lifechart.domain.user.port.AccountEventPublisherPort;
 import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.user.dto.*;
 import org.example.lifechart.domain.user.entity.User;

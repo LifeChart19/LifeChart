@@ -3,7 +3,7 @@ package org.example.lifechart.adapter.out;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
-import org.example.lifechart.common.port.AccountEventPublisherPort;
+import org.example.lifechart.domain.user.port.AccountEventPublisherPort;
 import org.example.lifechart.domain.user.dto.AccountCreatedEvent;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sns.SnsClient;
