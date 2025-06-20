@@ -21,6 +21,8 @@ public interface GoalRepository extends JpaRepository<Goal, Long>, CustomShareGo
     // 추가적인 쿼리 메서드가 필요하면 여기에 선언하시면 됩니다.
     Optional<Goal> findByIdAndStatus(Long id, Status status);
 
+    List<Goal> findAllByUserId(Long userId);
+
     @Query("""
     SELECT g FROM Goal g
     JOIN FETCH g.user
