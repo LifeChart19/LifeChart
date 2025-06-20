@@ -1,4 +1,4 @@
-package org.example.lifechart.simulation;
+package org.example.lifechart.domain.simulation;
 
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
