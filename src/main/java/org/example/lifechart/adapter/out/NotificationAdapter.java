@@ -1,5 +1,7 @@
 package org.example.lifechart.adapter.out;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.lifechart.domain.notification.dto.MessageQueueDto;
@@ -20,38 +22,32 @@ public class NotificationAdapter implements NotificationPort {
 
     private final SqsClient sqsClient;
 
+    ObjectMapper objectMapper = new ObjectMapper();
+
     @Value("${aws.url.sqs.notification}")
     private String URL_SQS_TEST;
 
     public MessageQueueDto receiveAndDelete() {
         ReceiveMessageRequest receiveRequest = ReceiveMessageRequest.builder()
                 .queueUrl(URL_SQS_TEST)
-                .maxNumberOfMessages(5)
-                .waitTimeSeconds(10)
-                .messageAttributeNames("All")
+                .maxNumberOfMessages(5) // 한 번에 최대 5개
+                .waitTimeSeconds(10)    // Long Polling
                 .build();
 
         List<Message> messages = sqsClient.receiveMessage(receiveRequest).messages();
         MessageQueueDto dto = null;
 
         for (Message m : messages) {
-            String body = m.body(); // 실제 message 본문
-            String queueId = m.messageAttributes().get("queueId").stringValue();
+            System.out.println("Received: " + m.body());
 
-            String[] parts = queueId.split("\\|");
-            if (parts.length < 4) {
-                log.warn("Invalid queueId format: {}", queueId);
-                continue;
+            String body = m.body();
+
+
+            try {
+                dto = objectMapper.readValue(body, MessageQueueDto.class);
+            } catch (JsonProcessingException e) {
+                log.info("failed to parse SQS message : {}", body, e);
             }
-
-            Long userId = Long.parseLong(parts[0]);
-            String type = parts[1];
-            String createdAt = parts[2];
-            String title = parts[3];
-
-            log.info("SQS 수신: userId={}, type={}, title={}, createdAt={}", userId, type, title, createdAt);
-
-            dto = new MessageQueueDto(type, body);
 
             // 처리 완료 후 삭제
             DeleteMessageRequest deleteRequest = DeleteMessageRequest.builder()
@@ -60,6 +56,7 @@ public class NotificationAdapter implements NotificationPort {
                     .build();
 
             sqsClient.deleteMessage(deleteRequest);
+
         }
 
         return dto;
