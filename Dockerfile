@@ -15,7 +15,7 @@ ARG SPRING_PROFILES_ACTIVE=dev
 ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
 
 # 6. 컨테이너 시작 시 JAR 파일을 실행
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "/app.jar"]
 
 # 7. CMD를 빈 배열로 지정해 ENTRYPOINT 실행 시 기본 인자를 없앰 (필요 시 덮어쓰기 가능)
 CMD []

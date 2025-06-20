@@ -78,6 +78,7 @@ jobs:
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
             --build-arg JAR_FILE=build/libs/*.jar \
+            --build-arg SPRING_PROFILES_ACTIVE=dev \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/spring-app \
             --load .
 
