@@ -21,13 +21,13 @@ public class NotificationService {
 
 	@Transactional
 	public List<NotificationResponseDto> getList(
-		Long cursor, Long userId
+		Long userId, Long cursor, int size
 	) {
-		return notificationRepo.findTop20ByUserIdOrderByRequestedAtDesc(
-				userId)
-			.stream()
-			.map(NotificationResponseDto::new)
-			.toList();
+		if(cursor == null) cursor = Long.MAX_VALUE;
+		if(size > 20) size = 20;
+
+		return notificationRepo.getList(
+				userId, cursor, size);
 	}
 
 	@Transactional
@@ -45,7 +45,7 @@ public class NotificationService {
 				() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND)
 			);
 
-		if(!Objects.equals(n.getUserId(), userId)){
+		if (!Objects.equals(n.getUserId(), userId)) {
 			throw new CustomException(ErrorCode.NOTIFICATION_PERMISSION);
 		}
 

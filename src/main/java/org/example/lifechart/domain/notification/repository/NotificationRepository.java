@@ -10,8 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
-	List<Notification> findTop20ByUserIdOrderByRequestedAtDesc(Long userId);
+public interface NotificationRepository extends JpaRepository<Notification, Long>, NotificationRepositoryCustom {
 
 	@Modifying(clearAutomatically = true)
 	@Query("UPDATE Notification n SET n.completedAt=:now WHERE n.userId = :userId AND n.completedAt IS NULL")
