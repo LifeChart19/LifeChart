@@ -1,6 +1,7 @@
 package org.example.lifechart.adapter.out;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.domain.user.port.AccountEventPublisherPort;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class AccountSnsEventPublisher implements AccountEventPublisherPort {
@@ -28,6 +30,7 @@ public class AccountSnsEventPublisher implements AccountEventPublisherPort {
                     .message(json)
                     .build());
         } catch (Exception e) {
+            log.error("SNS 발행 실패 - userId={}, email={}", event.getUserId(), event.getEmail(), e);
             throw new RuntimeException("SNS 발행 실패", e);
         }
     }

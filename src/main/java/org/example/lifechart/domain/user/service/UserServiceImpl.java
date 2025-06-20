@@ -103,14 +103,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserProfileResponse getProfile(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         return new UserProfileResponse(user);
     }
 
     @Override
     public UserPublicProfileResponse getUserById(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         return new UserPublicProfileResponse(user);
     }
