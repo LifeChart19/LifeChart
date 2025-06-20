@@ -65,6 +65,7 @@ public class GoalServiceImpl implements GoalService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public GoalInfoResponse findGoal(Long goalId, Long userId) {
 		Goal goal = validGoal(goalId, userId);
 		GoalDetailInfoResponse goalDetail = goalDetailFetcherFactory.getDetail(goal);
@@ -73,6 +74,7 @@ public class GoalServiceImpl implements GoalService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<GoalSummaryResponse> findMyGoals(Long userId) {
 		User user = validUser(userId);
 		return goalRepository.findAllByUserId(user.getId())
