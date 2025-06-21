@@ -6,4 +6,5 @@ import org.example.lifechart.domain.goal.enums.HousingType;
 public interface GoalHousingCalculateService {
 	boolean supports(HousingType type);
 	Long calculateTargetAmount(GoalHousingCalculateRequest request);
+	Long calculateFutureTargetAmount(GoalHousingCalculateRequest request, int yearsLater);
 }

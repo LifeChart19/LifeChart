@@ -10,7 +10,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GoalHousingApartmentCalculateService implements GoalHousingCalculateService {
 
-	private final JsonApartmentPriceService apartmentPriceService;
+	//private final JsonApartmentPriceService apartmentPriceService;
+	private final CachedApartmentPriceService apartmentPriceService;
 
 	@Override
 	public boolean supports(HousingType type) {
@@ -23,5 +24,15 @@ public class GoalHousingApartmentCalculateService implements GoalHousingCalculat
 		String subregion = request.getSubregion();
 		Long area = request.getArea();
 		return apartmentPriceService.getAveragePrice(region, subregion, area);
-	};
+	}
+
+	@Override
+	public Long calculateFutureTargetAmount(GoalHousingCalculateRequest request, int yearsLater) {
+		String region = request.getRegion();
+		String subregion = request.getSubregion();
+		Long area = request.getArea();
+		return apartmentPriceService.getFuturePredictedPrice(region, subregion, area, yearsLater);
+	}
+
+	;
 }
