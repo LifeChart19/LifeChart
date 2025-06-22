@@ -79,11 +79,11 @@ public class CachedApartmentPriceServiceTest {
 
 	@Test
 	@DisplayName("미래 가격 예측은 현재가에 복리 공식을 적용한다.")
-	void getFuturePredictedPrice_N년뒤_금액의_복리_계산결과를_반환한다() {
+	void getFuturePredictedPrice_현재_가격에_복리_계산한_결과를_반환한다() {
 		// given
 		String region = "서울";
 		String subregion = "도심";
-		Long area = 84L;
+		Long area = 100L;
 		int yearsLater = 10;
 		double rate = 0.03; // 연 평균 CAGR 3%
 		ApartmentPriceDto dto = ApartmentPriceDto.builder()
@@ -101,7 +101,7 @@ public class CachedApartmentPriceServiceTest {
 		Long result = service.getFuturePredictedPrice(region, subregion, area, yearsLater);
 
 		// then
-		Long expected = Math.round(2_000L * 10L * 10_000L *Math.pow(1+rate, yearsLater));
+		Long expected = Math.round(2_000L * 100L * 10_000L *Math.pow(1+rate, yearsLater));
 
 		verify(redisRepository).find(region, subregion);
 		assertThat(result).isEqualTo(expected);
