@@ -5,6 +5,7 @@ import static org.mockito.BDDMockito.*;
 
 import java.util.Optional;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.example.lifechart.domain.goal.dto.response.ApartmentPriceDto;
 import org.example.lifechart.domain.goal.repository.ApartmentPriceCacheRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -85,25 +86,29 @@ public class CachedApartmentPriceServiceTest {
 		String subregion = "도심";
 		Long area = 100L;
 		int yearsLater = 10;
-		double rate = 0.03; // 연 평균 CAGR 3%
-		ApartmentPriceDto dto = ApartmentPriceDto.builder()
-			.region(region)
-			.subregion(subregion)
-			.price(2_000L)
-			.unit("만원/m^2")
-			.period("202505")
-			.build();
+		int duration = 10;
 
-		given(redisRepository.find(region, subregion)).willReturn(Optional.of(dto));
-		given(openApiService.getAnnualGrowthRate(subregion)).willReturn(rate);
+		// price가 10년 간 1000 → 1343.9 (CAGR ≈ 3%)
+		ApartmentPriceDto start = ApartmentPriceDto.builder()
+			.region(region).subregion(subregion).period("201505").price(1000.0).unit("만원/m^2").build();
+
+		ApartmentPriceDto end = ApartmentPriceDto.builder()
+			.region(region).subregion(subregion).period("202505").price(1343.9).unit("만원/m^2").build();
+
+		Pair<ApartmentPriceDto, ApartmentPriceDto> pair = Pair.of(start, end);
+
+		given(redisRepository.findStartAndEnd(region, subregion, duration)).willReturn(Optional.of(pair));
+		given(redisRepository.find(region, subregion)).willReturn(Optional.of(end));
 
 		// when
 		Long result = service.getFuturePredictedPrice(region, subregion, area, yearsLater);
 
 		// then
-		Long expected = Math.round(2_000L * 100L * 10_000L *Math.pow(1+rate, yearsLater));
+		double rate = Math.pow(1343.9 / 1000.0, 1.0/10) - 1;
+		Long expected = Math.round(1_343.9 * 100L * 10_000L *Math.pow(1 + rate, 10));
 
 		verify(redisRepository).find(region, subregion);
+		verify(redisRepository).findStartAndEnd(region, subregion, duration);
 		assertThat(result).isEqualTo(expected);
 	}
 }

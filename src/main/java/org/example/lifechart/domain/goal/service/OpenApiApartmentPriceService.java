@@ -40,7 +40,7 @@ public class OpenApiApartmentPriceService {
 
 
 	public ApartmentPriceDto fetchLatest(String region, String subregion) {
-		String API_URL = buildUrl(60); // 최근 60개월
+		String API_URL = buildUrl(120); // 최근 60개월
 		try {
 			String response = restTemplate.getForObject(API_URL, String.class);
 			List<Map<String, Object>> dataList = objectMapper.readValue(response, new TypeReference<>() {});
@@ -83,10 +83,5 @@ public class OpenApiApartmentPriceService {
 			DEFAULT_PARAMS +
 			"&newEstPrdCnt=" + months +
 			"&apiKey=" + apiKey;
-	}
-
-	public double getAnnualGrowthRate(String subregion) {
-		// 추후 구현
-		return 0.04; // 예시: 4% 상승률
 	}
 }
