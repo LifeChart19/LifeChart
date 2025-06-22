@@ -13,7 +13,7 @@ public class CachedApartmentPriceService implements ApartmentPriceService {
 	private final ApartmentPriceCacheRepository redisRepository;
 	private final OpenApiApartmentPriceService openApiService;
 
-	@Override
+	@Override // 현재 시점의 가격 계싼
 	public Long getAveragePrice(String region, String subregion, Long area) {
 		ApartmentPriceDto dto = redisRepository.find(region, subregion)
 			.orElseGet(() -> {
@@ -24,7 +24,7 @@ public class CachedApartmentPriceService implements ApartmentPriceService {
 		return Math.round(dto.getPrice() * area * 10_000L); // price 단위가 만원으로, 원 단위 환산
 	}
 
-	@Override // 추후 목표 설정의 '종료일'과 결합해 활용할 예정
+	@Override // 미래 시점의 가격 계싼
 	public Long getFuturePredictedPrice(String region, String subregion, Long area, int yearsLater) {
 		Long current = getAveragePrice(region, subregion, area);
 		double rate = openApiService.getAnnualGrowthRate(subregion);

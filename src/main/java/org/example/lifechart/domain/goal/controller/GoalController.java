@@ -83,21 +83,6 @@ public class GoalController {
 	}
 
 	@Operation(
-		summary = "주거 목표 금액 계산 API",
-		description = "주거 목표 입력값을 바탕으로 목표 금액을 계산합니다.",
-		security = @SecurityRequirement(name="bearerAuth")
-	)
-	@PostMapping("/housing/calculate/future")
-	public ResponseEntity<ApiResponse<Long>> calculateHousingTargetAmount(
-		@RequestBody GoalHousingCalculateRequest request,
-		@RequestParam int yearsLater,
-		@AuthenticationPrincipal CustomUserPrincipal principal
-	) {
-		Long targetAmount = goalHousingCalculateService.calculateFutureTargetAmount(request, yearsLater);
-		return ApiResponse.onSuccess(SuccessCode.GOAL_CALCULATE_SUCCESS, targetAmount);
-	}
-
-	@Operation(
 		summary = "목표 생성 API",
 		description = "새로운 목표를 생성합니다.",
 		security = @SecurityRequirement(name="bearerAuth")
