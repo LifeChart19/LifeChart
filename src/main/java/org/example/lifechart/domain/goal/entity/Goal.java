@@ -1,6 +1,8 @@
 package org.example.lifechart.domain.goal.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.example.lifechart.common.entity.BaseEntity;
 import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
@@ -9,7 +11,9 @@ import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.user.entity.User;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -66,6 +70,17 @@ public class Goal extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Share share;
 
+	@Column(nullable = false)
+	private int commentCount = 0;
+
+	@Column(nullable = false)
+	private int likeCount = 0;
+
+	@ElementCollection(fetch = FetchType.LAZY)
+	@CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
+	@Column(name = "tag")
+	private List<String> tags = new ArrayList<>();
+
 	public void delete() {
 		this.status = Status.DELETED;
 	}
@@ -76,5 +91,6 @@ public class Goal extends BaseEntity {
 		startAt = request.getStartAt();
 		endAt = request.getEndAt();
 		share = request.getShare();
+		tags =  request.getTags();
 	}
 }

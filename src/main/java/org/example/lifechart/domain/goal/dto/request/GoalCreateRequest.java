@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,6 +70,10 @@ public class GoalCreateRequest implements HaSGoalPeriod {
 	@NotNull(message = "공유 설정은 필수 입력입니다.")
 	private Share share; // nullable
 
+	@Schema(description = "태그", example = "[주거, 강남]")
+	@NotEmpty(message = "태그는 필수 입력입니다.")
+	private List<String> tags;
+
 	public Goal toEntity(User user) { // GoalCreateDto를 Goal entity로 변환하는 메서드. 서비스 레이어에서 활용 예정
 		return Goal.builder()
 			.user(user)
@@ -79,6 +84,7 @@ public class GoalCreateRequest implements HaSGoalPeriod {
 			.targetAmount(targetAmount)
 			.status(Status.ACTIVE)
 			.share(share != null ? share : Share.PRIVATE)
+			.tags(tags)
 			.build();
 	}
 
