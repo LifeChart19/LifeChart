@@ -52,7 +52,7 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 
 		User foundAuthUser = validUser(authId);
 
-		User foundUser = validUser(authId);
+		User foundUser = validUser(userId);
 		return goalRepository.findByAuthIdAndUserId(foundAuthUser.getId(), foundUser.getId())
 			.stream()
 			.map(ShareGoalResponseDto::from)
