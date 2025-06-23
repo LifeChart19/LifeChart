@@ -9,6 +9,8 @@ import org.example.lifechart.domain.goal.enums.Share;
 public interface CustomShareGoalRepository {
 	List<Goal> findByAuthIdAndCursorAndFilters(Long authId, Long cursorId, int size, Category category, Share share);
 
-	List<Goal> findByAuthIdAndUserId(Long authid, Long userId);
+	List<Goal> findByAuthIdAndUserId(Long authId, Long userId);
+
+	List<Goal> findByAuthIdAndCursorAndTitleContaining(Long authId, Long cursorId, int size, String keyword);
 
 }

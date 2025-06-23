@@ -66,6 +66,31 @@ public class CustomShareGoalRepositoryImpl implements CustomShareGoalRepository 
 			.fetch();
 	}
 
+	@Override
+	public List<Goal> findByAuthIdAndCursorAndTitleContaining(Long authId, Long cursorId, int size, String keyword) {
+		QGoal goal = QGoal.goal;
+		QFollow follow = QFollow.follow;
+		BooleanBuilder booleanBuilder = new BooleanBuilder();
+		if (cursorId != null) {
+			booleanBuilder.and(goal.id.lt(cursorId));
+		}
+		booleanBuilder.and(
+			(follow.id.isNotNull().and(goal.share.eq(Share.FOLLOWER)))
+				.or(goal.share.eq(Share.ALL))
+		);
+		booleanBuilder.and(goal.title.contains(keyword));
+		booleanBuilder.and(goal.status.eq(Status.ACTIVE));
+		return jpaQueryFactory
+			.selectFrom(goal)
+			.leftJoin(follow).on(
+				follow.receiver.id.eq(goal.user.id).and(follow.requester.id.eq(authId))
+			)
+			.where(booleanBuilder)
+			.orderBy(goal.id.desc())
+			.limit(size)
+			.fetch();
+	}
+
 	private BooleanExpression shareCondition(Long authId, Share share, QGoal goal, QFollow follow) {
 		if (share == null) {
 			// default: 공유 상태가 ALL인 것과 로그인한 유저가 팔로우한 사람의 목표(공유 상태가 FOLLOWER)들이 나오는 상태
