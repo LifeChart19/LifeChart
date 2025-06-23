@@ -26,27 +26,27 @@ public class SendSqsAdapter implements SendSqsPort {
 	@Override
 	public void sendNotification(Long userId, Notification.Type type, String title, String message) {
 
-		String st = userId.toString() + '|'
-				+ type + '|'
-				+ LocalDateTime.now().withNano(0) + '|'
-				+ title;
+		// String st = userId.toString() + '|'
+		// 		+ type + '|'
+		// 		+ LocalDateTime.now().withNano(0) + '|'
+		// 		+ title;
 
-		Map<String, MessageAttributeValue> attr = new HashMap<>();
+		// Map<String, MessageAttributeValue> attr = new HashMap<>();
 
-		attr.put("queueId", MessageAttributeValue.builder()
-				.dataType("String")
-				.stringValue(st)
-				.build());
+		// attr.put("queueId", MessageAttributeValue.builder()
+		// 		.dataType("String")
+		// 		.stringValue(st)
+		// 		.build());
 
-		SendMessageRequest msgReq = null;
+		// SendMessageRequest msgReq = null;
 
-		msgReq = SendMessageRequest.builder()
-				.queueUrl(URL_SQS)
-				.messageBody(message)
-				.messageAttributes(attr)
-				.build();
+		// msgReq = SendMessageRequest.builder()
+		// 		.queueUrl(URL_SQS)
+		// 		.messageBody(message)
+		// 		.messageAttributes(attr)
+		// 		.build();
 
-		SendMessageResponse msgRes = sqsClient.sendMessage(msgReq);
+		// SendMessageResponse msgRes = sqsClient.sendMessage(msgReq);
 
 	}
 
