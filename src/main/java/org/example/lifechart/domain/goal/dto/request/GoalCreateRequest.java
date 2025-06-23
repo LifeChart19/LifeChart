@@ -10,7 +10,9 @@ import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.validation.annotation.ValidGoalPeriod;
+import org.example.lifechart.validation.annotation.ValidTags;
 import org.example.lifechart.validation.support.HaSGoalPeriod;
+import org.example.lifechart.validation.support.TagValidatable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +32,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @ValidGoalPeriod
-public class GoalCreateRequest implements HaSGoalPeriod {
+@ValidTags
+public class GoalCreateRequest implements HaSGoalPeriod, TagValidatable {
 
 	@Schema(description = "목표명", example = "강남 집사기")
 	@NotBlank(message = "목표명은 필수 입력입니다.")
@@ -69,6 +73,10 @@ public class GoalCreateRequest implements HaSGoalPeriod {
 	@NotNull(message = "공유 설정은 필수 입력입니다.")
 	private Share share; // nullable
 
+	@Schema(description = "태그", example = "[주거, 강남]")
+	@NotEmpty(message = "태그는 필수 입력입니다.")
+	private List<@NotBlank String> tags = new ArrayList<>();
+
 	public Goal toEntity(User user) { // GoalCreateDto를 Goal entity로 변환하는 메서드. 서비스 레이어에서 활용 예정
 		return Goal.builder()
 			.user(user)
@@ -90,5 +98,15 @@ public class GoalCreateRequest implements HaSGoalPeriod {
 	@Override
 	public LocalDateTime getEndAt() {
 		return endAt;
+	}
+
+	@Override
+	public String getTitle() {
+		return title;
+	}
+
+	@Override
+	public List<String> getTags() {
+		return tags;
 	}
 }
