@@ -32,47 +32,47 @@ public class NotificationListener {
 	@Value("${aws.url.sqs.notification}")
 	private String URL_SQS;
 
-	@PostConstruct
-	public void startPolling() {
-		log.info("aws SQS Listener : {}", URL_SQS);
-
-		Executors.newSingleThreadExecutor().submit(() -> {
-			while (!Thread.currentThread().isInterrupted()) {
-				try {
-					if (sqsClient == null) {
-						log.error("SqsClient is null — skipping polling.");
-						break;
-					}
-
-					ReceiveMessageResponse response = sqsClient.receiveMessage(
-							ReceiveMessageRequest.builder()
-									.queueUrl(URL_SQS)
-									.waitTimeSeconds(20)
-									.maxNumberOfMessages(5)
-									.messageAttributeNames("All")
-									.build());
-
-					for (Message message : response.messages()) {
-						try {
-							handleMessage(message);
-						} catch (DataIntegrityViolationException e) {
-							log.warn("이미 처리된 Message : {}", e.getMessage());
-						} finally {
-							deleteMessage(message);
-						}
-					}
-				} catch (Exception e) {
-					log.error("Error in SQS polling : {}", e.toString(), e);
-
-					// Shutdown 된 경우 루프 종료
-					if (e.getMessage().contains("Connection pool shut down")) {
-						log.error("SQS client connection pool shut down detected — stopping polling loop.");
-						break;
-					}
-				}
-			}
-		});
-	}
+	// @PostConstruct
+	// public void startPolling() {
+	// 	log.info("aws SQS Listener : {}", URL_SQS);
+	//
+	// 	Executors.newSingleThreadExecutor().submit(() -> {
+	// 		while (!Thread.currentThread().isInterrupted()) {
+	// 			try {
+	// 				if (sqsClient == null) {
+	// 					log.error("SqsClient is null — skipping polling.");
+	// 					break;
+	// 				}
+	//
+	// 				ReceiveMessageResponse response = sqsClient.receiveMessage(
+	// 						ReceiveMessageRequest.builder()
+	// 								.queueUrl(URL_SQS)
+	// 								.waitTimeSeconds(20)
+	// 								.maxNumberOfMessages(5)
+	// 								.messageAttributeNames("All")
+	// 								.build());
+	//
+	// 				for (Message message : response.messages()) {
+	// 					try {
+	// 						handleMessage(message);
+	// 					} catch (DataIntegrityViolationException e) {
+	// 						log.warn("이미 처리된 Message : {}", e.getMessage());
+	// 					} finally {
+	// 						deleteMessage(message);
+	// 					}
+	// 				}
+	// 			} catch (Exception e) {
+	// 				log.error("Error in SQS polling : {}", e.toString(), e);
+	//
+	// 				// Shutdown 된 경우 루프 종료
+	// 				if (e.getMessage().contains("Connection pool shut down")) {
+	// 					log.error("SQS client connection pool shut down detected — stopping polling loop.");
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
+	// 	});
+	// }
 
 	@PreDestroy
 	public void onDestroy() {
