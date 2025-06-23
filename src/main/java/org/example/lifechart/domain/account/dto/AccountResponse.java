@@ -5,8 +5,9 @@ import java.math.BigDecimal;
 
 @Getter
 @AllArgsConstructor
-public class AccountInfoResponse {
+public class AccountResponse {
+    private Long accountId;
+    private Long userId;
     private String accountNumber;
-    private String accountName;
     private BigDecimal balance;
 }
