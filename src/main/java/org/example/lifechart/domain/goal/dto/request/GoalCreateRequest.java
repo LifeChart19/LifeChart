@@ -74,19 +74,6 @@ public class GoalCreateRequest implements HaSGoalPeriod {
 	@NotEmpty(message = "태그는 필수 입력입니다.")
 	private List<String> tags;
 
-	public Goal toEntity(User user) { // GoalCreateDto를 Goal entity로 변환하는 메서드. 서비스 레이어에서 활용 예정
-		return Goal.builder()
-			.user(user)
-			.title(title)
-			.category(category)
-			.startAt(startAt != null ? startAt : LocalDateTime.now())
-			.endAt(endAt)
-			.targetAmount(targetAmount)
-			.status(Status.ACTIVE)
-			.share(share != null ? share : Share.PRIVATE)
-			.tags(tags)
-			.build();
-	}
 
 	@Override
 	public LocalDateTime getStartAt() {
