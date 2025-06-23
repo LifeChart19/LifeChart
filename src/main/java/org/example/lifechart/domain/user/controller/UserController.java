@@ -4,6 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.response.ApiResponse;
+import org.example.lifechart.domain.account.dto.AccountResponse;
+import org.example.lifechart.domain.account.dto.TransactionResponse;
+import org.example.lifechart.domain.account.service.AccountQueryService;
 import org.example.lifechart.domain.user.dto.*;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.service.UserService;
@@ -13,12 +16,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
+    private final AccountQueryService accountQueryService;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponse>> signup(@Validated @RequestBody SignupRequest request) {
@@ -62,5 +68,15 @@ public class UserController {
     ) {
         Long userId = userService.withdraw(userPrincipal.getUserId(), request);
         return ApiResponse.onSuccess(SuccessCode.DELETE_USER_SUCCESS, userId);
+    }
+
+    @GetMapping("/me/account")
+    public ResponseEntity<ApiResponse<AccountResponse>> getAccountInfo(@AuthenticationPrincipal CustomUserPrincipal user) {
+        return ApiResponse.onSuccess(SuccessCode.GET_ACCOUNT_SUCCESS, accountQueryService.getAccount(user.getUserId()));
+    }
+
+    @GetMapping("/me/account/transactions")
+    public ResponseEntity<ApiResponse<List<TransactionResponse>>> getTransactions(@AuthenticationPrincipal CustomUserPrincipal user) {
+        return ApiResponse.onSuccess(SuccessCode.GET_TRANSACTIONS_SUCCESS, accountQueryService.getTransactions(user.getUserId()));
     }
 }
