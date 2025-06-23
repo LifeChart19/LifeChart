@@ -27,5 +27,4 @@ public class SimulationResults {
 
     //매달 자산 가격 변화만 반환
     private List<MonthlyAssetDto> monthlyAssets;
-
 }

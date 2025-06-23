@@ -23,6 +23,7 @@ import java.util.List;
 @Table(name = "simulation")
 public class Simulation extends BaseEntity {
 
+    @Setter(AccessLevel.PROTECTED)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -161,6 +162,21 @@ public class Simulation extends BaseEntity {
                 .monthlyAssets(results.getMonthlyAssets())
                 .user(user)
                 .build();
+    }
+
+    //프록시 객체만가져오기 위한 메서드
+    public static Simulation withId(Long id) {
+        Simulation simulation = new Simulation();
+        simulation.setId(id);
+        return simulation;
+    }
+
+    public void updateResults(SimulationResults newResults) {
+        this.requiredAmount = newResults.getRequiredAmount();
+        this.monthsToGoal = newResults.getMonthsToGoal();
+        this.currentAchievementRate = newResults.getCurrentAchievementRate();
+        this.monthlyAchievements = newResults.getMonthlyAchievements();
+        this.monthlyAssets = newResults.getMonthlyAssets();
     }
 
 

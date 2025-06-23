@@ -2,6 +2,7 @@ package org.example.lifechart.domain.simulation.dto.response;
 
 import lombok.*;
 import org.example.lifechart.domain.simulation.entity.Simulation;
+import org.example.lifechart.domain.simulation.entity.SimulationGoal;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -65,6 +66,25 @@ public class BaseSimulationResponseDto {
                 .simulationId(simulation.getId())
                 .goalIds(simulation.getSimulationGoals().stream()
                         .map(simGoal -> simGoal.getGoal().getId())
+                        .collect(Collectors.toList()))
+                .userNickname(simulation.getUser().getNickname())
+                .title(simulation.getTitle())
+                .baseDate(simulation.getBaseDate())
+                .requiredAmount(simulation.getRequiredAmount())
+                .monthsToGoal(simulation.getMonthsToGoal())
+                .currentAchievementRate(simulation.getCurrentAchievementRate())
+                .monthlyAchievements(simulation.getMonthlyAchievements())
+                .monthlyAssets(simulation.getMonthlyAssets())
+                .build();
+    }
+
+    public static BaseSimulationResponseDto to(Simulation simulation) {
+        return BaseSimulationResponseDto.builder()
+                .simulationId(simulation.getId())
+                .goalIds(simulation.getSimulationGoals().stream()
+                        .filter(SimulationGoal::isActive) //
+                        .map(simGoal -> simGoal.getGoal().getId())
+                        .distinct() // 중복 제거
                         .collect(Collectors.toList()))
                 .userNickname(simulation.getUser().getNickname())
                 .title(simulation.getTitle())

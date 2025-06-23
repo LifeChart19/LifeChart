@@ -15,8 +15,9 @@ public interface SimulationService {
      List<SimulationSummaryDto> findAllSimulationsByUserId(Long userId);
      BaseSimulationResponseDto findSimulationByUserIdAndSimulationId(Long userId, Long simulationId);
      List<DeletedSimulationResponseDto> findAllSoftDeletedSimulations(Long userId);
-      DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId);
-      void deleteSimulation(Long userId, Long simulationId);
-//    SimulationResponseDto updateSimulation(SimulationResponseDto simulationResponseDto);
+     DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId);
+     void deleteSimulation(Long userId, Long simulationId);
+     CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId,List<Long> goalIds);
+     void updateSimulationsByGoalChange(Long userId, Long goalId, Long simulationId);
 
 }
