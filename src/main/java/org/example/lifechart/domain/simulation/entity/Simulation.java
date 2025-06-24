@@ -23,6 +23,7 @@ import java.util.List;
 @Table(name = "simulation")
 public class Simulation extends BaseEntity {
 
+    @Setter(AccessLevel.PROTECTED)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -49,6 +50,9 @@ public class Simulation extends BaseEntity {
     //지출
     @Column(nullable = false)
     private Long monthlyExpense;
+
+    @Column(nullable = false)
+    private String estimatedAchieveMonth;
 
     //simulation이 save될 때 연결된 SimulationGoal도 자동으로 save됨.
     @Builder.Default
@@ -83,10 +87,6 @@ public class Simulation extends BaseEntity {
     //앞으로 더 모아야하는 금액
     @Column(nullable = false)
     private Long requiredAmount;
-
-    //목표까지 남은 예상 개월 수
-    @Column(nullable = false)
-    private Integer monthsToGoal;
 
     //현재 달성률
     @Column(nullable = false)
@@ -155,12 +155,27 @@ public class Simulation extends BaseEntity {
                 .elapsedMonths(dto.getElapsedMonths())
                 .totalMonths(dto.getTotalMonths())
                 .requiredAmount(results.getRequiredAmount())
-                .monthsToGoal(results.getMonthsToGoal())
+                .estimatedAchieveMonth(results.getEstimatedAchieveMonth())
                 .currentAchievementRate(results.getCurrentAchievementRate())
                 .monthlyAchievements(results.getMonthlyAchievements())
                 .monthlyAssets(results.getMonthlyAssets())
                 .user(user)
                 .build();
+    }
+
+    //프록시 객체만가져오기 위한 메서드
+    public static Simulation withId(Long id) {
+        Simulation simulation = new Simulation();
+        simulation.setId(id);
+        return simulation;
+    }
+
+    public void updateResults(SimulationResults newResults) {
+        this.requiredAmount = newResults.getRequiredAmount();
+        this.estimatedAchieveMonth = newResults.getEstimatedAchieveMonth();
+        this.currentAchievementRate = newResults.getCurrentAchievementRate();
+        this.monthlyAchievements = newResults.getMonthlyAchievements();
+        this.monthlyAssets = newResults.getMonthlyAssets();
     }
 
 
