@@ -17,7 +17,7 @@ public class SimulationResults {
     private Long requiredAmount;
 
     //예상 개월 수
-    private Integer monthsToGoal;
+    private String estimatedAchieveMonth;
 
     //목표 대비 얼마나 달성되었는지. 달성률
     private Float currentAchievementRate;
@@ -27,5 +27,4 @@ public class SimulationResults {
 
     //매달 자산 가격 변화만 반환
     private List<MonthlyAssetDto> monthlyAssets;
-
 }

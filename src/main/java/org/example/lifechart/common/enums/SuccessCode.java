@@ -113,7 +113,7 @@ public enum SuccessCode implements BaseCode {
 	SIMULATION_GET_DELETED_LIST_SUCCESS(HttpStatus.OK, "삭제된 시뮬레이션 목록을 성공적으로 조회하였습니다."),
 	SIMULATION_SOFT_DELETE_SUCCESS(HttpStatus.OK, "시뮬레이션을 성공적으로 소프트 삭제하였습니다."),
 	SIMULATION_DELETE_SUCCESS(HttpStatus.OK, "시뮬레이션을 성공적으로 완전 삭제하였습니다."),
-
+	SIMULATION_PATCH_SUCCESS(HttpStatus.OK, "시뮬레이션을 성공적으로 업데이트 하였습니다." ),
 
 
 
@@ -233,8 +233,8 @@ public enum SuccessCode implements BaseCode {
 	PATCH_NOTIFICATION_SUCCESS(HttpStatus.NO_CONTENT, "알림 단건을 읽음 처리합니다."),
 	PATCH_ALL_NOTIFICATIONS_SUCCESS(HttpStatus.NO_CONTENT, "알림 목록을 읽음 처리합니다."),
 	DELETE_NOTIFICATION_SUCCESS(HttpStatus.NO_CONTENT, "알림 단건을 삭제합니다."),
-	DELETE_NOTIFICATIONS_SUCCESS(HttpStatus.NO_CONTENT, "알림 목록을 삭제합니다."),
-	;
+	DELETE_NOTIFICATIONS_SUCCESS(HttpStatus.NO_CONTENT, "알림 목록을 삭제합니다.");
+
 
 
 
@@ -271,10 +271,10 @@ public enum SuccessCode implements BaseCode {
 		this.httpStatus = httpStatus;
 		this.message = message;
 		this.cachedReasonDto = ReasonDto.builder()
-			.isSuccess(true)
-			.httpStatus(httpStatus)
-			.message(message)
-			.build();
+				.isSuccess(true)
+				.httpStatus(httpStatus)
+				.message(message)
+				.build();
 	}
 
 	@Override

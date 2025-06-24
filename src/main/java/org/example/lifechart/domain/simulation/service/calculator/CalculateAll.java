@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
@@ -44,7 +43,7 @@ public class CalculateAll {
         );
         //baseMonth부터 targetMonth까지의 개월 수 계산
         //baseMonth, targetMonth가 usermont타입이라 temporalunit 형태로 사용 -
-        int monthsToGoal = (int) baseMonth.until(targetMonth, ChronoUnit.MONTHS);
+        String estimatedAchieveMonth = targetMonth.getYear() + "." + String.format("%02d", targetMonth.getMonthValue());
 
         //현재 달성률계산
         double progressRate = SimulationCalculator.calculateProgressRate(
@@ -61,9 +60,10 @@ public class CalculateAll {
                 initialAsset, monthlySaving, annualInterestRate, totalMonths, baseMonth
         );
 
+        //dto클래스에 옮겨야할듯
         return SimulationResults.builder()
                 .requiredAmount(requiredAmount)
-                .monthsToGoal(monthsToGoal)
+                .estimatedAchieveMonth(estimatedAchieveMonth)
                 .currentAchievementRate((float) progressRate)
                 .monthlyAchievements(monthlyAchievements)
                 .monthlyAssets(monthlyAssets) // List<Double> 또는 List<MonthlyAssetDto>
