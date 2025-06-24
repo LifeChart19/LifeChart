@@ -87,14 +87,12 @@ public class SimulationServiceImpl implements SimulationService {
         //8. simulationGoal 목표랑 연결되기 위한 필드 목록
         //unlinked는 null이 됨.
         List<SimulationGoal> simulationGoals = goalIds.stream()
-                .map(goalId -> {
-                    return SimulationGoal.builder()
-                            .simulation(simulation)
-                            .goal(goalMap.get(goalId))
-                            .active(true)
-                            .linkedAt(LocalDateTime.now())
-                            .build();
-                })
+                .map(goalId -> SimulationGoal.builder()
+                        .simulation(simulation)
+                        .goal(goalMap.get(goalId))
+                        .active(true)
+                        .linkedAt(LocalDateTime.now())
+                        .build())
                 .toList();
 
         //8. entity저장
