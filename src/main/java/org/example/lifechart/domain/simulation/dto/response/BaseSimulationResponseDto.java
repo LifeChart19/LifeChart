@@ -33,7 +33,7 @@ public class BaseSimulationResponseDto {
     @Builder.Default
     List<Long> goalIds = new ArrayList<>();
 
-     //계산에 필요한 필드
+    //계산에 필요한 필드
 //    @Convert(converter = SimulationParamsConverter.class)
 //    @Column(columnDefinition = "json")
 //    private SimulationParams params;
@@ -47,7 +47,7 @@ public class BaseSimulationResponseDto {
     private Long requiredAmount;
 
     //목표 달성까지 예상 개월 수
-    private Integer monthsToGoal;
+    private String estimatedAchieveMonth;
 
     //현재 달성률
     private Float currentAchievementRate;
@@ -71,7 +71,7 @@ public class BaseSimulationResponseDto {
                 .title(simulation.getTitle())
                 .baseDate(simulation.getBaseDate())
                 .requiredAmount(simulation.getRequiredAmount())
-                .monthsToGoal(simulation.getMonthsToGoal())
+                .estimatedAchieveMonth(simulation.getEstimatedAchieveMonth())
                 .currentAchievementRate(simulation.getCurrentAchievementRate())
                 .monthlyAchievements(simulation.getMonthlyAchievements())
                 .monthlyAssets(simulation.getMonthlyAssets())
@@ -90,7 +90,7 @@ public class BaseSimulationResponseDto {
                 .title(simulation.getTitle())
                 .baseDate(simulation.getBaseDate())
                 .requiredAmount(simulation.getRequiredAmount())
-                .monthsToGoal(simulation.getMonthsToGoal())
+                .estimatedAchieveMonth(simulation.getEstimatedAchieveMonth())
                 .currentAchievementRate(simulation.getCurrentAchievementRate())
                 .monthlyAchievements(simulation.getMonthlyAchievements())
                 .monthlyAssets(simulation.getMonthlyAssets())
