@@ -2,13 +2,13 @@ package org.example.lifechart.domain.goal.dto.response;
 
 import java.util.List;
 
+import lombok.Builder;
+import lombok.Getter;
+
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
-
-import lombok.Builder;
-import lombok.Getter;
 
 @Getter
 @Builder

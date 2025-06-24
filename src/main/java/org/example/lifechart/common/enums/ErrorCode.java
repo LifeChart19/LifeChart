@@ -90,10 +90,9 @@ public enum ErrorCode implements BaseCode {
 	GOAL_ETC_NOT_FOUND(HttpStatus.NOT_FOUND, "기타 목표가 존재하지 않습니다."),
 	GOAL_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 목표입니다."),
 	GOAL_CATEGORY_DETAIL_MISMATCH(HttpStatus.BAD_REQUEST, "카테고리와 카테고리 입력 필드가 일치하지 않습니다."),
-
-
-
-
+	DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "데이터를 찾을 수 없습니다."),
+	EXTERNAL_API_FAILURE(HttpStatus.BAD_REQUEST, "외부 API 응답 반환에 실패했습니다."),
+	INVALID_REGION_MATCH(HttpStatus.BAD_REQUEST, "지역-세부지역 매칭에 실패했습니다."),
 
 
 

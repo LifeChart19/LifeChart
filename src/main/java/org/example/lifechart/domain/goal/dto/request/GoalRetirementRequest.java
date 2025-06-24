@@ -40,14 +40,4 @@ public class GoalRetirementRequest implements GoalDetailRequest {
 	@NotNull(message = "기대 수명은 필수 입력입니다.")
 	private Long expectedLifespan; // endAt보다 크거나 같음을 검증하는 로직 필요. 어디에서 할지는 고민 필요
 
-	public GoalRetirement toEntity(Goal goal, int birthYear) {
-		LocalDate expectedDeathDate = GoalDateHelper.toExpectedDeathDate(expectedLifespan, birthYear);
-
-		return GoalRetirement.builder()
-			.goal(goal)
-			.monthlyExpense(monthlyExpense)
-			.retirementType(retirementType)
-			.expectedDeathDate(expectedDeathDate)
-			.build();
-	}
 }

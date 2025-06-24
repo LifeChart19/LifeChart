@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
 import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Share;
@@ -83,6 +84,19 @@ public class Goal extends BaseEntity {
 
 	public void delete() {
 		this.status = Status.DELETED;
+	}
+
+	public static Goal from(GoalCreateRequest request, User user) {
+		return Goal.builder()
+			.user(user)
+			.title(request.getTitle())
+			.category(request.getCategory())
+			.targetAmount(request.getTargetAmount())
+			.startAt(request.getStartAt())
+			.endAt(request.getEndAt())
+			.share(request.getShare())
+			.tags(request.getTags())
+			.build();
 	}
 
 	public void update(GoalUpdateRequest request) {
