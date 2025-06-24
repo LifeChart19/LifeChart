@@ -163,10 +163,16 @@ public class SimulationServiceImpl implements SimulationService {
     @Transactional
     public void updateSimulationsByGoalChange(Long userId, Long goalId) {
 
+        User user = validUser(userId);
+        Goal goal = validGoal(goalId, user.getId());
         // 시뮬레이션 골에서 ACTIVE인 것만
         //goalid에 연결된 시뮬레이션id를 갖고와야함.
         List<SimulationGoal> simulationGoals =
-                simulationGoalRepository.findAllByGoalIdAndUserIdAndActiveTrue(goalId, userId);
+                simulationGoalRepository.findAllByGoalIdAndUserIdAndActiveTrue(user.getId(), goal.getId());
+
+        if (simulationGoals.isEmpty()) {
+            throw new CustomException(ErrorCode.SIMULATION_NOT_FOUND_BY_GOAL);
+        }
 
         //다른 사용자의 simulation에 연결된 goal을 통해 접근하면 안됨.
         for (SimulationGoal sg : simulationGoals) {
@@ -297,5 +303,16 @@ public class SimulationServiceImpl implements SimulationService {
         }
 
         simulationRepository.delete(simulation);
+    }
+
+    private User validUser(Long userId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return user;
+    }
+    private Goal validGoal(Long goalId, Long userId) {
+        Goal goal = goalRepository.findByIdAndUserId(goalId, userId).
+                orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
+        return goal;
     }
 }
