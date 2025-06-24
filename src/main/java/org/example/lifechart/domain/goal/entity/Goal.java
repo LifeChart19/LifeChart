@@ -105,6 +105,6 @@ public class Goal extends BaseEntity {
 		startAt = request.getStartAt();
 		endAt = request.getEndAt();
 		share = request.getShare();
-		tags =  request.getTags();
+		tags = request.getTags();
 	}
 }
