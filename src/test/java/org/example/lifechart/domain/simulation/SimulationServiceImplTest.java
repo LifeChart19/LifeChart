@@ -147,7 +147,7 @@ public class SimulationServiceImplTest {
         //필요금액 확인
         assertThat(results.getRequiredAmount()).isEqualTo(8_000_000L);
         //목표 달성까지 걸리는 개월 수가 0보다 큼 -> 달성 기간 계산됐는지
-        assertThat(results.getMonthsToGoal()).isGreaterThan(0);
+        assertThat(results.getEstimatedAchieveMonth()).isGreaterThan("2025-06");
         //현재 달성률 0보다 큼.
         assertThat(results.getCurrentAchievementRate()).isGreaterThan(0f);
         //월별 자산 변화 리스트 생성됐는지
@@ -294,6 +294,12 @@ public class SimulationServiceImplTest {
         verify(simulationGoalJdbcRepository).deactivateSimulationGoals(simulationId);
         verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
 
+        verify(calculateAll).calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(LocalDate.class), anyList()
+        );
+
+        verify(simulationRepository).findById(simulationId);
         assertThat(response).isNotNull();
         assertThat(response.getSimulationId()).isEqualTo(simulationId);
 
@@ -349,7 +355,7 @@ public class SimulationServiceImplTest {
 
         SimulationResults results = SimulationResults.builder()
                 .requiredAmount(8_000_000L)
-                .monthsToGoal(36)
+                .estimatedAchieveMonth("2026-05")
                 .currentAchievementRate(10.0f)
                 .monthlyAchievements(List.of())
                 .monthlyAssets(List.of())
@@ -360,12 +366,12 @@ public class SimulationServiceImplTest {
                 anyInt(), anyInt(), any(LocalDate.class), anyList()
         )).willReturn(results);
 
-        simulationService.updateSimulationsByGoalChange(user.getId(), goal.getId(), simulation.getId());
+        simulationService.updateSimulationsByGoalChange(user.getId(), goal.getId());
 
         // then
         // 시뮬레이션 객체 내부값이 실제로 바꼈는지 확인
         assertThat(simulation.getRequiredAmount()).isEqualTo(results.getRequiredAmount());
-        assertThat(simulation.getMonthsToGoal()).isEqualTo(results.getMonthsToGoal());
+        assertThat(simulation.getEstimatedAchieveMonth()).isEqualTo(results.getEstimatedAchieveMonth());
 
     }
 
@@ -421,7 +427,7 @@ public class SimulationServiceImplTest {
 
         SimulationResults mockResults = SimulationResults.builder()
                 .requiredAmount(8_000_000L)
-                .monthsToGoal(36)
+                .estimatedAchieveMonth("2025-6")
                 .currentAchievementRate(10.0f)
                 .monthlyAchievements(List.of()) // 또는 dummy 데이터
                 .monthlyAssets(List.of())
