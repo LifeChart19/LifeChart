@@ -27,6 +27,7 @@ public class BaseCreateSimulationRequestDto {
     @Min(value = 0, message = "초기 자산(initialAsset)은 0 이상이어야 합니다.")
     private Long initialAsset;
 
+    //일단 월 수입과 월 지출은 현재 계산에 사용되고 있지않지만 혹시 모르니 일단 필드는 남겨두겠습니다.
     @Schema(description = "월 수입", example = "3000000")
     @NotNull(message = "월 수입(monthlyIncome)은 필수 입력값입니다.")
     @Min(value = 0, message = "월 수입(monthlyIncome)은 0 이상이어야 합니다.")

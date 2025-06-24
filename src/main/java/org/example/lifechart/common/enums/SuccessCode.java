@@ -271,10 +271,10 @@ public enum SuccessCode implements BaseCode {
 		this.httpStatus = httpStatus;
 		this.message = message;
 		this.cachedReasonDto = ReasonDto.builder()
-			.isSuccess(true)
-			.httpStatus(httpStatus)
-			.message(message)
-			.build();
+				.isSuccess(true)
+				.httpStatus(httpStatus)
+				.message(message)
+				.build();
 	}
 
 	@Override

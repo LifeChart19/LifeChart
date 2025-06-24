@@ -5,10 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
-import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
-import org.example.lifechart.domain.goal.service.GoalService;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.*;
 import org.example.lifechart.domain.simulation.entity.Simulation;
@@ -39,7 +37,6 @@ public class SimulationServiceImpl implements SimulationService {
     private final UserRepository userRepository;
     private final SimulationGoalRepository simulationGoalRepository;
     private final CalculateAll calculateAll;
-    private final GoalService goalService;
 
     //사용자가 목표는 그대로 두고, 시뮬레이션만 새로운 파라미터로 돌림
     @Transactional
@@ -90,14 +87,12 @@ public class SimulationServiceImpl implements SimulationService {
         //8. simulationGoal 목표랑 연결되기 위한 필드 목록
         //unlinked는 null이 됨.
         List<SimulationGoal> simulationGoals = goalIds.stream()
-                .map(goalId -> {
-                    return SimulationGoal.builder()
-                            .simulation(simulation)
-                            .goal(goalMap.get(goalId))
-                            .active(true)
-                            .linkedAt(LocalDateTime.now())
-                            .build();
-                })
+                .map(goalId -> SimulationGoal.builder()
+                        .simulation(simulation)
+                        .goal(goalMap.get(goalId))
+                        .active(true)
+                        .linkedAt(LocalDateTime.now())
+                        .build())
                 .toList();
 
         //8. entity저장
@@ -137,7 +132,7 @@ public class SimulationServiceImpl implements SimulationService {
             throw new CustomException(ErrorCode.SIMULATION_BAD_REQUEST);
         }
 
-        return BaseSimulationResponseDto.dto(simulation);
+        return BaseSimulationResponseDto.to(simulation);
     }
 
     //소프트딜리트 조회
@@ -159,70 +154,99 @@ public class SimulationServiceImpl implements SimulationService {
     }
 
 
-//    수정로직
+    //    수정로직
+    //비즈니스 로직(재계산, 업데이트)만 수행.
+    //하나의 goalId와 연결된 여러 개의 Simulation을 찾아
+    //각 Simulation의 계산을 재수행하고,
+    //내부 값을 updateResults()로 갱신함
+    //void로 바꾸면 클라이언트는 따로 조회해야하고 후속 비동기처리 할때 좋음.
     @Transactional
-    public BaseSimulationResponseDto updateSimulation(BaseCreateSimulationRequestDto dto,
-                                                      List<SimulationGoal> newSimulationGoals,
-                                                      Simulation simulation,
-                                                      GoalUpdateRequest goalUpdateRequest,
-                                                      Long goalId,
+    public void updateSimulationsByGoalChange(Long userId, Long goalId) {
 
-                                                      Long userId) {
+        // 시뮬레이션 골에서 ACTIVE인 것만
+        //goalid에 연결된 시뮬레이션id를 갖고와야함.
+        List<SimulationGoal> simulationGoals =
+                simulationGoalRepository.findAllByGoalIdAndUserIdAndActiveTrue(goalId, userId);
 
-        //유저 정보
-        //연결되어있는 목표 시뮬레이션도 바꿀 수 잇음 . 입력값 파라미터를 시뮬레이션
-        //골이 업데이트되면  시뮬레이션이 바뀔 수가 있음.
-        //
+        //다른 사용자의 simulation에 연결된 goal을 통해 접근하면 안됨.
+        for (SimulationGoal sg : simulationGoals) {
+            Simulation simulation = sg.getSimulation();
 
-        //시뮬레이션 안에서 목표를 수정하는 흐름. 시뮬레이션은
-        //목표 도메인 updateGoal업데이트반영되면 시뮬레이션골이 goal이 담고있음.
-        //연결되는 목표id로 업데이트된게 반영 목표가 수정됐을 때 시뮬레이션 업데이트 ㅎ르므 . 시뮬에ㅣ션 업데이트서비스로직에
-        //기존 목표 연결 비활성화
+            // 해당 simulation에 연결된 Goal만 조회 활성화된 goal만 갖고옴.
+            List<Goal> relatedGoals = simulationGoalRepository
+                    .findActiveGoalsBySimulationId(simulation.getId());
 
-        // 1. goal이 목표 수정했는지  -> 목표가 수정되면 목표 ID를 확보함. 업데이트된 골을 service메서드에서 dto값을 가져옴.
-//        GoalResponse updatedGoalResponse = goalService.updateGoal(goalUpdateRequest, goalId, userId);
-//
-//        Long updatedGoalId = updatedGoalResponse.getGoalId();
-//
-//        //2. 수정된 목표가 연결된 시뮬레이션 조회 goalId에 연결된 시뮬레이션이 여러개일 수도 있음 -> 가져올 때 중복 제거
-//        List<Simulation> simulations = simulationGoalRepository.findDistinctSimulationsByGoalId(goalId);
-//
-//        //3. 수정된 Goal엔티티 조회
-//        Goal updateGoal = goalRepository.findById(updatedGoalId)
-//                .orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
-//        List<Goal> updateGoals = List.of(updateGoal);
-//
-//        //4. 각 시뮬레이션에 대해 재계산
-//        //수정: Goal리스트를 Map으로 변환하고 key는 goalid, value는 goal객체 자체.
-//        Map<Long, Goal> goalMap = updateGoals.stream()
-//                .collect(Collectors.toMap(Goal::getId, Function.identity()));
+            SimulationResults newResults = calculateAll.calculate(
+                    simulation.getInitialAsset(),
+                    simulation.getMonthlyIncome(),
+                    simulation.getMonthlyExpense(),
+                    simulation.getMonthlySaving(),
+                    simulation.getAnnualInterestRate(),
+                    simulation.getElapsedMonths(),
+                    simulation.getTotalMonths(),
+                    simulation.getBaseDate(),
+                    relatedGoals
+            );
 
-        //
-            //5. 시뮬레이션과 시뮬레이션 골 사이의 연관관계 재설정.
-            //시뮬레이션 수정 흐름 설계 중에 기존 Simulation에 연결된 SimulationGoal들이 존재.
-            //업데이트하는 로직에서도 필드를 같이 관리 해야함.
-        //goalId에 연결된 모든 Simulation을 확인해봐야함.
-        //시뮬레이션은 현재 목표와 바꾸고싶은 목표를 시뮬레이션 해서 보여줄 수 있다.
-//        SimulationResults results = calculateAll.calculate(
-//                dto.getInitialAsset(),
-//                dto.getMonthlyIncome(),
-//                dto.getMonthlyExpense(),
-//                dto.getMonthlySaving(),
-//                dto.getAnnualInterestRate(),
-//                dto.getElapsedMonths(),
-//                dto.getTotalMonths(),
-//                dto.getBaseDate(),
-//                goalId1
-//        );
-//        simulation.updateResults(results);
-//
-        return BaseSimulationResponseDto.dto(simulation);
-
+            simulation.updateResults(newResults);
+        }
     }
+
+
 //    어떤 목표랑 연결되어있는지, 시뮬레이션 하나에 복수 목표를 가지고 있지 않은지 판단하는 로직 필요.
 
+    //시뮬레이션 안에서 update
+    @Transactional
+    public CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId, List<Long> goalIds) {
 
-//    소프트딜리트용
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        Simulation simulation = simulationRepository.findById(simulationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SIMULATION_NOT_FOUND));
+
+        if (!simulation.getUser().getId().equals(user.getId())) {
+            throw new CustomException(ErrorCode.SIMULATION_BAD_REQUEST);
+        }
+
+        //연결할 목표 조회
+        List<Goal> selectedGoals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId);
+
+        //기존 연결은 끊기 goal은 끊을 필요가 x
+        simulationGoalJdbcRepository.deactivateSimulationGoals(simulationId);
+
+        SimulationResults newResults = calculateAll.calculate(
+                simulation.getInitialAsset(),
+                simulation.getMonthlyIncome(),
+                simulation.getMonthlyExpense(),
+                simulation.getMonthlySaving(),
+                simulation.getAnnualInterestRate(),
+                simulation.getElapsedMonths(),
+                simulation.getTotalMonths(),
+                simulation.getBaseDate(),
+                selectedGoals
+        );
+
+        //임시 프록시 객체를 생성 -> sismulation전체를 조회하면 또 쿼리발생. id만 이용할거라 프록시객체로 갖고옴
+        List<SimulationGoal> simulationGoals = selectedGoals.stream()
+                .map(goal -> SimulationGoal.builder()
+                        .simulation(Simulation.withId(simulationId))
+                        .goal(goal)
+                        .active(true)
+                        .linkedAt(LocalDateTime.now())
+                        .build())
+                .toList();
+
+        //새로 연결
+        simulationGoalJdbcRepository.batchInsertSimulationGoals(simulationGoals);
+
+        simulation.updateResults(newResults);
+
+        return CreateSimulationResponseDto.from(simulation);
+
+    }
+
+    //    소프트딜리트용
     @Transactional
     public DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId) {
 
