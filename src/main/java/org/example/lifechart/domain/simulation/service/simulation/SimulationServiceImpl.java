@@ -163,7 +163,7 @@ public class SimulationServiceImpl implements SimulationService {
     //내부 값을 updateResults()로 갱신함
     //void로 바꾸면 클라이언트는 따로 조회해야하고 후속 비동기처리 할때 좋음.
     @Transactional
-    public void updateSimulationsByGoalChange(Long userId, Long goalId, Long simulationId) {
+    public void updateSimulationsByGoalChange(Long userId, Long goalId) {
 
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));

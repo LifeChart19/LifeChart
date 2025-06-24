@@ -18,6 +18,6 @@ public interface SimulationService {
      DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId);
      void deleteSimulation(Long userId, Long simulationId);
      CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId,List<Long> goalIds);
-     void updateSimulationsByGoalChange(Long userId, Long goalId, Long simulationId);
+     void updateSimulationsByGoalChange(Long userId, Long goalId);
 
 }

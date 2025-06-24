@@ -78,7 +78,7 @@ public class SimulationController {
     @PutMapping("/goals/{goalId}/simulations/recalculate")
     public  ResponseEntity<ApiResponse<Void>> updateSimulation(@AuthenticationPrincipal CustomUserPrincipal principal, @PathVariable Long goalId,
                                                                      @RequestBody BaseSimulationResponseDto requestDto) {
-        simulationService.updateSimulationsByGoalChange(principal.getUserId(), goalId, requestDto.getSimulationId());
+        simulationService.updateSimulationsByGoalChange(principal.getUserId(), goalId);
         return ApiResponse.onSuccess(SuccessCode.SIMULATION_PATCH_SUCCESS, null);
     }
 
