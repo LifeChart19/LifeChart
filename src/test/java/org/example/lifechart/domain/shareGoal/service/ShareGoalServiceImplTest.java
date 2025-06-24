@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -484,12 +485,19 @@ class ShareGoalServiceImplTest {
 
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
 		given(redisTemplate.opsForZSet()).willReturn(zSetOperations);
+		ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+		ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
+		ArgumentCaptor<Double> scoreCaptor = ArgumentCaptor.forClass(Double.class);
+
 
 		// when
 		shareGoalService.plusSearchKeyword(authUser.getId(), requestDto);
 
 		// then
-		verify(zSetOperations).incrementScore(key, value, 1);
+		verify(zSetOperations).incrementScore(keyCaptor.capture(), valueCaptor.capture(), scoreCaptor.capture());
+		assertEquals(key, keyCaptor.getValue());
+		assertEquals(value, valueCaptor.getValue());
+		assertEquals(1, scoreCaptor.getValue());
 	}
 
 	@Test
