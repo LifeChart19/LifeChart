@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.example.lifechart.domain.goal.enums.Share;
+import org.example.lifechart.validation.annotation.ValidTags;
+import org.example.lifechart.validation.support.TagValidatable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -11,13 +13,15 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class GoalUpdateRequest {
+@ValidTags
+public class GoalUpdateRequest implements TagValidatable {
 
 	@Schema(description = "목표명", example = "강남 집사기")
 	@NotBlank(message = "목표명은 필수 입력입니다.")
@@ -51,4 +55,18 @@ public class GoalUpdateRequest {
 	@JsonProperty("share")
 	@NotNull(message = "공유 설정은 필수 입력입니다.")
 	private Share share; // nullable
+
+	@Schema(description = "태그", example = "[주거, 강남]")
+	@NotEmpty(message = "태그는 필수 입력입니다.")
+	private List<@NotBlank String> tags;
+
+	@Override
+	public String getTitle() {
+		return title;
+	}
+
+	@Override
+	public List<String> getTags() {
+		return tags;
+	}
 }

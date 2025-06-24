@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.follow.entity.Follow;
@@ -16,8 +17,10 @@ import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
+import org.example.lifechart.domain.shareGoal.dto.reqeust.ShareGoalSearchRequestDto;
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalCursorResponseDto;
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalResponseDto;
+import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalSearchResponseDto;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,8 +30,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 
 @ExtendWith(MockitoExtension.class)
 class ShareGoalServiceImplTest {
@@ -44,6 +47,13 @@ class ShareGoalServiceImplTest {
 
 	@Mock
 	private FollowRepository followRepository;
+
+	@Mock
+	private RedisTemplate<String, String> redisTemplate;
+
+	@Mock
+	private ZSetOperations<String, String> zSetOperations;
+
 	User authUser;
 	User user1;
 	User user2;
@@ -70,81 +80,97 @@ class ShareGoalServiceImplTest {
 		authUserGoalAll = Goal.builder()
 			.id(1L)
 			.user(authUser)
+			.title("집 사고 싶다")
 			.share(Share.ALL)
 			.status(Status.ACTIVE)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.HOUSING)
+			.tags(List.of("집"))
 			.build();
 
 		authUserGoalFollower = Goal.builder()
 			.id(2L)
 			.user(authUser)
+			.title("은퇴 하고 싶다")
 			.share(Share.FOLLOWER)
 			.status(Status.ACTIVE)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.RETIREMENT)
+			.tags(List.of("은퇴"))
 			.build();
 
 		user1GoalAll = Goal.builder()
 			.id(3L)
 			.user(user1)
+			.title("집 사고 싶다1")
 			.share(Share.ALL)
 			.status(Status.ACTIVE)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.HOUSING)
+			.tags(List.of("집"))
 			.build();
 
 		user1GoalFollower = Goal.builder()
 			.id(4L)
 			.user(user1)
+			.title("은퇴 하고 싶다1")
 			.share(Share.FOLLOWER)
 			.status(Status.ACTIVE)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.RETIREMENT)
+			.tags(List.of("은퇴"))
 			.build();
 
 		user2GoalAll = Goal.builder()
 			.id(5L)
 			.user(user2)
+			.title("집 사고 싶다2")
 			.share(Share.ALL)
 			.status(Status.ACTIVE)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.HOUSING)
+			.tags(List.of("집"))
 			.build();
 
 		user2GoalFollower = Goal.builder()
 			.id(6L)
 			.user(user2)
+			.title("은퇴 하고 싶다2")
 			.share(Share.FOLLOWER)
 			.status(Status.ACTIVE)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.RETIREMENT)
+			.tags(List.of("은퇴"))
 			.build();
 
 		user3GoalAll = Goal.builder()
 			.id(7L)
 			.user(user3)
+			.title("집 사고 싶다3")
 			.share(Share.ALL)
 			.status(Status.ACTIVE)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.HOUSING)
+			.tags(List.of("집"))
 			.build();
 
 		user3GoalFollower = Goal.builder()
 			.id(8L)
 			.user(user3)
+			.title("은퇴 하고 싶다3")
 			.share(Share.FOLLOWER)
 			.status(Status.ACTIVE)
 			.startAt(LocalDateTime.now())
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.RETIREMENT)
+			.tags(List.of("은퇴"))
 			.build();
 	}
 
@@ -405,4 +431,141 @@ class ShareGoalServiceImplTest {
 				user1.getId()));
 		assertEquals("유저를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
 	}
+
+	@Test
+	@DisplayName("키워드로 공유 목표 조회 성공")
+	void searchShareGoals_Ok() {
+		// given
+		List<Goal> goalList = List.of(user2GoalFollower, user1GoalFollower);
+		List<ShareGoalResponseDto> responseDtoList = goalList.stream().map(ShareGoalResponseDto::from).toList();
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+		given(goalRepository.findByAuthIdAndCursorAndTitleContaining(authUser.getId(), null, 10, "은퇴"))
+			.willReturn(goalList);
+
+		// when
+		ShareGoalCursorResponseDto result = shareGoalService.searchShareGoals(
+			authUser.getId(), null, 10, "은퇴");
+
+		// then
+		assertThat(result.getContent()).usingRecursiveComparison().isEqualTo(responseDtoList);
+		assertEquals(4, result.getNextCursor());
+	}
+
+	@Test
+	@DisplayName("키워드로 공유 목표 조회 실패 - 로그인 유저 x")
+	void searchShareGoals_Fail() {
+		// given
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.empty());
+		// when, then
+		CustomException exception = assertThrows(CustomException.class,
+			() -> shareGoalService.searchShareGoals(authUser.getId(), null, 10, "은퇴"));
+		assertEquals("유저를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+	}
+
+
+	@Test
+	@DisplayName("검색된 키워드 증가 성공")
+	void plusSearchKeyword_Ok() {
+		// given
+		ShareGoalSearchRequestDto requestDto = ShareGoalSearchRequestDto.builder()
+			.keyword("은퇴")
+			.tags(List.of("은퇴"))
+			.category(Category.RETIREMENT)
+			.build();
+		String category = requestDto.getCategory().toString();
+		String keyword = requestDto.getKeyword();
+
+		String accurateKeyword = requestDto.getTags().stream().filter(tag -> tag.equals(keyword))
+			.findFirst().orElse(null);
+
+		String key = "search:keywords";
+
+		String value = String.format("%s:%s", category, accurateKeyword);
+
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+		given(redisTemplate.opsForZSet()).willReturn(zSetOperations);
+
+		// when
+		shareGoalService.plusSearchKeyword(authUser.getId(), requestDto);
+
+		// then
+		verify(zSetOperations).incrementScore(key, value, 1);
+	}
+
+	@Test
+	@DisplayName("검색된 키워드 증가 실패 - 로그인 유저 x")
+	void plusSearchKeyword_Fail() {
+		// given
+		ShareGoalSearchRequestDto requestDto = ShareGoalSearchRequestDto.builder()
+			.keyword("은퇴")
+			.tags(List.of("은퇴"))
+			.category(Category.RETIREMENT)
+			.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.empty());
+
+		// when then
+		CustomException exception = assertThrows(CustomException.class,
+			() -> shareGoalService.plusSearchKeyword(authUser.getId(), requestDto));
+		assertEquals("유저를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+	}
+
+	@Test
+	@DisplayName("검색된 키워드 증가 성공? - null인 경우")
+	void plusSearchKeyword_Ok1() {
+		// given
+		ShareGoalSearchRequestDto requestDto = ShareGoalSearchRequestDto.builder()
+			.keyword("주거")
+			.tags(List.of("은퇴"))
+			.category(Category.RETIREMENT)
+			.build();
+		String category = requestDto.getCategory().toString();
+		String keyword = requestDto.getKeyword();
+		String accurateKeyword = requestDto.getTags().stream().filter(tag -> tag.equals(keyword))
+			.findFirst().orElse(null);
+		String key = "search:keywords";
+		String value = String.format("%s:%s", category, accurateKeyword);
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+
+		// when
+		shareGoalService.plusSearchKeyword(authUser.getId(), requestDto);
+
+		// then
+		verify(zSetOperations, never()).incrementScore(key, value, 1);
+	}
+
+	@Test
+	@DisplayName("인기 검색어 Top 10 조회 성공")
+	void searchTop10Keyword_Ok() {
+		// given
+		String key = "search:keywords";
+		ZSetOperations.TypedTuple<String> fake = mock(ZSetOperations.TypedTuple.class);
+		given(fake.getValue()).willReturn("RETIREMENT:은퇴");
+		given(fake.getScore()).willReturn(1.0);
+		given(redisTemplate.opsForZSet()).willReturn(zSetOperations);
+		given(redisTemplate.opsForZSet().reverseRangeWithScores(key, 0, 9)).willReturn(Set.of(fake));
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+
+
+		// when
+		List<ShareGoalSearchResponseDto> result = shareGoalService.searchTop10Keyword(authUser.getId());
+
+		// then
+		assertEquals(1, result.size());
+		assertEquals("RETIREMENT:은퇴", result.getFirst().getKeyword());
+		assertEquals(1.0, result.getFirst().getScore());
+	}
+
+	@Test
+	@DisplayName("인기 검색어 Top 10 조회 실패 - 로그인 유저 x")
+	void searchTop10Keyword_Fail() {
+		// given
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.empty());
+
+		// when then
+		CustomException exception = assertThrows(CustomException.class,
+			() -> shareGoalService.searchTop10Keyword(authUser.getId()));
+		assertEquals("유저를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+	}
+
 }

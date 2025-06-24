@@ -1,5 +1,7 @@
 package org.example.lifechart.domain.goal.dto.response;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,6 +20,7 @@ public class GoalInfoResponse {
     private Status status;
     private Share share;
     private GoalDetailInfoResponse detail;
+    private List<String> tags;
 
     public static GoalInfoResponse from(Goal goal, GoalDetailInfoResponse detail) {
         return GoalInfoResponse.builder()
@@ -27,6 +30,7 @@ public class GoalInfoResponse {
             .status(goal.getStatus())
             .share(goal.getShare())
             .detail(detail)
+            .tags(goal.getTags())
             .build();
 
     }

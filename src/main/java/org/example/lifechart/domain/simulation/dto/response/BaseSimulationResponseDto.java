@@ -6,6 +6,7 @@ import org.example.lifechart.domain.simulation.entity.Simulation;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
@@ -56,41 +57,23 @@ public class BaseSimulationResponseDto {
     //매달 자산 가격 변화
     private List<MonthlyAssetDto> monthlyAssets;
 
-    //시뮬레이션 생성에 필요한 정적팩토리메서드
-    public static BaseSimulationResponseDto of(
-            Simulation simulation,
-            List<Long> goalIds,
-            SimulationResults results
-    ) {
-        return BaseSimulationResponseDto.builder()
-                .simulationId(simulation.getId())
-                .userNickname(simulation.getUser().getNickname())
-                .title(simulation.getTitle())
-                .baseDate(simulation.getBaseDate())
-                .goalIds(goalIds)
-                .requiredAmount(results.getRequiredAmount())
-                .monthsToGoal(results.getMonthsToGoal())
-                .currentAchievementRate(results.getCurrentAchievementRate())
-                .monthlyAchievements(results.getMonthlyAchievements())
-                .monthlyAssets(results.getMonthlyAssets())
-                .build();
-    }
-
-    //이건 조회할 때 필요.
+    //이건 조회시.
     public static BaseSimulationResponseDto dto(
-            Simulation simulation,
-            SimulationResults results
+            Simulation simulation
     ) {
         return BaseSimulationResponseDto.builder()
                 .simulationId(simulation.getId())
+                .goalIds(simulation.getSimulationGoals().stream()
+                        .map(simGoal -> simGoal.getGoal().getId())
+                        .collect(Collectors.toList()))
                 .userNickname(simulation.getUser().getNickname())
                 .title(simulation.getTitle())
                 .baseDate(simulation.getBaseDate())
-                .requiredAmount(results.getRequiredAmount())
-                .monthsToGoal(results.getMonthsToGoal())
-                .currentAchievementRate(results.getCurrentAchievementRate())
-                .monthlyAchievements(results.getMonthlyAchievements())
-                .monthlyAssets(results.getMonthlyAssets())
+                .requiredAmount(simulation.getRequiredAmount())
+                .monthsToGoal(simulation.getMonthsToGoal())
+                .currentAchievementRate(simulation.getCurrentAchievementRate())
+                .monthlyAchievements(simulation.getMonthlyAchievements())
+                .monthlyAssets(simulation.getMonthlyAssets())
                 .build();
     }
 

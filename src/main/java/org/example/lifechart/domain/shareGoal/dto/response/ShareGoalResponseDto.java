@@ -2,6 +2,7 @@ package org.example.lifechart.domain.shareGoal.dto.response;
 
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.List;
 
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.enums.Category;
@@ -21,13 +22,15 @@ public class ShareGoalResponseDto {
 	private String remainingPeriod;
 	private Float progressRate;
 	private Share share;
+	private List<String> tags;
 	private LocalDateTime createdAt;
 
 	public static ShareGoalResponseDto from(Goal goal) {
 		Period period = Period.between(goal.getStartAt().toLocalDate(), goal.getEndAt().toLocalDate());
 		int years = period.getYears();
 		int months = period.getMonths();
-		String periodFormat = String.format("%d년 %d개월", years, months);
+		int days = period.getDays();
+		String periodFormat = String.format("%d년 %d개월 %d일", years, months, days);
 
 		return ShareGoalResponseDto.builder()
 			.goalId(goal.getId())
@@ -38,6 +41,7 @@ public class ShareGoalResponseDto {
 			.remainingPeriod(periodFormat)
 			.progressRate(null)
 			.share(goal.getShare())
+			.tags(goal.getTags())
 			.createdAt(goal.getCreatedAt())
 			.build();
 	}

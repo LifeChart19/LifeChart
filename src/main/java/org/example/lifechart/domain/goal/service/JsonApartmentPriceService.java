@@ -37,6 +37,11 @@ public class JsonApartmentPriceService implements ApartmentPriceService {
 	public Long getAveragePrice(String region, String subregion, Long area) {
 		Double pricePerMeter = apartmentPriceMap.getOrDefault(region, Map.of())
 			.getOrDefault(subregion, 0.0);
-		return Math.round(pricePerMeter * area * 10_000_000L); // 단위가 천만원으로, 원 단위 환산
+		return Math.round(pricePerMeter * area * 10_000L); // 평당 가격 단위가 만원으로, 원 단위 환산
+	}
+
+	@Override
+	public Long getFuturePredictedPrice(String region, String subregion, Long area, int yearsLater) {
+		return null;
 	}
 }

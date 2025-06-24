@@ -93,9 +93,9 @@ public class GoalServiceImplTest {
 			.share(Share.PRIVATE)
 			.build();
 
-		Goal goal = request.toEntity(user);
+		Goal goal = Goal.from(request, user);
 		goal = goal.toBuilder().id(1L).build();
-		GoalRetirement goalRetirement = detail.toEntity(goal, user.getBirthDate().getYear());
+		GoalRetirement goalRetirement = GoalRetirement.from(goal, detail, user.getBirthDate().getYear());
 		goalRetirement = goalRetirement.toBuilder().id(1L).build();
 
 		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
@@ -144,9 +144,9 @@ public class GoalServiceImplTest {
 			.share(Share.PRIVATE)
 			.build();
 
-		Goal goal = request.toEntity(user);
+		Goal goal = Goal.from(request, user);
 		goal = goal.toBuilder().id(1L).build();
-		GoalHousing goalHousing = detail.toEntity(goal);
+		GoalHousing goalHousing = GoalHousing.from(goal, detail);
 		goalHousing = goalHousing.toBuilder().id(1L).build();
 
 		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
@@ -193,9 +193,9 @@ public class GoalServiceImplTest {
 			.share(Share.PRIVATE)
 			.build();
 
-		Goal goal = request.toEntity(user);
+		Goal goal = Goal.from(request, user);
 		goal = goal.toBuilder().id(1L).build();
-		GoalEtc goalEtc = detail.toEntity(goal);
+		GoalEtc goalEtc = GoalEtc.from(goal, detail);
 		goalEtc = goalEtc.toBuilder().id(1L).build();
 
 		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));

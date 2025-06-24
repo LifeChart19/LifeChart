@@ -48,6 +48,18 @@ public class GoalRetirement extends BaseEntity {
 	@Column(nullable = false)
 	private Long monthlyExpense;
 
+	public static GoalRetirement from(Goal goal, GoalRetirementRequest request, int birthYear) {
+
+		LocalDate expectedDeathDate = GoalDateHelper.toExpectedDeathDate(request.getExpectedLifespan(), birthYear);
+
+		return GoalRetirement.builder()
+			.goal(goal)
+			.retirementType(request.getRetirementType())
+			.expectedDeathDate(expectedDeathDate)
+			.monthlyExpense(request.getMonthlyExpense())
+			.build();
+	}
+
 	public void update(GoalRetirementRequest request, int birthYear) {
 		this.retirementType = request.getRetirementType();
 		this.expectedDeathDate = GoalDateHelper.toExpectedDeathDate(request.getExpectedLifespan(), birthYear);
