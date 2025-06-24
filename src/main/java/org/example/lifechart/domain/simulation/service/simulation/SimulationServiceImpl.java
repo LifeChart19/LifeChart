@@ -163,10 +163,17 @@ public class SimulationServiceImpl implements SimulationService {
     @Transactional
     public void updateSimulationsByGoalChange(Long userId, Long goalId) {
 
+        userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         // 시뮬레이션 골에서 ACTIVE인 것만
         //goalid에 연결된 시뮬레이션id를 갖고와야함.
         List<SimulationGoal> simulationGoals =
                 simulationGoalRepository.findAllByGoalIdAndUserIdAndActiveTrue(goalId, userId);
+
+        if (simulationGoals.isEmpty()) {
+            throw new CustomException(ErrorCode.SIMULATION_NOT_FOUND_BY_GOAL);
+        }
 
         //다른 사용자의 simulation에 연결된 goal을 통해 접근하면 안됨.
         for (SimulationGoal sg : simulationGoals) {
