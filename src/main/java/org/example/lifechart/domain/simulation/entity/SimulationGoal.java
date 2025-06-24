@@ -15,7 +15,7 @@ public class SimulationGoal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long simulationGoalId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "simulation_id")
