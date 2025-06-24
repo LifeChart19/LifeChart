@@ -96,6 +96,9 @@ public class Goal extends BaseEntity {
 			.endAt(request.getEndAt())
 			.share(request.getShare())
 			.tags(request.getTags())
+			.status(Status.ACTIVE)
+			.commentCount(0)
+			.likeCount(0)
 			.build();
 	}
 

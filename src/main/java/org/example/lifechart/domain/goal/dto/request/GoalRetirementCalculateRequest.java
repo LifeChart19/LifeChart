@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,6 +34,7 @@ public class GoalRetirementCalculateRequest implements HaSGoalPeriod {
 	private LocalDateTime endAt;
 
 	@Schema(description = "기대 수명", example = "90")
+	@Positive
 	@Max(150L) // 최대 150세까지 입력 가능
 	@NotNull(message = "기대 수명은 필수 입력입니다.")
 	private Long expectedLifespan;
