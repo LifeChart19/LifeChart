@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 public enum SuccessCode implements BaseCode {
 
-	GET_POPULAR_KEYWORDS_SUCCESS(HttpStatus.OK, "인기 검색어를 조회합니다."),
+
 
 
 
@@ -84,9 +84,7 @@ public enum SuccessCode implements BaseCode {
 	GOAL_GET_INFO_SUCCESS(HttpStatus.OK, "개별 목표 조회에 성공했습니다."),
 	GOAL_DELETE_SUCCESS(HttpStatus.OK, "목표를 삭제했습니다."),
 	GOAL_UPDATE_SUCCESS(HttpStatus.OK, "목표를 수정했습니다."),
-
-
-
+	GOAL_GET_LIST_SUCCESS(HttpStatus.OK, "목표 리스트를 조회했습니다."),
 
 
 
@@ -139,10 +137,6 @@ public enum SuccessCode implements BaseCode {
 
 
 
-
-
-
-
 	// Follow (Line#: 140~156)
 	CREATE_FOLLOW_SUCCESS(HttpStatus.CREATED, "팔로우를 생성했습니다."),
 	GET_ALL_FOLLOWERS_SUCCESS(HttpStatus.OK, "대상의 팔로워 목록을 조회합니다."),
@@ -162,8 +156,8 @@ public enum SuccessCode implements BaseCode {
 
 	// ShareGoal (Line#: 157~169)
 	GET_ALL_SHAREGOALS_SUCCESS(HttpStatus.OK, "공유 목표 목록을 조회합니다"),
-
-
+	KEYWORD_SCORE_PLUS_SUCCESS(HttpStatus.OK, "검색어 점수를 증가시킵니다"),
+	GET_POPULAR_KEYWORDS_SUCCESS(HttpStatus.OK, "인기 검색어 Top10을 조회합니다."),
 
 
 

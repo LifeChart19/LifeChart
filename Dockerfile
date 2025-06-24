@@ -10,11 +10,12 @@ ARG JAR_FILE=build/libs/app.jar
 # 4. 지정된 JAR 파일을 컨테이너 내부 /app.jar 경로에 복사 (절대경로 권장)
 COPY ${JAR_FILE} /app.jar
 
-# 5. Spring Boot 실행 시 사용할 기본 프로파일을 prod로 설정
-ENV SPRING_PROFILES_ACTIVE=prod
+# 5. Spring Boot 실행 시 사용할 기본 프로파일을 외부에서 전달받도록 설정
+ARG SPRING_PROFILES_ACTIVE=dev
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
 
 # 6. 컨테이너 시작 시 JAR 파일을 실행
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "/app.jar"]
 
 # 7. CMD를 빈 배열로 지정해 ENTRYPOINT 실행 시 기본 인자를 없앰 (필요 시 덮어쓰기 가능)
 CMD []

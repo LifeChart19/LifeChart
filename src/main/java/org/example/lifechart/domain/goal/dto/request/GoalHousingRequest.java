@@ -41,13 +41,4 @@ public class GoalHousingRequest implements GoalDetailRequest {
 	@JsonProperty("housingType")
 	private HousingType housingType;
 
-	public GoalHousing toEntity(Goal goal) {
-		return GoalHousing.builder()
-			.goal(goal)
-			.region(region)
-			.subregion(subregion)
-			.area(area)
-			.housingType(housingType)
-			.build();
-	}
 }

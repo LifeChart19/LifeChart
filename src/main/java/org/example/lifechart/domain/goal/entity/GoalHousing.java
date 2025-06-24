@@ -47,6 +47,16 @@ public class GoalHousing extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private HousingType housingType;
 
+	public static GoalHousing from(Goal goal, GoalHousingRequest request) {
+		return GoalHousing.builder()
+			.goal(goal)
+			.region(request.getRegion())
+			.subregion(request.getSubregion())
+			.area(request.getArea())
+			.housingType(request.getHousingType())
+			.build();
+	}
+
 	public void update(GoalHousingRequest request) {
 		this.region = request.getRegion();
 		this.subregion = request.getSubregion();

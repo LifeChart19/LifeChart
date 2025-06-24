@@ -27,11 +27,4 @@ public class GoalEtcRequest implements GoalDetailRequest {
 	@NotNull(message = "필요 금액은 필수 입력입니다.")
 	private Long expectedPrice;
 
-	public GoalEtc toEntity(Goal goal) {
-		return GoalEtc.builder()
-			.goal(goal)
-			.theme(theme)
-			.expectedPrice(expectedPrice)
-			.build();
-	}
 }
