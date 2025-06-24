@@ -13,10 +13,15 @@ import lombok.extern.slf4j.Slf4j;
 public class Top10Scheduler {
 	private final RedisTemplate<String, String> redisTemplate;
 
+	// 매일 새벽 2시
 	@Scheduled(cron = "0 0 2 * * *")
 	public void top10Reset() {
 		String key = "search:keywords";
-		redisTemplate.delete(key);
-		log.info("{} 인기 검색어가 삭제되었습니다", key);
+		Boolean isDelete = redisTemplate.delete(key);
+		if (isDelete) {
+			log.info("{}를 가진 인기 검색어가 삭제되었습니다", key);
+		} else {
+			log.info("{}가 존재하지 않습니다", key);
+		}
 	}
 }
