@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,4 +52,8 @@ public class GoalUpdateRequest {
 	@JsonProperty("share")
 	@NotNull(message = "공유 설정은 필수 입력입니다.")
 	private Share share; // nullable
+
+	@Schema(description = "태그", example = "[주거, 강남]")
+	@NotEmpty(message = "태그는 필수 입력입니다.")
+	private List<String> tags;
 }

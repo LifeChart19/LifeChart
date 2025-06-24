@@ -29,7 +29,7 @@ public class GoalHousingCalculateRequest implements HaSGoalPeriod {
 	@NotNull(message = "시작일은 필수 입력값입니다.")
 	private LocalDateTime startAt;
 
-	@Schema(description = "종료일", example = "2025-07-31T00:00:00")
+	@Schema(description = "종료일", example = "2030-07-31T00:00:00 - 미래 예측을 원할 경우 1년 이상 기간 설정 필요")
 	@NotNull(message = "종료일은 필수 입력값입니다.")
 	private LocalDateTime endAt;
 

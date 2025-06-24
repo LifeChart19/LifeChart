@@ -57,7 +57,7 @@ public class GoalServiceImpl implements GoalService {
 		validateCategoryAndDetail(requestDto.getCategory(), detail);
 
 		// Goal Entity 반환
-		Goal newGoal = requestDto.toEntity(user);
+		Goal newGoal = Goal.from(requestDto, user);
 		Goal savedGoal = goalRepository.save(newGoal);
 		saveGoalDetail(detail, savedGoal, user);
 
@@ -142,13 +142,13 @@ public class GoalServiceImpl implements GoalService {
 
 	private void saveGoalDetail(GoalDetailRequest detail, Goal savedGoal, User user) {
 		if (detail instanceof GoalRetirementRequest retirementDetail) {
-			GoalRetirement goalRetirement = retirementDetail.toEntity(savedGoal, user.getBirthDate().getYear());
+			GoalRetirement goalRetirement = GoalRetirement.from(savedGoal, retirementDetail, user.getBirthDate().getYear());
 			goalRetirementRepository.save(goalRetirement);
 		} else if (detail instanceof GoalHousingRequest housingDetail) {
-			GoalHousing goalHousing = housingDetail.toEntity(savedGoal);
+			GoalHousing goalHousing = GoalHousing.from(savedGoal, housingDetail);
 			goalHousingRepository.save(goalHousing);
 		} else if (detail instanceof GoalEtcRequest etcDetail) {
-			GoalEtc goalEtc = etcDetail.toEntity(savedGoal);
+			GoalEtc goalEtc = GoalEtc.from(savedGoal, etcDetail);
 			goalEtcRepository.save(goalEtc);
 		} else {
 			throw new CustomException(ErrorCode.GOAL_INVALID_CATEGORY);
