@@ -10,7 +10,9 @@ import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.validation.annotation.ValidGoalPeriod;
+import org.example.lifechart.validation.annotation.ValidTags;
 import org.example.lifechart.validation.support.HaSGoalPeriod;
+import org.example.lifechart.validation.support.TagValidatable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -30,7 +32,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @ValidGoalPeriod
-public class GoalCreateRequest implements HaSGoalPeriod {
+@ValidTags
+public class GoalCreateRequest implements HaSGoalPeriod, TagValidatable {
 
 	@Schema(description = "목표명", example = "강남 집사기")
 	@NotBlank(message = "목표명은 필수 입력입니다.")
@@ -72,7 +75,7 @@ public class GoalCreateRequest implements HaSGoalPeriod {
 
 	@Schema(description = "태그", example = "[주거, 강남]")
 	@NotEmpty(message = "태그는 필수 입력입니다.")
-	private List<String> tags;
+	private List<@NotBlank String> tags = new ArrayList<>();
 
 
 	@Override
@@ -83,5 +86,15 @@ public class GoalCreateRequest implements HaSGoalPeriod {
 	@Override
 	public LocalDateTime getEndAt() {
 		return endAt;
+	}
+
+	@Override
+	public String getTitle() {
+		return title;
+	}
+
+	@Override
+	public List<String> getTags() {
+		return tags;
 	}
 }

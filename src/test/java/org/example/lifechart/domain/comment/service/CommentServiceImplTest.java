@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.example.lifechart.common.exception.CustomException;
+import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.comment.dto.request.CommentRequestDto;
 import org.example.lifechart.domain.comment.dto.response.CommentCursorResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentGetResponseDto;
@@ -40,8 +41,12 @@ class CommentServiceImplTest {
 	@Mock
 	private GoalRepository goalRepository;
 
+	@Mock
+	private SendSqsPort sqsPort;
+
 	@InjectMocks
 	private CommentServiceImpl commentService;
+
 	Long me;
 	Long goalId;
 	User authUser;
@@ -52,14 +57,15 @@ class CommentServiceImplTest {
 	Comment comment;
 	Status status;
 
+
 	@BeforeEach
 	void setUp() {
 		me = 1L;
 		goalId = 1L;
 		status = Status.ACTIVE;
-		authUser = new User(me, "email", "password", "nickname", "men", "0",
+		authUser = new User(me, "name", "email", "password", "nickname", "men", "0",
 			"job", false, null, LocalDate.now(), "user", "provider", "0");
-		user = new User(2L, "email2", "password2", "nickname2", "men", "2",
+		user = new User(2L, "name1", "email2", "password2", "nickname2", "men", "2",
 			"job", false, null, LocalDate.now(), "user", "provider2", "2");
 		goal = Goal.builder().id(goalId).user(authUser).status(Status.ACTIVE).build();
 		contents = "hi";
@@ -75,6 +81,8 @@ class CommentServiceImplTest {
 		given(userRepository.findByIdAndDeletedAtIsNull(me)).willReturn(Optional.of(authUser));
 		given(goalRepository.findByIdAndStatus(goalId, status)).willReturn(Optional.of(goal));
 		given(commentRepository.save(any(Comment.class))).willReturn(comment);
+		sqsPort.sendNotification(authUser.getId(),
+			"USER_NOTIFICATION", "New Comment", "댓글이 달렸습니다");
 
 		// when
 		CommentResponseDto result = commentService.createComment(me, goalId, commentRequestDto);
