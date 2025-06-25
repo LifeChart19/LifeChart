@@ -32,7 +32,7 @@ public class RedisApartmentPriceRepository implements ApartmentPriceCacheReposit
 	private final RedisTemplate<String, String> redisTemplate;
 	private final ObjectMapper objectMapper;
 
-	private static final Duration TTL = Duration.ofDays(30); // 1일 캐시 유지
+	private static final Duration TTL = Duration.ofDays(30); // 30일 캐시 유지
 
 	private String generateKey(String region, String subregion, String period) {
 		return "apt-price::" + region + "::" + subregion + "::" + period;

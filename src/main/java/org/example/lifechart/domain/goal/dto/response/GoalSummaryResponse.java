@@ -13,6 +13,7 @@ import lombok.Getter;
 @Builder
 public class GoalSummaryResponse {
 
+	private Long id;
 	private String title;
 	private Long targetAmount;
 	private LocalDateTime startAt;
@@ -22,6 +23,7 @@ public class GoalSummaryResponse {
 
 	public static GoalSummaryResponse from(Goal goal) {
 		return GoalSummaryResponse.builder()
+			.id(goal.getId())
 			.title(goal.getTitle())
 			.targetAmount(goal.getTargetAmount())
 			.startAt(goal.getStartAt())
