@@ -2,6 +2,7 @@ package org.example.lifechart.domain.simulation.dto.response;
 
 import lombok.*;
 import org.example.lifechart.domain.simulation.entity.Simulation;
+import org.example.lifechart.domain.simulation.entity.SimulationGoal;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class BaseSimulationResponseDto {
     @Builder.Default
     List<Long> goalIds = new ArrayList<>();
 
-     //계산에 필요한 필드
+    //계산에 필요한 필드
 //    @Convert(converter = SimulationParamsConverter.class)
 //    @Column(columnDefinition = "json")
 //    private SimulationParams params;
@@ -46,7 +47,7 @@ public class BaseSimulationResponseDto {
     private Long requiredAmount;
 
     //목표 달성까지 예상 개월 수
-    private Integer monthsToGoal;
+    private String estimatedAchieveMonth;
 
     //현재 달성률
     private Float currentAchievementRate;
@@ -70,7 +71,26 @@ public class BaseSimulationResponseDto {
                 .title(simulation.getTitle())
                 .baseDate(simulation.getBaseDate())
                 .requiredAmount(simulation.getRequiredAmount())
-                .monthsToGoal(simulation.getMonthsToGoal())
+                .estimatedAchieveMonth(simulation.getEstimatedAchieveMonth())
+                .currentAchievementRate(simulation.getCurrentAchievementRate())
+                .monthlyAchievements(simulation.getMonthlyAchievements())
+                .monthlyAssets(simulation.getMonthlyAssets())
+                .build();
+    }
+
+    public static BaseSimulationResponseDto to(Simulation simulation) {
+        return BaseSimulationResponseDto.builder()
+                .simulationId(simulation.getId())
+                .goalIds(simulation.getSimulationGoals().stream()
+                        .filter(SimulationGoal::isActive) //
+                        .map(simGoal -> simGoal.getGoal().getId())
+                        .distinct() // 중복 제거
+                        .collect(Collectors.toList()))
+                .userNickname(simulation.getUser().getNickname())
+                .title(simulation.getTitle())
+                .baseDate(simulation.getBaseDate())
+                .requiredAmount(simulation.getRequiredAmount())
+                .estimatedAchieveMonth(simulation.getEstimatedAchieveMonth())
                 .currentAchievementRate(simulation.getCurrentAchievementRate())
                 .monthlyAchievements(simulation.getMonthlyAchievements())
                 .monthlyAssets(simulation.getMonthlyAssets())

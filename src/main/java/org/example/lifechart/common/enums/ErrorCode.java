@@ -119,7 +119,7 @@ public enum ErrorCode implements BaseCode {
 	SIMULATION_DELETE_FAILED(HttpStatus.BAD_REQUEST, "삭제할 수 없는 시뮬레이션입니다."),
 	SIMULATION_LINKED_ENTITY_EXISTS(HttpStatus.BAD_REQUEST, "연결된 목표가 있는 시뮬레이션은 삭제할 수 없습니다."),
 	INVALID_GOAL_CATEGORY(HttpStatus.BAD_REQUEST,"지원하지 않는 카테고리입니다."),
-
+	SIMULATION_NOT_FOUND_BY_GOAL(HttpStatus.NOT_FOUND, "업데이트 가능한 목표가 아닙니다. "),
 
 
 
