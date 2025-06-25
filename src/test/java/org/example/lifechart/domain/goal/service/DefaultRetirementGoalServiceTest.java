@@ -65,6 +65,7 @@ public class DefaultRetirementGoalServiceTest {
 		given(retirementReferenceValueService.getReferenceValues(eq(userId), anyInt())).willReturn(retirementResponse);
 		given(goalRetirementCalculateService.calculateTargetAmount(any(GoalRetirementCalculateRequest.class), eq(userId))).willReturn(targetAmount);
 		given(goalService.createGoal(any(GoalCreateRequest.class), eq(userId))).willReturn(dummyResponse);
+		ArgumentCaptor<GoalCreateRequest> captor = ArgumentCaptor.forClass(GoalCreateRequest.class);
 
 		// when
 		GoalResponse response = defaultRetirementGoalService.createDefaultRetirementGoal(userId);
@@ -73,7 +74,6 @@ public class DefaultRetirementGoalServiceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getGoalId()).isEqualTo(1L);
 
-		ArgumentCaptor<GoalCreateRequest> captor = ArgumentCaptor.forClass(GoalCreateRequest.class);
 		verify(goalService).createGoal(captor.capture(), eq(userId));
 		GoalCreateRequest req = captor.getValue();
 

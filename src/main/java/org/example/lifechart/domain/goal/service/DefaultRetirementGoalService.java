@@ -33,25 +33,21 @@ public class DefaultRetirementGoalService {
 		LocalDateTime startAt = LocalDateTime.now();
 
 		GoalRetirementEstimateResponse retirementResponse = retirementReferenceValueService.getReferenceValues(userId, startAt.getYear());
-		LocalDateTime endAt = retirementResponse.getExpectedRetirementDate();
-		Long expectedLifespan = retirementResponse.getExpectedLifespan();
-		Long monthlyExpense = retirementResponse.getMonthlyExpense();
-		RetirementType retirementType = retirementResponse.getRetirementType();
 
 		GoalRetirementCalculateRequest calculateRequest = GoalRetirementCalculateRequest.builder()
 			.startAt(startAt)
-			.endAt(endAt)
-			.expectedLifespan(expectedLifespan)
-			.monthlyExpense(monthlyExpense)
-			.retirementType(retirementType)
+			.endAt(retirementResponse.getExpectedRetirementDate())
+			.expectedLifespan(retirementResponse.getExpectedLifespan())
+			.monthlyExpense(retirementResponse.getMonthlyExpense())
+			.retirementType(retirementResponse.getRetirementType())
 			.build();
 
 		Long targetAmount = retirementCalculateService.calculateTargetAmount(calculateRequest, userId);
 
 		GoalRetirementRequest retirementRequest = GoalRetirementRequest.builder()
-			.monthlyExpense(monthlyExpense)
-			.retirementType(retirementType)
-			.expectedLifespan(expectedLifespan)
+			.monthlyExpense(retirementResponse.getMonthlyExpense())
+			.retirementType(retirementResponse.getRetirementType())
+			.expectedLifespan(retirementResponse.getExpectedLifespan())
 			.build();
 
 		GoalCreateRequest createRequest = GoalCreateRequest.builder()
@@ -60,7 +56,7 @@ public class DefaultRetirementGoalService {
 			.startAt(startAt)
 			.share(Share.PRIVATE)
 			.tags(DEFAULT_TAGS)
-			.endAt(endAt)
+			.endAt(retirementResponse.getExpectedRetirementDate())
 			.detail(retirementRequest)
 			.targetAmount(targetAmount)
 			.build();

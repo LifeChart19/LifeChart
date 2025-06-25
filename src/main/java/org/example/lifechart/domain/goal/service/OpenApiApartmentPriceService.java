@@ -47,7 +47,7 @@ public class OpenApiApartmentPriceService {
 		backoff = @Backoff(delay = 2000)
 	)
 	public ApartmentPriceDto fetchLatest(String region, String subregion) {
-		String API_URL = buildUrl(120); // 최근 60개월
+		String API_URL = buildUrl(120); // 최근 120개월
 		try {
 			String response = restTemplate.getForObject(API_URL, String.class);
 			List<Map<String, Object>> dataList = objectMapper.readValue(response, new TypeReference<>() {});
