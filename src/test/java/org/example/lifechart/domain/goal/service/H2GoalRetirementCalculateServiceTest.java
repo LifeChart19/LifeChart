@@ -73,9 +73,9 @@ public class H2GoalRetirementCalculateServiceTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email@email.com")
+			.email("email1@email.com")
 			.password("5678")
-			.nickname("닉네임")
+			.nickname("닉네임1")
 			.gender("중성")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -106,9 +106,9 @@ public class H2GoalRetirementCalculateServiceTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email@email.com")
+			.email("email2@email.com")
 			.password("5678")
-			.nickname("닉네임")
+			.nickname("닉네임2")
 			.gender("중성")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -137,10 +137,10 @@ public class H2GoalRetirementCalculateServiceTest {
 	void calculateTargetAmount_기대수명_입력이_목표_종료일_이전이면_GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE_예외를_던진다() {
 		// given
 		User user = User.builder()
-			.name("이름")
-			.email("email@email.com")
+			.name("이름3")
+			.email("email3@email.com")
 			.password("5678")
-			.nickname("닉네임")
+			.nickname("닉네임3")
 			.gender("중성")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)

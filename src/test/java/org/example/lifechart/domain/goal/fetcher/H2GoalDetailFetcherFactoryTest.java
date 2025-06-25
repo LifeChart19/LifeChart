@@ -3,6 +3,7 @@ package org.example.lifechart.domain.goal.fetcher;
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.user.entity.User;
+import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,6 +50,9 @@ public class H2GoalDetailFetcherFactoryTest {
 	@Autowired
 	private GoalRepository goalRepository;
 
+	@Autowired
+	private UserRepository userRepository;
+
 	@BeforeEach
 	void setup() {
 		goalDetailFetcherFactory = new GoalDetailFetcherFactory(List.of(goalEtcFetcher, goalHousingFetcher, goalRetirementFetcher));
@@ -60,8 +65,16 @@ public class H2GoalDetailFetcherFactoryTest {
 	void getDetail_지원하는_fetcher가_존재하면_fetcher가_정상적으로_호출된다() {
 		// given
 		User user = User.builder()
-			.id(1L)
+			.name("이름")
+			.email("email@email.com")
+			.password("5678")
+			.nickname("닉네임")
+			.gender("male")
+			.birthDate(LocalDate.of(1990,1,1))
+			.isDeleted(false)
 			.build();
+
+		userRepository.save(user);
 
 		Goal goal = Goal.builder()
 			.user(user)
@@ -102,8 +115,16 @@ public class H2GoalDetailFetcherFactoryTest {
 	void getDetail_fecther가_존재하지_않으면_GOAL_INVALID_CATEGORY_예외를_던진다() {
 		// given
 		User user = User.builder()
-			.id(1L)
+			.name("이름")
+			.email("email2@email.com")
+			.password("5678")
+			.nickname("닉네임2")
+			.gender("male")
+			.birthDate(LocalDate.of(1990,1,1))
+			.isDeleted(false)
 			.build();
+
+		userRepository.save(user);
 
 		Goal goal = Goal.builder()
 			.id(1L)
@@ -127,5 +148,4 @@ public class H2GoalDetailFetcherFactoryTest {
 		// then
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_INVALID_CATEGORY);
 	}
-
 }

@@ -22,6 +22,7 @@ import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
 import org.example.lifechart.domain.user.entity.User;
+import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,9 @@ public class H2GoalRetirementFetcherTest {
 
 	@Autowired
 	private GoalRepository goalRepository;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Autowired
 	private GoalRetirementFetcher goalRetirementFetcher;
@@ -73,8 +77,16 @@ public class H2GoalRetirementFetcherTest {
 	void fetch_은퇴_목표_상세_정보를_정상적으로_반환한다() {
 		// given
 		User user = User.builder()
-			.id(1L)
+			.name("이름")
+			.email("email@email.com")
+			.password("5678")
+			.nickname("닉네임")
+			.gender("male")
+			.birthDate(LocalDate.of(1990,1,1))
+			.isDeleted(false)
 			.build();
+
+		userRepository.save(user);
 
 		Goal goal = Goal.builder()
 			.user(user)

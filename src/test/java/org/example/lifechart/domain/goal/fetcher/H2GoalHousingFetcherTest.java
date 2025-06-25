@@ -4,6 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.user.entity.User;
+import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +42,9 @@ public class H2GoalHousingFetcherTest {
 
 	@Autowired
 	private GoalRepository goalRepository;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Autowired
 	private GoalHousingFetcher goalHousingFetcher;
@@ -72,8 +77,16 @@ public class H2GoalHousingFetcherTest {
 	void fetch_주거_목표_상세_정보를_정상적으로_반환한다() {
 		// given
 		User user = User.builder()
-			.id(1L)
+			.name("이름")
+			.email("email@email.com")
+			.password("5678")
+			.nickname("닉네임")
+			.gender("male")
+			.birthDate(LocalDate.of(1990,1,1))
+			.isDeleted(false)
 			.build();
+
+		userRepository.save(user);
 
 		Goal goal = Goal.builder()
 			.user(user)
@@ -114,8 +127,16 @@ public class H2GoalHousingFetcherTest {
 	void fetch_goalID에_해당하는_주거_목표가_없으면_GOAL_HOUSING_NOT_FOUND_예외를_던진다() {
 		// given
 		User user = User.builder()
-			.id(1L)
+			.name("이름")
+			.email("email1@email.com")
+			.password("5678")
+			.nickname("닉네임1")
+			.gender("male")
+			.birthDate(LocalDate.of(1990,1,1))
+			.isDeleted(false)
 			.build();
+
+		userRepository.save(user);
 
 		Goal goal = Goal.builder()
 			.user(user)
