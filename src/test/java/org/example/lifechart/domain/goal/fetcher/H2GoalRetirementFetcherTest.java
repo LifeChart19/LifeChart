@@ -1,0 +1,151 @@
+package org.example.lifechart.domain.goal.fetcher;
+
+import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.example.lifechart.common.enums.ErrorCode;
+import org.example.lifechart.common.exception.CustomException;
+import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
+import org.example.lifechart.domain.goal.dto.response.GoalRetirementInfoResponse;
+import org.example.lifechart.domain.goal.entity.Goal;
+import org.example.lifechart.domain.goal.entity.GoalRetirement;
+import org.example.lifechart.domain.goal.enums.Category;
+import org.example.lifechart.domain.goal.enums.RetirementType;
+import org.example.lifechart.domain.goal.enums.Share;
+import org.example.lifechart.domain.goal.enums.Status;
+import org.example.lifechart.domain.goal.repository.GoalRepository;
+import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
+import org.example.lifechart.domain.user.entity.User;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+@SpringBootTest
+@ActiveProfiles("test")
+public class H2GoalRetirementFetcherTest {
+
+	@Autowired
+	private GoalRetirementRepository goalRetirementRepository;
+
+	@Autowired
+	private GoalRepository goalRepository;
+
+	@Autowired
+	private GoalRetirementFetcher goalRetirementFetcher;
+
+	LocalDateTime fixedNow = LocalDateTime.of(2025, 9, 1, 0, 0);
+
+	@Test
+	@DisplayName("카테고리가 RETIREMENT이면 true를 반환한다.")
+	void supports_목표_카테고리가_RETIREMENT이면_True를_반환한다() {
+		// given
+		Category category = Category.RETIREMENT;
+
+		// when & then
+		assertThat(goalRetirementFetcher.supports(category)).isEqualTo(true);
+
+	}
+
+	@Test
+	@DisplayName("카테고리가 RETIREMENT가 아니면 false를 반환한다.")
+	void supports_목표_카테고리가_RETIREMENT가_아니면_false를_반환한다() {
+		// given
+		Category category = Category.ETC;
+
+		// when & then
+		assertThat(goalRetirementFetcher.supports(category)).isEqualTo(false);
+	}
+
+	@Test
+	@DisplayName("은퇴 목표 상세 정보를 정상적으로 반환한다.")
+	void fetch_은퇴_목표_상세_정보를_정상적으로_반환한다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.build();
+
+		Goal goal = Goal.builder()
+			.user(user)
+			.title("은퇴한 젊은 한량 되기")
+			.category(Category.RETIREMENT)
+			.targetAmount(1_500_000_000L)
+			.startAt(fixedNow)
+			.endAt(fixedNow.plusYears(10))
+			.status(Status.ACTIVE)
+			.share(Share.PRIVATE)
+			.commentCount(0)
+			.likeCount(0)
+			.tags(List.of("은퇴", "한량"))
+			.build();
+
+		goalRepository.save(goal);
+
+		GoalRetirement goalRetirement = GoalRetirement.builder()
+			.goal(goal)
+			.monthlyExpense(5_000_000L)
+			.expectedDeathDate(LocalDate.of(2083,12,31))
+			.retirementType(RetirementType.COUPLE)
+			.build();
+
+		goalRetirementRepository.save(goalRetirement);
+
+		// when
+		GoalDetailInfoResponse response = goalRetirementFetcher.fetch(goal.getId());
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response).isInstanceOf(GoalRetirementInfoResponse.class);
+	}
+
+	@Test
+	@DisplayName("goalId에 해당하는 은퇴 목표가 DB에 없으면 예외를 던진다.")
+	void fetch_goalId에_해당하는_은퇴_목표가_없으면_GOAL_RETIREMENT_NOT_FOUND_예외를_던진다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.build();
+
+		Goal goal = Goal.builder()
+			.user(user)
+			.title("은퇴한 젊은 한량 되기")
+			.category(Category.RETIREMENT)
+			.targetAmount(1_500_000_000L)
+			.startAt(fixedNow)
+			.endAt(fixedNow.plusYears(10))
+			.status(Status.ACTIVE)
+			.share(Share.PRIVATE)
+			.commentCount(0)
+			.likeCount(0)
+			.tags(List.of("은퇴", "한량"))
+			.build();
+
+		goalRepository.save(goal);
+
+		GoalRetirement goalRetirement = GoalRetirement.builder()
+			.id(1L)
+			.goal(goal)
+			.monthlyExpense(5_000_000L)
+			.expectedDeathDate(LocalDate.of(2083,12,31))
+			.retirementType(RetirementType.COUPLE)
+			.build();
+
+		// when
+		CustomException customException = assertThrows(CustomException.class, () ->
+			goalRetirementFetcher.fetch(goal.getId()));
+
+		// then
+		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_RETIREMENT_NOT_FOUND);
+	}
+}
