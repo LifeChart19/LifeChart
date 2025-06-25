@@ -91,4 +91,5 @@ public class OpenApiApartmentPriceService {
 			"&newEstPrdCnt=" + months +
 			"&apiKey=" + apiKey;
 	}
+
 }

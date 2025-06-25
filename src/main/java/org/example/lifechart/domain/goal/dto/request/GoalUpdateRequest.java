@@ -83,4 +83,5 @@ public class GoalUpdateRequest implements HaSGoalPeriod, TagValidatable {
 	public List<String> getTags() {
 		return tags;
 	}
+
 }

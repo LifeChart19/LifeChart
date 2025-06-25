@@ -160,4 +160,5 @@ public class DefaultRetirementGoalServiceTest {
 		// then
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE);
 	}
+
 }
