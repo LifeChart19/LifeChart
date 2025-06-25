@@ -120,6 +120,5 @@ public class OpenApiApartmentPriceServiceTest {
 
 		// then
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.DATA_NOT_FOUND);
-
 	}
 }

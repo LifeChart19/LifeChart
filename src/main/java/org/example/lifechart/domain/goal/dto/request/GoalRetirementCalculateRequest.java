@@ -59,5 +59,4 @@ public class GoalRetirementCalculateRequest implements HaSGoalPeriod {
 	public LocalDateTime getEndAt() {
 		return endAt;
 	}
-
 }

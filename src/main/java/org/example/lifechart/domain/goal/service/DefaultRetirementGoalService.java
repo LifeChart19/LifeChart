@@ -63,5 +63,4 @@ public class DefaultRetirementGoalService {
 
 		return goalService.createGoal(createRequest, userId);
 	}
-
 }
