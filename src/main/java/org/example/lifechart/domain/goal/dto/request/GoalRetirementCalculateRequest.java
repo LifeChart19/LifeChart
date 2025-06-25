@@ -34,7 +34,7 @@ public class GoalRetirementCalculateRequest implements HaSGoalPeriod {
 	private LocalDateTime endAt;
 
 	@Schema(description = "기대 수명", example = "90")
-	@Positive
+	@Positive(message = "양수만 입력 가능합니다.")
 	@Max(150L) // 최대 150세까지 입력 가능
 	@NotNull(message = "기대 수명은 필수 입력입니다.")
 	private Long expectedLifespan;

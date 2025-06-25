@@ -143,6 +143,7 @@ public class GoalServiceImpl implements GoalService {
 			case HOUSING -> detail instanceof GoalHousingRequest;
 			case RETIREMENT -> detail instanceof GoalRetirementRequest;
 			case ETC -> detail instanceof GoalEtcRequest;
+			default -> false;
 		};
 
 		if (!isValid) {

@@ -67,6 +67,10 @@ dependencies {
     implementation 'org.springframework.retry:spring-retry'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    // retry
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
     // redisson
     implementation 'org.redisson:redisson-spring-boot-starter:3.23.4'
     //  Redisson을 Spring Boot와 통합해서 쉽게 사용할 수 있게 해줌. Redisson은 고급 분산 기능 제공.

@@ -31,7 +31,7 @@ public class GoalRetirementRequest implements GoalDetailRequest {
 	private RetirementType retirementType;
 
 	@Schema(description = "기대 수명", example = "90")
-	@Positive
+	@Positive(message = "양수만 입력 가능합니다.")
 	@Max(150L) // 최대 150세까지 입력 가능
 	@NotNull(message = "기대 수명은 필수 입력입니다.")
 	private Long expectedLifespan; // endAt보다 크거나 같음을 검증하는 로직 필요. 어디에서 할지는 고민 필요

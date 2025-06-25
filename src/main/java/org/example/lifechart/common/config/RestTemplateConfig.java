@@ -10,9 +10,6 @@ public class RestTemplateConfig {
 
 	@Bean
 	public RestTemplate restTemplate() {
-		HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-		factory.setConnectTimeout(3000); // 연결 시도 timeout (ms)
-		factory.setReadTimeout(5000);    // 응답 대기 timeout (ms)
 		return new RestTemplate();
 	}
 }
