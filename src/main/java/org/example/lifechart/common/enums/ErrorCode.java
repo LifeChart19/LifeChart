@@ -1,9 +1,10 @@
 package org.example.lifechart.common.enums;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.response.ReasonDto;
 import org.springframework.http.HttpStatus;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
@@ -75,11 +76,12 @@ public enum ErrorCode implements BaseCode {
 
 
 
+
 	// Goal (Line#: 80~109)
 	GOAL_BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 	GOAL_INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
 	GOAL_INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "잘못된 카테고리입니다."),
-	GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE(HttpStatus.BAD_REQUEST, "기대 수명은 목표 종료일 이후여야 합니다."),
+	GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE(HttpStatus.BAD_REQUEST, "생년월일에 기대수명을 더한 값은 목표 종료일보다 이후 시점이어야 합니다."),
 	GOAL_LIFESPAN_DATA_NOT_EXIST(HttpStatus.UNPROCESSABLE_ENTITY, "성별과 연도에 해당하는 기대 수명 데이터가 존재하지 않습니다."),
 	GOAL_INIT_DATA_MISSING(HttpStatus.INTERNAL_SERVER_ERROR, "목표 데이터 파일을 찾을 수 없습니다."),
 	GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "목표가 존재하지 않습니다."),
@@ -88,10 +90,11 @@ public enum ErrorCode implements BaseCode {
 	GOAL_ETC_NOT_FOUND(HttpStatus.NOT_FOUND, "기타 목표가 존재하지 않습니다."),
 	GOAL_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 목표입니다."),
 	GOAL_CATEGORY_DETAIL_MISMATCH(HttpStatus.BAD_REQUEST, "카테고리와 카테고리 입력 필드가 일치하지 않습니다."),
-
-
-
-
+	DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "데이터를 찾을 수 없습니다."),
+	EXTERNAL_API_FAILURE(HttpStatus.BAD_REQUEST, "외부 API 응답 반환에 실패했습니다."),
+	INVALID_REGION_MATCH(HttpStatus.BAD_REQUEST, "지역-세부지역 매칭에 실패했습니다."),
+	ONLY_ONE_RETIREMENT_GOAL(HttpStatus.BAD_REQUEST, "은퇴 목표는 반드시 하나가 존재해야 합니다."),
+	INVALID_EXPECTED_LIFESPAN(HttpStatus.BAD_REQUEST, "기대 수명은 현재 나이보다 큰 값이어야 합니다."),
 
 
 
@@ -106,7 +109,6 @@ public enum ErrorCode implements BaseCode {
 
 
 	// Simulation (Line#: 110~139)
-	// Simulation (Line#: 110~...)
 	SIMULATION_BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 	SIMULATION_INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
 	SIMULATION_NOT_FOUND(HttpStatus.NOT_FOUND, "시뮬레이션을 찾을 수 없습니다."),
@@ -117,14 +119,7 @@ public enum ErrorCode implements BaseCode {
 	SIMULATION_DELETE_FAILED(HttpStatus.BAD_REQUEST, "삭제할 수 없는 시뮬레이션입니다."),
 	SIMULATION_LINKED_ENTITY_EXISTS(HttpStatus.BAD_REQUEST, "연결된 목표가 있는 시뮬레이션은 삭제할 수 없습니다."),
 	INVALID_GOAL_CATEGORY(HttpStatus.BAD_REQUEST,"지원하지 않는 카테고리입니다."),
-
-
-
-
-
-
-
-
+	SIMULATION_NOT_FOUND_BY_GOAL(HttpStatus.NOT_FOUND, "업데이트 가능한 목표가 아닙니다. "),
 
 
 
@@ -160,8 +155,8 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
-
+	// shareGoal (Line#: 157~169)
+	SHARE_GOAL_KEYWORD_BAD_REQEUST(HttpStatus.BAD_REQUEST, "키워드는 공백이면 안 되고 길이가 2이상이여야 합니다"),
 
 
 

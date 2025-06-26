@@ -1,9 +1,9 @@
 package org.example.lifechart.domain.goal.service;
 
-import java.util.List;
-
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalSearchCondition;
 import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
+import org.example.lifechart.domain.goal.dto.response.CursorPageResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalSummaryResponse;
@@ -13,5 +13,5 @@ public interface GoalService {
 	GoalInfoResponse findGoal(Long goalId, Long userId);
 	void deleteGoal(Long goalId, Long userId);
 	GoalResponse updateGoal(GoalUpdateRequest request, Long goalId, Long UserId);
-	List<GoalSummaryResponse> findMyGoals(Long userId);
+	CursorPageResponse<GoalSummaryResponse> findMyGoals(Long userId, GoalSearchCondition condition);
 }

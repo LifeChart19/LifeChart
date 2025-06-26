@@ -1,7 +1,6 @@
 package org.example.lifechart.domain.goal.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
@@ -10,7 +9,9 @@ import org.example.lifechart.domain.goal.dto.request.GoalDetailRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalSearchCondition;
 import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
+import org.example.lifechart.domain.goal.dto.response.CursorPageResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
@@ -26,8 +27,6 @@ import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
-import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
-import org.example.lifechart.domain.simulation.entity.SimulationGoal;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -55,9 +54,12 @@ public class GoalServiceImpl implements GoalService {
 		GoalDetailRequest detail = requestDto.getDetail();
 
 		validateCategoryAndDetail(requestDto.getCategory(), detail);
+		if (requestDto.getCategory() == Category.RETIREMENT && goalRepository.existsByUserIdAndCategory(userId, Category.RETIREMENT)) {
+			throw new CustomException(ErrorCode.ONLY_ONE_RETIREMENT_GOAL);
+		}
 
 		// Goal Entity 반환
-		Goal newGoal = requestDto.toEntity(user);
+		Goal newGoal = Goal.from(requestDto, user);
 		Goal savedGoal = goalRepository.save(newGoal);
 		saveGoalDetail(detail, savedGoal, user);
 
@@ -75,12 +77,20 @@ public class GoalServiceImpl implements GoalService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<GoalSummaryResponse> findMyGoals(Long userId) {
+	public CursorPageResponse<GoalSummaryResponse> findMyGoals(Long userId, GoalSearchCondition condition) {
 		User user = validUser(userId);
-		return goalRepository.findAllByUserId(user.getId())
-			.stream()
+
+		List<Goal> goals = goalRepository.searchGoalsWithCursor(user.getId(), condition);
+
+		boolean hasNext = goals.size() > condition.size();
+		List<GoalSummaryResponse> result = goals.stream()
+			.limit(condition.size())
 			.map(GoalSummaryResponse::from)
-			.collect(Collectors.toList());
+			.toList();
+
+		Long nextCursor = hasNext ? result.get(result.size() -1).getId() : null;
+
+		return new CursorPageResponse<>(result, nextCursor, hasNext);
 	}
 
 	@Transactional
@@ -90,6 +100,10 @@ public class GoalServiceImpl implements GoalService {
 		Goal goal = validGoal(goalId, user.getId());
 		if (isDeleted(goal)) {
 			throw new CustomException(ErrorCode.GOAL_ALREADY_DELETED);
+		}
+		if (goal.getCategory() == Category.RETIREMENT
+			&& goalRepository.countByUserIdAndCategory(userId, Category.RETIREMENT) <= 1) {
+			throw new CustomException(ErrorCode.ONLY_ONE_RETIREMENT_GOAL);
 		}
 		goal.delete();
 	}
@@ -112,7 +126,7 @@ public class GoalServiceImpl implements GoalService {
 		return GoalResponse.from(savedGoal);
 	}
 
-	private User validUser(Long userId) {
+	public User validUser(Long userId) {
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
 		return user;
@@ -129,6 +143,7 @@ public class GoalServiceImpl implements GoalService {
 			case HOUSING -> detail instanceof GoalHousingRequest;
 			case RETIREMENT -> detail instanceof GoalRetirementRequest;
 			case ETC -> detail instanceof GoalEtcRequest;
+			default -> false;
 		};
 
 		if (!isValid) {
@@ -142,13 +157,13 @@ public class GoalServiceImpl implements GoalService {
 
 	private void saveGoalDetail(GoalDetailRequest detail, Goal savedGoal, User user) {
 		if (detail instanceof GoalRetirementRequest retirementDetail) {
-			GoalRetirement goalRetirement = retirementDetail.toEntity(savedGoal, user.getBirthDate().getYear());
+			GoalRetirement goalRetirement = GoalRetirement.from(savedGoal, retirementDetail, user.getBirthDate().getYear());
 			goalRetirementRepository.save(goalRetirement);
 		} else if (detail instanceof GoalHousingRequest housingDetail) {
-			GoalHousing goalHousing = housingDetail.toEntity(savedGoal);
+			GoalHousing goalHousing = GoalHousing.from(savedGoal, housingDetail);
 			goalHousingRepository.save(goalHousing);
 		} else if (detail instanceof GoalEtcRequest etcDetail) {
-			GoalEtc goalEtc = etcDetail.toEntity(savedGoal);
+			GoalEtc goalEtc = GoalEtc.from(savedGoal, etcDetail);
 			goalEtcRepository.save(goalEtc);
 		} else {
 			throw new CustomException(ErrorCode.GOAL_INVALID_CATEGORY);

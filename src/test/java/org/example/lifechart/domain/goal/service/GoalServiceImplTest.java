@@ -12,6 +12,7 @@ import java.util.Optional;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.request.*;
+import org.example.lifechart.domain.goal.dto.response.CursorPageResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalEtcInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
@@ -93,9 +94,9 @@ public class GoalServiceImplTest {
 			.share(Share.PRIVATE)
 			.build();
 
-		Goal goal = request.toEntity(user);
+		Goal goal = Goal.from(request, user);
 		goal = goal.toBuilder().id(1L).build();
-		GoalRetirement goalRetirement = detail.toEntity(goal, user.getBirthDate().getYear());
+		GoalRetirement goalRetirement = GoalRetirement.from(goal, detail, user.getBirthDate().getYear());
 		goalRetirement = goalRetirement.toBuilder().id(1L).build();
 
 		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
@@ -144,9 +145,9 @@ public class GoalServiceImplTest {
 			.share(Share.PRIVATE)
 			.build();
 
-		Goal goal = request.toEntity(user);
+		Goal goal = Goal.from(request, user);
 		goal = goal.toBuilder().id(1L).build();
-		GoalHousing goalHousing = detail.toEntity(goal);
+		GoalHousing goalHousing = GoalHousing.from(goal, detail);
 		goalHousing = goalHousing.toBuilder().id(1L).build();
 
 		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
@@ -193,9 +194,9 @@ public class GoalServiceImplTest {
 			.share(Share.PRIVATE)
 			.build();
 
-		Goal goal = request.toEntity(user);
+		Goal goal = Goal.from(request, user);
 		goal = goal.toBuilder().id(1L).build();
-		GoalEtc goalEtc = detail.toEntity(goal);
+		GoalEtc goalEtc = GoalEtc.from(goal, detail);
 		goalEtc = goalEtc.toBuilder().id(1L).build();
 
 		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
@@ -648,27 +649,33 @@ public class GoalServiceImplTest {
 			.id(1L)
 			.user(user)
 			.targetAmount(1L)
+			.status(Status.ACTIVE)
 			.build();
 
 		Goal secondGoal = Goal.builder()
 			.id(2L)
 			.user(user)
 			.targetAmount(2L)
+			.status(Status.ACTIVE)
 			.build();
 
 		List<Goal> myGoals = List.of(firstGoal, secondGoal);
 
+		GoalSearchCondition condition = new GoalSearchCondition(1L, 10, Status.ACTIVE, null, null);
+
 		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(user));
-		given(goalRepository.findAllByUserId(1L)).willReturn(myGoals);
+		given(goalRepository.searchGoalsWithCursor(1L, condition)).willReturn(myGoals);
 
 		// when
-		List<GoalSummaryResponse> response = goalService.findMyGoals(1L);
+		CursorPageResponse<GoalSummaryResponse> response = goalService.findMyGoals(1L, condition);
 
 		// then
 		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
-		verify(goalRepository).findAllByUserId(1L);
-		assertThat(response.size()).isEqualTo(2);
-		assertThat(response.getFirst().getTargetAmount()).isEqualTo(1L);
+		verify(goalRepository).searchGoalsWithCursor(1L, condition);
+		assertThat(response.contents().size()).isEqualTo(2);
+		assertThat(response.contents().get(0).getTargetAmount()).isEqualTo(1L);
+		assertThat(response.nextCursor()).isNull();
+		assertThat(response.hasNext()).isFalse();
 	}
 
 	@Test
@@ -685,13 +692,13 @@ public class GoalServiceImplTest {
 			.user(loginUser)
 			.build();
 
-		List<Goal> goals = List.of(goal);
+		GoalSearchCondition condition = new GoalSearchCondition(1L, 10, Status.ACTIVE, null, null);
 
 		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
 
 		// when
 		CustomException customException = assertThrows(CustomException.class, () ->
-			goalService.findMyGoals(1L));
+			goalService.findMyGoals(1L, condition));
 
 		// then
 		verify(userRepository).findByIdAndDeletedAtIsNull(1L);

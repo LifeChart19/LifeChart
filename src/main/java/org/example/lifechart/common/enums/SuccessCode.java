@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 public enum SuccessCode implements BaseCode {
 
-	GET_POPULAR_KEYWORDS_SUCCESS(HttpStatus.OK, "인기 검색어를 조회합니다."),
+
 
 
 
@@ -25,7 +25,6 @@ public enum SuccessCode implements BaseCode {
 	GET_USER_PROFILE_SUCCESS(HttpStatus.OK, "유저 프로필을 조회했습니다."),
 	GET_ACCOUNT_SUCCESS(HttpStatus.OK, "계좌 잔액 조회를 성공했습니다."),
     GET_TRANSACTIONS_SUCCESS(HttpStatus.OK, "거래 내역 조회를 성공했습니다."),
-
 
 
 
@@ -110,19 +109,13 @@ public enum SuccessCode implements BaseCode {
 
 
 
-
-
 	// Simulation (Line#: 110~139)
 	SIMULATION_CREATE_SUCCESS(HttpStatus.CREATED, "시뮬레이션이 성공적으로 생성되었습니다."),
 	SIMULATION_GET_LIST_SUCCESS(HttpStatus.OK, "시뮬레이션 목록을 성공적으로 조회하였습니다."),
 	SIMULATION_GET_DELETED_LIST_SUCCESS(HttpStatus.OK, "삭제된 시뮬레이션 목록을 성공적으로 조회하였습니다."),
 	SIMULATION_SOFT_DELETE_SUCCESS(HttpStatus.OK, "시뮬레이션을 성공적으로 소프트 삭제하였습니다."),
 	SIMULATION_DELETE_SUCCESS(HttpStatus.OK, "시뮬레이션을 성공적으로 완전 삭제하였습니다."),
-
-
-
-
-
+	SIMULATION_PATCH_SUCCESS(HttpStatus.OK, "시뮬레이션을 성공적으로 업데이트 하였습니다." ),
 
 
 
@@ -165,8 +158,8 @@ public enum SuccessCode implements BaseCode {
 
 	// ShareGoal (Line#: 157~169)
 	GET_ALL_SHAREGOALS_SUCCESS(HttpStatus.OK, "공유 목표 목록을 조회합니다"),
-
-
+	KEYWORD_SCORE_PLUS_SUCCESS(HttpStatus.OK, "검색어 점수를 증가시킵니다"),
+	GET_POPULAR_KEYWORDS_SUCCESS(HttpStatus.OK, "인기 검색어 Top10을 조회합니다."),
 
 
 
@@ -242,8 +235,8 @@ public enum SuccessCode implements BaseCode {
 	PATCH_NOTIFICATION_SUCCESS(HttpStatus.NO_CONTENT, "알림 단건을 읽음 처리합니다."),
 	PATCH_ALL_NOTIFICATIONS_SUCCESS(HttpStatus.NO_CONTENT, "알림 목록을 읽음 처리합니다."),
 	DELETE_NOTIFICATION_SUCCESS(HttpStatus.NO_CONTENT, "알림 단건을 삭제합니다."),
-	DELETE_NOTIFICATIONS_SUCCESS(HttpStatus.NO_CONTENT, "알림 목록을 삭제합니다."),
-	;
+	DELETE_NOTIFICATIONS_SUCCESS(HttpStatus.NO_CONTENT, "알림 목록을 삭제합니다.");
+
 
 
 
@@ -280,10 +273,10 @@ public enum SuccessCode implements BaseCode {
 		this.httpStatus = httpStatus;
 		this.message = message;
 		this.cachedReasonDto = ReasonDto.builder()
-			.isSuccess(true)
-			.httpStatus(httpStatus)
-			.message(message)
-			.build();
+				.isSuccess(true)
+				.httpStatus(httpStatus)
+				.message(message)
+				.build();
 	}
 
 	@Override
