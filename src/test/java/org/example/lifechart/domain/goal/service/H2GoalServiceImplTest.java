@@ -62,9 +62,6 @@ public class H2GoalServiceImplTest {
 	private UserRepository userRepository;
 
 	@Autowired
-	private GoalDetailFetcherFactory goalDetailFetcherFactory;
-
-	@Autowired
 	private GoalServiceImpl goalService;
 
 	LocalDateTime fixedNow = LocalDateTime.of(2025,9,1,0,0);

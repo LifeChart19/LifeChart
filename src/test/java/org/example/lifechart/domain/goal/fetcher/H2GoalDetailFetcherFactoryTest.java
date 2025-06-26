@@ -27,19 +27,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test") // application-test.properties 적용
 public class H2GoalDetailFetcherFactoryTest {
-
-	@Autowired
-	private GoalHousingFetcher goalHousingFetcher;
-
-	@Autowired
-	private GoalRetirementFetcher goalRetirementFetcher;
-
-	@Autowired
-	private GoalEtcFetcher goalEtcFetcher;
 
 	@Autowired
 	private GoalDetailFetcherFactory goalDetailFetcherFactory;
@@ -53,15 +45,11 @@ public class H2GoalDetailFetcherFactoryTest {
 	@Autowired
 	private UserRepository userRepository;
 
-	@BeforeEach
-	void setup() {
-		goalDetailFetcherFactory = new GoalDetailFetcherFactory(List.of(goalEtcFetcher, goalHousingFetcher, goalRetirementFetcher));
-	}
-
 	LocalDateTime fixedNow = LocalDateTime.of(2025, 9, 1, 0, 0);
 
 	@Test
 	@DisplayName("지원하는 fetcher가 존재하면 해당 fetcher가 선택되고 fetcher가 호출된다.")
+	@Transactional
 	void getDetail_지원하는_fetcher가_존재하면_fetcher가_정상적으로_호출된다() {
 		// given
 		User user = User.builder()
@@ -113,13 +101,14 @@ public class H2GoalDetailFetcherFactoryTest {
 
 	@Test
 	@DisplayName("fetcher가 존재하지 않으면 예외를 던진다.")
+	@Transactional
 	void getDetail_fecther가_존재하지_않으면_GOAL_INVALID_CATEGORY_예외를_던진다() {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email2@email.com")
+			.email("email@email.com")
 			.password("5678")
-			.nickname("닉네임2")
+			.nickname("닉네임")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
