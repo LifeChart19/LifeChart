@@ -110,4 +110,24 @@ public class Goal extends BaseEntity {
 		share = request.getShare();
 		tags = request.getTags();
 	}
+
+	public void increaseComment() {
+		this.commentCount++;
+	}
+
+	public void decreaseComment() {
+		if (this.commentCount > 0) {
+			this.commentCount--;
+		}
+	}
+
+	public void increaseLike() {
+		this.likeCount++;
+	}
+
+	public void decreaseLike() {
+		if (this.likeCount > 0) {
+			this.likeCount--;
+		}
+	}
 }
