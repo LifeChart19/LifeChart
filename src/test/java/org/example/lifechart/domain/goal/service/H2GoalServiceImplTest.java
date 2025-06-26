@@ -2,12 +2,10 @@ package org.example.lifechart.domain.goal.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
@@ -18,8 +16,6 @@ import org.example.lifechart.domain.goal.dto.request.GoalRetirementRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalSearchCondition;
 import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
 import org.example.lifechart.domain.goal.dto.response.CursorPageResponse;
-import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
-import org.example.lifechart.domain.goal.dto.response.GoalEtcInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalRetirementInfoResponse;
@@ -42,10 +38,6 @@ import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -114,7 +106,10 @@ public class H2GoalServiceImplTest {
 		GoalResponse response = goalService.createGoal(request, user.getId());
 
 		// then
-		assertThat(response.getGoalId()).isEqualTo(1L);
+		Goal savedGoal = goalRepository.findById(response.getGoalId()).orElseThrow();
+		GoalRetirement savedRetirement = goalRetirementRepository.findByGoalId(response.getGoalId()).orElseThrow();
+		assertThat(savedGoal.getTargetAmount()).isEqualTo(502_000_000L);
+		assertThat(savedRetirement.getMonthlyExpense()).isEqualTo(2_000_000L);
 	}
 
 	@Test
@@ -155,7 +150,10 @@ public class H2GoalServiceImplTest {
 		GoalResponse response = goalService.createGoal(request, user.getId());
 
 		// then
-		assertThat(response.getGoalId()).isEqualTo(1L);
+		Goal savedGoal = goalRepository.findById(response.getGoalId()).orElseThrow();
+		GoalHousing savedGoalHousing = goalHousingRepository.findByGoalId(response.getGoalId()).orElseThrow();
+		assertThat(savedGoal.getTargetAmount()).isEqualTo(1_432_100_000L);
+		assertThat(savedGoalHousing.getArea()).isEqualTo(100L);
 	}
 
 	@Test
@@ -194,7 +192,10 @@ public class H2GoalServiceImplTest {
 		GoalResponse response = goalService.createGoal(request, user.getId());
 
 		// then
-		assertThat(response.getGoalId()).isEqualTo(1L);
+		Goal savedGoal = goalRepository.findById(response.getGoalId()).orElseThrow();
+		GoalEtc savedGoalEtc = goalEtcRepository.findByGoalId(response.getGoalId()).orElseThrow();
+		assertThat(savedGoal.getTargetAmount()).isEqualTo(30_000_000L);
+		assertThat(savedGoalEtc.getTheme()).isEqualTo("여행");
 	}
 
 	@Test // to do
@@ -245,9 +246,9 @@ public class H2GoalServiceImplTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email@email.com")
+			.email("email4@email.com")
 			.password("5678")
-			.nickname("닉네임")
+			.nickname("닉네임4")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -302,9 +303,9 @@ public class H2GoalServiceImplTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email3@email.com")
+			.email("email5@email.com")
 			.password("5678")
-			.nickname("닉네임3")
+			.nickname("닉네임5")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -353,9 +354,9 @@ public class H2GoalServiceImplTest {
 	void findGoal_존재하지_않는_goalId이거나_다른_사용자의_목표인_경우_GOAL_NOT_FOUND_예외를_던진다() {
 		User loginUser = User.builder()
 			.name("이름")
-			.email("email3@email.com")
+			.email("email6@email.com")
 			.password("5678")
-			.nickname("닉네임3")
+			.nickname("닉네임6")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -363,16 +364,15 @@ public class H2GoalServiceImplTest {
 
 		User anotherUser = User.builder()
 			.name("다른 유저")
-			.email("email00@email.com")
+			.email("email000@email.com")
 			.password("5678")
-			.nickname("다른 유저")
+			.nickname("다른 유저000")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
 			.build();
 
-		userRepository.save(loginUser);
-		userRepository.save(anotherUser);
+		userRepository.saveAll(List.of(loginUser, anotherUser));
 
 		Goal goal = Goal.builder()
 			.user(anotherUser)
@@ -403,9 +403,9 @@ public class H2GoalServiceImplTest {
 	void deleteGoal_목표_삭제에_성공한다() {
 		User user = User.builder()
 			.name("이름")
-			.email("email3@email.com")
+			.email("email7@email.com")
 			.password("5678")
-			.nickname("닉네임3")
+			.nickname("닉네임7")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -460,15 +460,14 @@ public class H2GoalServiceImplTest {
 		Goal deletedGoal = goalRepository.findById(testgoal.getId()).orElseThrow();
 		assertThat(deletedGoal.getStatus()).isEqualTo(Status.DELETED);
 	}
-
 	@Test
 	@DisplayName("로그인한 유저가 생성한 목표가 아니면 예외를 반환한다.")
 	void deleteGoal_로그인한_유저가_생성한_목표가_아니면_GOAL_NOT_FOUND_예외를_던진다() {
 		User loginUser = User.builder()
 			.name("이름")
-			.email("email3@email.com")
+			.email("email8@email.com")
 			.password("5678")
-			.nickname("닉네임3")
+			.nickname("닉네임8")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -516,9 +515,9 @@ public class H2GoalServiceImplTest {
 	void deleteGoal_이미_삭제된_목표인_경우_GOAL_ALREADY_DELETED_예외를_던진다() {
 		User user = User.builder()
 			.name("이름")
-			.email("email3@email.com")
+			.email("email9@email.com")
 			.password("5678")
-			.nickname("닉네임3")
+			.nickname("닉네임9")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -579,9 +578,9 @@ public class H2GoalServiceImplTest {
 	void deleteGoal_은퇴_목표가_하나뿐이면_ONLY_ONE_RETIREMENT_GOAL_예외를_던진다() {
 		User user = User.builder()
 			.name("이름")
-			.email("email3@email.com")
+			.email("email10@email.com")
 			.password("5678")
-			.nickname("닉네임3")
+			.nickname("닉네임10")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -628,9 +627,9 @@ public class H2GoalServiceImplTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email1@email.com")
+			.email("email11@email.com")
 			.password("5678")
-			.nickname("닉네임1")
+			.nickname("닉네임11")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -699,9 +698,9 @@ public class H2GoalServiceImplTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email1@email.com")
+			.email("email12@email.com")
 			.password("5678")
-			.nickname("닉네임1")
+			.nickname("닉네임12")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -765,9 +764,9 @@ public class H2GoalServiceImplTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email1@email.com")
+			.email("email13@email.com")
 			.password("5678")
-			.nickname("닉네임1")
+			.nickname("닉네임13")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -833,9 +832,9 @@ public class H2GoalServiceImplTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email1@email.com")
+			.email("email14@email.com")
 			.password("5678")
-			.nickname("닉네임1")
+			.nickname("닉네임14")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -896,9 +895,9 @@ public class H2GoalServiceImplTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email1@email.com")
+			.email("email15@email.com")
 			.password("5678")
-			.nickname("닉네임1")
+			.nickname("닉네임15")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(false)
@@ -955,9 +954,9 @@ public class H2GoalServiceImplTest {
 		// given
 		User user = User.builder()
 			.name("이름")
-			.email("email1@email.com")
+			.email("email16@email.com")
 			.password("5678")
-			.nickname("닉네임1")
+			.nickname("닉네임16")
 			.gender("male")
 			.birthDate(LocalDate.of(1990,1,1))
 			.isDeleted(true)
