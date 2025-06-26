@@ -12,4 +12,5 @@ public class TransactionResponse {
     private String type; // DEPOSIT, WITHDRAWAL
     private LocalDateTime createdAt;
     private String description;
+    private String memo;
 }
