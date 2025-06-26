@@ -20,11 +20,22 @@ public class GoalRetirementCalculateService{
 	private final UserRepository userRepository;
 
 	public Long calculateTargetAmount(GoalRetirementCalculateRequest request, Long userId) {
-		User user = userRepository.findById(userId)
+		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		int currentAge = LocalDate.now().getYear() - user.getBirthDate().getYear();
+
+		if (request.getExpectedLifespan() <= currentAge) {
+			throw new CustomException(ErrorCode.INVALID_EXPECTED_LIFESPAN);
+		}
 
 		LocalDate endAt = request.getEndAt().toLocalDate();
 		LocalDate expectedDeathDate = GoalDateHelper.toExpectedDeathDate(request.getExpectedLifespan(), user.getBirthDate().getYear());
+
+		if (endAt.isAfter(expectedDeathDate)) {
+			throw new CustomException(ErrorCode.GOAL_RETIREMENT_LIFESPAN_BEFORE_END_DATE);
+		}
+
 		Long monthsBetween = ChronoUnit.MONTHS.between(endAt, expectedDeathDate);
 
 		return monthsBetween * request.getMonthlyExpense();
