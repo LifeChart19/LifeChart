@@ -2,11 +2,14 @@ package org.example.lifechart.domain.goal.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.response.GoalRetirementEstimateResponse;
+import org.example.lifechart.domain.goal.enums.RetirementAverageAge;
 import org.example.lifechart.domain.goal.enums.RetirementMonthlyExpense;
 import org.example.lifechart.domain.goal.enums.RetirementType;
 import org.example.lifechart.domain.user.entity.User;
@@ -18,8 +21,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.annotation.PostConstruct;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 public class RetirementReferenceValueService {
@@ -53,15 +54,20 @@ public class RetirementReferenceValueService {
 	}
 
 	public GoalRetirementEstimateResponse getReferenceValues(Long userId, int currentYear) {
-		User user = userRepository.findById(userId)
+		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
 
 		Long expectedLifespan = getExpectedLifespan(user.getGender(), currentYear);
 		RetirementType retirementType = RetirementType.COUPLE;
-		Long MonthlyExpense = getAverageMonthlyExpense(retirementType);
+		Long monthlyExpense = getAverageMonthlyExpense(retirementType);
+		LocalDateTime expectedRetirementDate = calculateExpectedRetirementDate(user.getGender(), user.getBirthDate());
 
-		return new GoalRetirementEstimateResponse(expectedLifespan, MonthlyExpense, retirementType);
+		return GoalRetirementEstimateResponse.builder()
+			.expectedLifespan(expectedLifespan)
+			.monthlyExpense(monthlyExpense)
+			.retirementType(retirementType)
+			.expectedRetirementDate(expectedRetirementDate)
+			.build();
 	}
 
 	// 기대 수명 반환 메서드
@@ -85,5 +91,11 @@ public class RetirementReferenceValueService {
 	// 평균 지출 메서드도 이곳에 함께 구현
 	private Long getAverageMonthlyExpense(RetirementType retirementType) {
 		return RetirementMonthlyExpense.valueOf(retirementType.name()).getValue();
+	}
+
+	private LocalDateTime calculateExpectedRetirementDate(String gender, LocalDate birthDate) {
+		int retirementAge = RetirementAverageAge.getByGender(gender);
+		LocalDateTime birthDateTime = birthDate.atStartOfDay();
+		return birthDateTime.plusYears((long) retirementAge);
 	}
 }

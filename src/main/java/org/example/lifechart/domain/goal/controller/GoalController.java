@@ -1,18 +1,22 @@
 package org.example.lifechart.domain.goal.controller;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalHousingCalculateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalRetirementCalculateRequest;
+import org.example.lifechart.domain.goal.dto.request.GoalSearchCondition;
 import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
+import org.example.lifechart.domain.goal.dto.response.CursorPageResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalRetirementEstimateResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalSummaryResponse;
+import org.example.lifechart.domain.goal.enums.Category;
+import org.example.lifechart.domain.goal.enums.Share;
+import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.service.GoalHousingCalculateService;
 import org.example.lifechart.domain.goal.service.GoalRetirementCalculateService;
 import org.example.lifechart.domain.goal.service.GoalServiceImpl;
@@ -116,10 +120,16 @@ public class GoalController {
 		description = "내가 생성한 목표 전체를 조회합니다.",
 		security = @SecurityRequirement(name="bearerAuth")
 	)
-	public ResponseEntity<ApiResponse<List<GoalSummaryResponse>>> getMyGoals(
-		@AuthenticationPrincipal CustomUserPrincipal principal
+	public ResponseEntity<ApiResponse<CursorPageResponse<GoalSummaryResponse>>> getMyGoals(
+		@AuthenticationPrincipal CustomUserPrincipal principal,
+		@RequestParam(required = false) Long cursorId,
+		@RequestParam(required = false, defaultValue = "10") Integer size,
+		@RequestParam(required = false) Status status,
+		@RequestParam(required = false) Category category,
+		@RequestParam(required = false) Share share
 	) {
-		List<GoalSummaryResponse> response = goalService.findMyGoals(principal.getUserId());
+		GoalSearchCondition condition = new GoalSearchCondition(cursorId, size, status, category, share);
+		CursorPageResponse<GoalSummaryResponse> response = goalService.findMyGoals(principal.getUserId(), condition);
 		return ApiResponse.onSuccess(SuccessCode.GOAL_GET_LIST_SUCCESS, response);
 	}
 

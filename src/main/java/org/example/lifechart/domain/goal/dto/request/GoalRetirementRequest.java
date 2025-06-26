@@ -1,18 +1,13 @@
 package org.example.lifechart.domain.goal.dto.request;
 
-import java.time.LocalDate;
-
-import org.example.lifechart.domain.goal.entity.Goal;
-import org.example.lifechart.domain.goal.entity.GoalRetirement;
 import org.example.lifechart.domain.goal.enums.RetirementType;
-import org.example.lifechart.domain.goal.helper.GoalDateHelper;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,8 +31,8 @@ public class GoalRetirementRequest implements GoalDetailRequest {
 	private RetirementType retirementType;
 
 	@Schema(description = "기대 수명", example = "90")
+	@Positive(message = "양수만 입력 가능합니다.")
 	@Max(150L) // 최대 150세까지 입력 가능
 	@NotNull(message = "기대 수명은 필수 입력입니다.")
-	private Long expectedLifespan; // endAt보다 크거나 같음을 검증하는 로직 필요. 어디에서 할지는 고민 필요
-
+	private Long expectedLifespan;
 }

@@ -1,6 +1,7 @@
 package org.example.lifechart.domain.goal.repository;
 
 import org.example.lifechart.domain.goal.entity.Goal;
+import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.shareGoal.repository.CustomShareGoalRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface GoalRepository extends JpaRepository<Goal, Long>, CustomShareGoalRepository {
+public interface GoalRepository extends JpaRepository<Goal, Long>,
+                                        CustomShareGoalRepository,
+                                        CustomGoalRepository {
+
     // userId 기준으로 Goal 목록 조회 (예: 특정 사용자의 모든 목표 조회)
     List<Goal> findByUserId(Long userId);
 
@@ -22,6 +26,10 @@ public interface GoalRepository extends JpaRepository<Goal, Long>, CustomShareGo
     Optional<Goal> findByIdAndStatus(Long id, Status status);
 
     List<Goal> findAllByUserId(Long userId);
+
+    Boolean existsByUserIdAndCategory(Long userId, Category category);
+
+    Long countByUserIdAndCategory(Long userId, Category category);
 
     @Query("""
     SELECT g FROM Goal g

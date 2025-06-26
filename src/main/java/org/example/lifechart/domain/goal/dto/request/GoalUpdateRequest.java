@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.example.lifechart.domain.goal.enums.Share;
+import org.example.lifechart.validation.annotation.ValidGoalPeriod;
 import org.example.lifechart.validation.annotation.ValidTags;
+import org.example.lifechart.validation.support.HaSGoalPeriod;
 import org.example.lifechart.validation.support.TagValidatable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,14 +22,16 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@ValidGoalPeriod
 @ValidTags
-public class GoalUpdateRequest implements TagValidatable {
+public class GoalUpdateRequest implements HaSGoalPeriod, TagValidatable {
 
 	@Schema(description = "목표명", example = "강남 집사기")
 	@NotBlank(message = "목표명은 필수 입력입니다.")
 	private String title;
 
 	@Schema(description = "목표 시작일", example = "2025-07-01T00:00:00") // 클라이언트가 2025-07-01 이렇게 입력해도 뒤에 T00:00:00 자동 반환
+	@NotNull(message = "시작일은 필수 입력입니다.")
 	private LocalDateTime startAt; // nullable.
 
 	@Schema(description = "목표 종료일", example = "2030-06-30T00:00:00") // 클라이언트가 2025-07-01 이렇게 입력해도 뒤에 T00:00:00 자동 반환
@@ -59,6 +63,16 @@ public class GoalUpdateRequest implements TagValidatable {
 	@Schema(description = "태그", example = "[주거, 강남]")
 	@NotEmpty(message = "태그는 필수 입력입니다.")
 	private List<@NotBlank String> tags;
+
+	@Override
+	public LocalDateTime getStartAt() {
+		return startAt;
+	}
+
+	@Override
+	public LocalDateTime getEndAt() {
+		return endAt;
+	}
 
 	@Override
 	public String getTitle() {

@@ -1,5 +1,6 @@
 package org.example.lifechart.domain.goal.service;
 
+import java.net.SocketTimeoutException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,8 @@ import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.response.ApartmentPriceDto;
 import org.example.lifechart.domain.goal.enums.RegionCode;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -38,9 +41,13 @@ public class OpenApiApartmentPriceService {
 			"&outputFields=OBJ_ID+OBJ_NM+NM+ITM_ID+ITM_NM+UNIT_NM+PRD_SE+PRD_DE+LST_CHN_DE+" +
 			"&orgId=408&tblId=DT_KAB_11672_S15";
 
-
+	@Retryable(
+		value = {SocketTimeoutException.class},
+		maxAttempts = 3,
+		backoff = @Backoff(delay = 2000)
+	)
 	public ApartmentPriceDto fetchLatest(String region, String subregion) {
-		String API_URL = buildUrl(120); // 최근 60개월
+		String API_URL = buildUrl(120); // 최근 120개월
 		try {
 			String response = restTemplate.getForObject(API_URL, String.class);
 			List<Map<String, Object>> dataList = objectMapper.readValue(response, new TypeReference<>() {});
@@ -84,4 +91,5 @@ public class OpenApiApartmentPriceService {
 			"&newEstPrdCnt=" + months +
 			"&apiKey=" + apiKey;
 	}
+
 }

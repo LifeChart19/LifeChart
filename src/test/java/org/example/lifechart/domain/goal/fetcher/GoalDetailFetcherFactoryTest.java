@@ -34,6 +34,7 @@ public class GoalDetailFetcherFactoryTest {
 	@Mock
 	GoalDetailInfoResponse mockResponse;
 
+	@InjectMocks
 	private GoalDetailFetcherFactory goalDetailFetcherFactory;
 
 	@BeforeEach
@@ -49,8 +50,7 @@ public class GoalDetailFetcherFactoryTest {
 			.id(1L)
 			.category(Category.HOUSING)
 			.build();
-
-
+		
 		given(goalHousingFetcher.supports(Category.HOUSING)).willReturn(true);
 		given(goalHousingFetcher.fetch(1L)).willReturn(mockResponse);
 
@@ -59,6 +59,7 @@ public class GoalDetailFetcherFactoryTest {
 
 		// then
 		assertThat(goalDetailInfoResponse).isEqualTo(mockResponse);
+		verify(goalHousingFetcher).supports(Category.HOUSING);
 		verify(goalHousingFetcher).fetch(1L);
 		verify(goalRetirementFetcher, never()).fetch(any());
 	}
@@ -83,5 +84,4 @@ public class GoalDetailFetcherFactoryTest {
 		// then
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_INVALID_CATEGORY);
 	}
-
 }
