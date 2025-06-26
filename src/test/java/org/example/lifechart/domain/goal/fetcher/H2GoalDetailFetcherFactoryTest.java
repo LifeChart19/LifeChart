@@ -108,6 +108,7 @@ public class H2GoalDetailFetcherFactoryTest {
 		// then
 		assertThat(response).isNotNull();
 		assertThat(response).isInstanceOf(GoalHousingInfoResponse.class);
+		assertThat(((GoalHousingInfoResponse) response).getArea()).isEqualTo(100L);
 	}
 
 	@Test
