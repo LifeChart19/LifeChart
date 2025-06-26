@@ -15,10 +15,10 @@ public class AccountQueryService {
     private final AccountClient accountClient;
 
     public AccountResponse getAccount(Long userId) {
-        return accountClient.getAccount(userId);
+        return accountClient.getAccount(userId).getData();
     }
 
     public List<TransactionResponse> getTransactions(Long userId) {
-        return accountClient.getTransactions(userId);
+        return accountClient.getTransactions(userId).getData();
     }
 }
