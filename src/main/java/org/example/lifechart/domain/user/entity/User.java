@@ -8,7 +8,7 @@
     import java.time.LocalDate;
     import java.time.LocalDateTime;
 
-    @Entity
+    @Entity(name = "\"user\"")
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
