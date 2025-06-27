@@ -4,11 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Share;
-import org.example.lifechart.domain.goal.enums.Status;
-import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.validation.annotation.ValidGoalPeriod;
 import org.example.lifechart.validation.annotation.ValidTags;
 import org.example.lifechart.validation.support.HaSGoalPeriod;
