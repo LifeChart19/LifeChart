@@ -43,8 +43,9 @@ public class AwsConfig {
 			Ec2MetadataResponse res = client.get("/latest/meta-data/instance-id");
 
 			if(res.asString() != null) return true;
+		} catch (Exception e) {
+			return false;
 		}
-
 		return false;
 	}
 
