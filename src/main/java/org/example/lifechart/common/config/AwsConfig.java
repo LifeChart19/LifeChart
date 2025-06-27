@@ -13,7 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.imds.Ec2MetadataClient;
+import software.amazon.awssdk.imds.Ec2MetadataResponse;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.internal.util.EC2MetadataUtils;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sts.StsClient;
@@ -35,15 +38,14 @@ public class AwsConfig {
 	private StsAssumeRoleCredentialsProvider credential;
 
 	private boolean isRunningOnEc2() {
-		try {
-			URI uri = URI.create("http://169.254.169.254/latest/meta-data/");
-			HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
-			connection.setConnectTimeout(100); // 매우 짧게 설정
-			connection.connect();
-			return connection.getResponseCode() == 200;
-		} catch (IOException e) {
-			return false;
+
+		try (Ec2MetadataClient client = Ec2MetadataClient.create()){
+			Ec2MetadataResponse res = client.get("/latest/meta-data/instance-id");
+
+			if(res.asString() != null) return true;
 		}
+
+		return false;
 	}
 
 
