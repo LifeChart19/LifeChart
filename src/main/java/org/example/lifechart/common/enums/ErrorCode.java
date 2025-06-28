@@ -107,7 +107,6 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
 	// Simulation (Line#: 110~139)
 	SIMULATION_BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 	SIMULATION_INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
@@ -183,9 +182,9 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
-
-
+	// Lock (Line#: 185~190)
+	LOCK_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "잠시 후 다시 시도해주세요."),
+	LOCK_INTERRUPTION(HttpStatus.SERVICE_UNAVAILABLE, "요청이 중단되었습니다. 다시 시도해주세요."),
 
 
 
