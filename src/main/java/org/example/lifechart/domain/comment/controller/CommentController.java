@@ -7,6 +7,7 @@ import org.example.lifechart.domain.comment.dto.response.CommentCursorResponseDt
 import org.example.lifechart.domain.comment.dto.response.CommentGetResponseDto;
 import org.example.lifechart.domain.comment.dto.response.CommentResponseDto;
 import org.example.lifechart.domain.comment.service.CommentService;
+import org.example.lifechart.domain.comment.service.DistributedLockCommentService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommentController {
 	public final CommentService commentService;
+	public final DistributedLockCommentService distributedLockCommentService;
 
 	@Operation(
 		summary = "댓글 생성 API",
@@ -44,7 +46,7 @@ public class CommentController {
 		@PathVariable Long goalId,
 		@Valid @RequestBody CommentRequestDto commentRequestDto) {
 		return ApiResponse.onSuccess(SuccessCode.CREATE_COMMENT_SUCCESS,
-			commentService.createComment(customUserPrincipal.getUserId(), goalId, commentRequestDto));
+			distributedLockCommentService.createComment(customUserPrincipal.getUserId(), goalId, commentRequestDto));
 	}
 
 	@Operation(
@@ -98,7 +100,7 @@ public class CommentController {
 	public ResponseEntity<ApiResponse<Void>> deleteComment(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
 		@PathVariable Long commentId) {
-		commentService.deleteComment(customUserPrincipal.getUserId(), commentId);
+		distributedLockCommentService.deleteComment(customUserPrincipal.getUserId(), commentId);
 		return ApiResponse.onSuccess(SuccessCode.DELETE_COMMENT_SUCCESS, null);
 	}
 
