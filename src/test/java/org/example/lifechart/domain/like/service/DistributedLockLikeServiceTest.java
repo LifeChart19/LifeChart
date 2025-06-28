@@ -84,7 +84,7 @@ class DistributedLockLikeServiceTest {
 				.birthDate(LocalDate.of(2000, 3, 5))
 				.build();
 			savedUser = userRepository.save(user);
-			userList.add(user);
+			userList.add(savedUser);
 		}
 
 		Goal goal = Goal.builder()
@@ -105,8 +105,9 @@ class DistributedLockLikeServiceTest {
 	@DisplayName("동시에 좋아요를 여러개 생성 & 삭제가 제대로 되는지 확인")
 	void likeLock_Ok() throws InterruptedException {
 
-		Map<Long, Long> likeIds = Collections.synchronizedMap(new HashMap<>());
-
+		// like의 같은 경우는 하나의 유저가 하나의 골에 누를 수 있기 때문에 유저 5000명을 다 다르게 하고,
+		// likeId도 다 다른 것을 삭제해야 해서 Map 사용
+		Map<Long, Long> userLikeIds = Collections.synchronizedMap(new HashMap<>());
 
 		likeLockTest(5000, () -> {
 			long userId;
@@ -120,26 +121,27 @@ class DistributedLockLikeServiceTest {
 			}
 
 			Long likeId = distributedLockLikeService.plusLike(userId, savedGoal.getId()).getId();
-			likeIds.put(userId, likeId);
-			});
+			userLikeIds.put(userId, likeId);
+		});
 
-		assertEquals(5000, likeIds.size());
+		assertEquals(5000, userLikeIds.size());
 		assertEquals(5000, likeRepository.count());
 
 		likeLockTest(5000, () -> {
 			Long userId;
 			Long likeId;
-			synchronized (likeIds) {
-				if (!likeIds.isEmpty()) {
-					userId = likeIds.keySet().iterator().next();
-					likeId = likeIds.remove(userId);
+			synchronized (userLikeIds) {
+				if (!userLikeIds.isEmpty()) {
+					userId = userLikeIds.keySet().iterator().next(); // key중에서 아무거나 하나 꺼냄
+					likeId = userLikeIds.remove(userId); // 키를 제거하면서 키에 해당하는 값 반환
 				} else {
 					return;
 				}
 				distributedLockLikeService.deleteLike(userId, likeId);
-			}});
+			}
+		});
 
-		assertEquals(0, likeIds.size());
+		assertEquals(0, userLikeIds.size());
 		assertEquals(0, likeRepository.count());
 	}
 

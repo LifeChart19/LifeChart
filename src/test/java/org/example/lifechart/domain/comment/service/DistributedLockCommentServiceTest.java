@@ -48,24 +48,28 @@ class DistributedLockCommentServiceTest {
 
 
 	private void commentLockTest(int numberOfThreads, Runnable action) throws InterruptedException {
+
+		// (값) 만큼의 쓰레드 풀 생성과 동시에 병렬로 실행되게 해줌
 		ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
+
+		// 모든 쓰레드가 작업을 다할 때까지 기다리게 해주는 도구
 		CountDownLatch latch = new CountDownLatch(numberOfThreads);
 
 		try {
 			for (int i = 0; i < numberOfThreads; i++) {
-				executorService.submit(() -> {
+				executorService.submit(() -> { // 쓰레드 풀에 작업 제출(비동기)
 					try {
-						action.run();
+						action.run(); // 동시성 테스트 하려는 로직
 					} catch (Exception e) {
 						System.out.println("예외 발생: " + e.getMessage());
 					} finally {
-						latch.countDown();
+						latch.countDown(); // 하나의 쓰레드 작업이 끝났을 때 1씩 감소
 					}
 				});
 			}
-			latch.await();
+			latch.await(); // 모든 쓰레드의 작업이 완료될 때까지 대기하고 모두 완료되면 다음 단계로
 		} finally {
-			executorService.shutdown();
+			executorService.shutdown(); // 자원 해제
 		}
 	}
 
@@ -100,31 +104,35 @@ class DistributedLockCommentServiceTest {
 	void commentLock_Ok() throws InterruptedException {
 
 		CommentRequestDto commentRequestDto = CommentRequestDto.builder().contents("1").build();
+
+		// 멀티쓰레드 환경에서 안전하게 추가/ 삭제 가능한 동시성 제어 리스트
 		List<Long> commentIds = Collections.synchronizedList(new ArrayList<>());
 
 
 		commentLockTest(5000, ()-> {
-			Long id = distributedLockCommentService.createComment(savedUser.getId(), savedGoal.getId(),
+			Long commentId = distributedLockCommentService.createComment(savedUser.getId(), savedGoal.getId(),
 				commentRequestDto).getId();
-			commentIds.add(id);
-			});
-
+			commentIds.add(commentId);
+		});
 
 		assertEquals(5000, commentIds.size());
 		assertEquals(5000, commentRepository.count());
 
 
 		commentLockTest(5000, () -> {
-			Long id;
+			Long commentId;
+
+			// 간단한 add / remove면 동시성 제어 리스트로 되지만 isEmpty()와 remove가 묶여 복합적일 땐 에러가 날 위험이 있어서
+			// 명시적 동기화 추가
 			synchronized (commentIds) {
 				if (!commentIds.isEmpty()) {
-					id = commentIds.remove(0);
+					commentId = commentIds.remove(0);
 				} else {
 					return;
 				}
 			}
-			distributedLockCommentService.deleteComment(savedUser.getId(), id);
-			});
+			distributedLockCommentService.deleteComment(savedUser.getId(), commentId);
+		});
 
 		assertEquals(0, commentIds.size());
 		assertEquals(0, commentRepository.count());

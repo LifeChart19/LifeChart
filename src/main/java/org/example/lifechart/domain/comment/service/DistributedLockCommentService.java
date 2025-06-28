@@ -29,14 +29,14 @@ public class DistributedLockCommentService {
 			CommentResponseDto responseDto = commentService.createComment(authId, goalId, commentRequestDto);
 			long end = System.nanoTime();
 			long elapsedMs = (end - start) / 1_000_000;
-			log.info("댓글 생성 시간: {}ms", elapsedMs);
+			log.info("댓글 생성 시간: {}ms", elapsedMs); // 동시성 제어할 때 댓글 생성의 평균 작업시간을 구하기 위함
 			return responseDto;
 			},30,  5, TimeUnit.SECONDS);
 	}
 
 	public void deleteComment(Long authId, Long commentId) {
 		Long goalId = commentRepository.findGoalIdByCommentId(commentId).orElseThrow(() ->
-			new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+			new CustomException(ErrorCode.COMMENT_NOT_FOUND)); // goalId를 키로 넣어야 하는데 받는 로직이 없어서 가져옴
 		String key = defaultKey + "delete:" + goalId;
 		lockExecutor.executeWithLock(key, () -> {
 			long start = System.nanoTime();
