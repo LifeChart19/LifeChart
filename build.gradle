@@ -81,6 +81,7 @@ dependencies {
     implementation 'software.amazon.awssdk:sqs'
     implementation 'software.amazon.awssdk:auth'
     implementation 'software.amazon.awssdk:sts'
+    implementation 'software.amazon.awssdk:imds'
 
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
