@@ -32,12 +32,14 @@ public class FeignConfig {
         };
     }
 
-    // HttpServletRequest에서 토큰 추출 (최적!)
     private String extractAccessTokenFromRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes == null) return null;
         HttpServletRequest request = attributes.getRequest();
-        String authHeader = request.getHeader("Authorization");
+        return extractAccessToken(request.getHeader("Authorization"));
+    }
+
+    private String extractAccessToken(String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }
