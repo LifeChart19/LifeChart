@@ -47,6 +47,7 @@ public enum ErrorCode implements BaseCode {
 
 
 
+
 	// Auth (Line#: 50~79)
 	NOT_MATCH_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 	NOT_EXIST_COOKIE(HttpStatus.NOT_FOUND, "쿠키가 존재하지 않습니다."),
