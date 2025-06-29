@@ -24,7 +24,7 @@ public enum SuccessCode implements BaseCode {
 	GET_USER_INFO_SUCCESS(HttpStatus.OK, "내 정보를 조회했습니다."),
 	GET_USER_PROFILE_SUCCESS(HttpStatus.OK, "유저 프로필을 조회했습니다."),
 	GET_ACCOUNT_SUCCESS(HttpStatus.OK, "계좌 잔액 조회를 성공했습니다."),
-    GET_TRANSACTIONS_SUCCESS(HttpStatus.OK, "거래 내역 조회를 성공했습니다."),
+	GET_TRANSACTIONS_SUCCESS(HttpStatus.OK, "거래 내역 조회를 성공했습니다."),
 
 
 
