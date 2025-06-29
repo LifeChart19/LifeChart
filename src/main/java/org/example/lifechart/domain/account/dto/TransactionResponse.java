@@ -1,6 +1,7 @@
 package org.example.lifechart.domain.account.dto;
 
 import lombok.Getter;
+import org.example.lifechart.domain.account.enums.TransactionType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 public class TransactionResponse {
     private Long id;
     private BigDecimal amount;
-    private String type; // DEPOSIT, WITHDRAWAL
+    private TransactionType type; // DEPOSIT, WITHDRAWAL
     private LocalDateTime createdAt;
     private String description;
     private String memo;
