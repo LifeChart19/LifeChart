@@ -5,15 +5,18 @@ import org.example.lifechart.domain.user.dto.AccountCreatedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 
-
+@ExtendWith(MockitoExtension.class)
 class AccountSnsEventPublisherTest {
 
     @Mock
@@ -27,8 +30,6 @@ class AccountSnsEventPublisherTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        // topicArn 세팅 (Reflection, 테스트 목적으로)
         TestUtils.setField(publisher, "topicArn", "test-arn");
     }
 
@@ -39,7 +40,7 @@ class AccountSnsEventPublisherTest {
         AccountCreatedEvent event = new AccountCreatedEvent(1L, "email@test.com", "닉네임", "이름", null);
         String json = "{\"userId\":1}";
 
-        when(objectMapper.writeValueAsString(event)).thenReturn(json);
+        given(objectMapper.writeValueAsString(event)).willReturn(json);
 
         // when
         publisher.publishAccountCreatedEvent(event);
@@ -85,7 +86,7 @@ class AccountSnsEventPublisherTest {
 
         String json = "{\"userId\":1}";
 
-        when(objectMapper.writeValueAsString(event)).thenReturn(json);
+        given(objectMapper.writeValueAsString(event)).willReturn(json);
         doThrow(new RuntimeException("AWS 에러")).when(snsClient).publish(any(PublishRequest.class));
 
         assertThatThrownBy(() -> publisher.publishAccountCreatedEvent(event))
