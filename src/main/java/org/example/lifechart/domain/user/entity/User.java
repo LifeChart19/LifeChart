@@ -43,8 +43,6 @@
         @Column(nullable = false)
         private Boolean isDeleted = false;
 
-        private LocalDateTime createdAt;
-
         @Column
         private LocalDateTime deletedAt;
 
@@ -95,12 +93,4 @@
 
         @Column
         private String providerId;
-
-        @PrePersist
-        public void prePersist() {
-            if (this.createdAt == null) {
-                this.createdAt = LocalDateTime.now();
-            }
-        }
-
     }
