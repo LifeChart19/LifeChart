@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode implements BaseCode {
 
-	CUSTOM_ERROR_STATUS(HttpStatus.INTERNAL_SERVER_ERROR, "Custom Error"),
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "예상치 못한 에러입니다."),
 
 
 

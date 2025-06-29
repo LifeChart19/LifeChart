@@ -22,6 +22,8 @@ import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.entity.GoalRetirement;
 import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Status;
+import org.example.lifechart.domain.goal.event.GoalDeletedEvent;
+import org.example.lifechart.domain.goal.event.GoalUpdatedEvent;
 import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
@@ -29,6 +31,7 @@ import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +49,7 @@ public class GoalServiceImpl implements GoalService {
 	private final GoalEtcRepository goalEtcRepository;
 	private final UserRepository userRepository;
 	private final GoalDetailFetcherFactory goalDetailFetcherFactory;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	@Override
@@ -106,6 +110,8 @@ public class GoalServiceImpl implements GoalService {
 			throw new CustomException(ErrorCode.ONLY_ONE_RETIREMENT_GOAL);
 		}
 		goal.delete();
+
+		eventPublisher.publishEvent(new GoalDeletedEvent(goal.getId()));
 	}
 
 	@Transactional
@@ -122,6 +128,8 @@ public class GoalServiceImpl implements GoalService {
 
 		savedGoal.update(request); // 목표 수정 Entity 반영 > DB 갱신
 		updateGoalDetail(detail, savedGoal.getId(), user); // 목표 상세 수정 Entity > DB 갱신
+
+		eventPublisher.publishEvent(new GoalUpdatedEvent(savedGoal.getId()));
 
 		return GoalResponse.from(savedGoal);
 	}
