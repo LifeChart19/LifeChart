@@ -20,5 +20,6 @@ public interface ShareGoalService {
 
 	List<ShareGoalSearchResponseDto> searchTop10Keyword(Long authId);
 
+	List<String> searchAutocomplete(Long authId, String prefix);
 }
 
