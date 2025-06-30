@@ -95,8 +95,8 @@ public enum ErrorCode implements BaseCode {
 	INVALID_REGION_MATCH(HttpStatus.BAD_REQUEST, "지역-세부지역 매칭에 실패했습니다."),
 	ONLY_ONE_RETIREMENT_GOAL(HttpStatus.BAD_REQUEST, "은퇴 목표는 반드시 하나가 존재해야 합니다."),
 	INVALID_EXPECTED_LIFESPAN(HttpStatus.BAD_REQUEST, "기대 수명은 현재 나이보다 큰 값이어야 합니다."),
-
-
+	GOAL_UPDATE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 수정 이벤트 발행에 실패했습니다."),
+	GOAL_DELETE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 수정 이벤트 발행에 실패했습니다."),
 
 
 

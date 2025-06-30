@@ -29,7 +29,6 @@ import org.example.lifechart.domain.goal.enums.HousingType;
 import org.example.lifechart.domain.goal.enums.RetirementType;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
-import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
@@ -38,6 +37,7 @@ import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -819,9 +819,8 @@ public class H2GoalServiceImplTest {
 		assertThat(updatedGoal.getTitle()).isEqualTo("30일 크루즈 세계일주");
 		assertThat(updatedGoalEtc.getTheme()).isEqualTo("세계 여행");
 		assertThat(updatedGoalEtc.getExpectedPrice()).isEqualTo(30_000_000L);
-
-
 	}
+
 
 	@Test // to do
 	@DisplayName("조회한 목표의 category와 수정할 detail 양식이 다르면 예외를 던진다.")

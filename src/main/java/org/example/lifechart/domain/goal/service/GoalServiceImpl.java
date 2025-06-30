@@ -111,7 +111,11 @@ public class GoalServiceImpl implements GoalService {
 		}
 		goal.delete();
 
-		eventPublisher.publishEvent(new GoalDeletedEvent(goal.getId()));
+		try {
+			eventPublisher.publishEvent(new GoalDeletedEvent(goal.getId()));
+		} catch (Exception e) {
+			log.warn(ErrorCode.GOAL_DELETE_EVENT_PUBLISH_FAILED.getMessage());
+		}
 	}
 
 	@Transactional
@@ -129,7 +133,11 @@ public class GoalServiceImpl implements GoalService {
 		savedGoal.update(request); // 목표 수정 Entity 반영 > DB 갱신
 		updateGoalDetail(detail, savedGoal.getId(), user); // 목표 상세 수정 Entity > DB 갱신
 
-		eventPublisher.publishEvent(new GoalUpdatedEvent(savedGoal.getId()));
+		try {
+			eventPublisher.publishEvent(new GoalUpdatedEvent(savedGoal.getId()));
+		} catch (Exception e) {
+			log.warn(ErrorCode.GOAL_UPDATE_EVENT_PUBLISH_FAILED.getMessage());
+		}
 
 		return GoalResponse.from(savedGoal);
 	}
