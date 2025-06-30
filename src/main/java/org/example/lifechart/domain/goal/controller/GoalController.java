@@ -120,6 +120,7 @@ public class GoalController {
 		description = "내가 생성한 목표 전체를 조회합니다.",
 		security = @SecurityRequirement(name="bearerAuth")
 	)
+	@GetMapping
 	public ResponseEntity<ApiResponse<CursorPageResponse<GoalSummaryResponse>>> getMyGoals(
 		@AuthenticationPrincipal CustomUserPrincipal principal,
 		@RequestParam(required = false) Long cursorId,
