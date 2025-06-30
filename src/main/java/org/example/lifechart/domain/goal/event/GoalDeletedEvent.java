@@ -7,5 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GoalDeletedEvent {
 
+	private  final Long userId;
 	private final Long goalId;
 }
