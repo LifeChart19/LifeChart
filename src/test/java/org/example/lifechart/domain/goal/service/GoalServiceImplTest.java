@@ -27,6 +27,8 @@ import org.example.lifechart.domain.goal.enums.HousingType;
 import org.example.lifechart.domain.goal.enums.RetirementType;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
+import org.example.lifechart.domain.goal.event.GoalDeletedEvent;
+import org.example.lifechart.domain.goal.event.GoalUpdatedEvent;
 import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
@@ -37,9 +39,11 @@ import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 public class GoalServiceImplTest {
@@ -62,8 +66,13 @@ public class GoalServiceImplTest {
 	@Mock
 	private GoalDetailFetcherFactory goalDetailFetcherFactory;
 
+	@Mock
+	private ApplicationEventPublisher eventPublisher;
+
 	@InjectMocks
 	private GoalServiceImpl goalService;
+
+	LocalDateTime fixedNow = LocalDateTime.of(2025,9,1,0,0);
 
 	@Test
 	@DisplayName("은퇴 목표 생성에 성공한다.")
@@ -343,6 +352,33 @@ public class GoalServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("목표 삭제와 이벤트 발행에 성공한다.")
+	void deleteGoal_목표_삭제와_이벤트_발행에_성공한다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.build();
+		Goal goal = Goal.builder()
+			.id(1L)
+			.status(Status.ACTIVE)
+			.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(goal.getId(), user.getId())).willReturn(Optional.of(goal));
+		ArgumentCaptor<GoalDeletedEvent> captor = ArgumentCaptor.forClass(GoalDeletedEvent.class);
+
+		// when
+		goalService.deleteGoal(goal.getId(), user.getId());
+
+		// then
+		verify(eventPublisher).publishEvent(captor.capture());
+		assertThat(captor.getValue().getGoalId()).isEqualTo(1L);
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
+		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
+		assertThat(goal.getStatus()).isEqualTo(Status.DELETED);
+	}
+
+	@Test
 	@DisplayName("로그인한 유저가 생성한 목표가 아니면 예외를 반환한다.")
 	void deleteGoal_로그인한_유저가_생성한_목표가_아니면_GOAL_NOT_FOUND_예외를_던진다() {
 		// given
@@ -585,7 +621,76 @@ public class GoalServiceImplTest {
 		assertThat(response.getGoalId()).isEqualTo(1L);
 		assertThat(goal.getTitle()).isEqualTo("30일 크루즈 세계일주");
 		assertThat(goalEtc.getTheme()).isEqualTo("여행");
+	}
 
+	@Test // to do
+	@DisplayName("주거 목표 수정과 이벤트 발행에 성공한다.")
+	void updateGoal_주거_목표_수정과_이벤트_발행에_성공한다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.build();
+
+		Goal goal = Goal.builder()
+			.id(1L)
+			.user(user)
+			.title("목표명")
+			.category(Category.HOUSING)
+			.targetAmount(1000L)
+			.startAt(LocalDateTime.now())
+			.endAt(LocalDateTime.now().plusMonths(6))
+			.status(Status.ACTIVE)
+			.share(Share.ALL)
+			.build();
+
+		GoalHousing goalHousing = GoalHousing.builder()
+			.id(1L)
+			.goal(goal)
+			.region("서울")
+			.subregion("서북권")
+			.housingType(HousingType.APARTMENT)
+			.area(84L)
+			.build();
+
+		GoalHousingRequest detail = GoalHousingRequest.builder()
+			.region("서울")
+			.subregion("서남권")
+			.housingType(HousingType.APARTMENT)
+			.area(100L)
+			.build();
+
+		LocalDateTime currentTime = LocalDateTime.now();
+
+		GoalUpdateRequest request = GoalUpdateRequest.builder()
+			.title("여의도 집 사기")
+			.startAt(currentTime)
+			.endAt(currentTime.plusMonths(6))
+			.detail(detail)
+			.targetAmount(1_432_100_000L)
+			.share(Share.PRIVATE)
+			.build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(user));
+		given(goalRepository.findByIdAndUserId(1L, 1L)).willReturn(Optional.of(goal));
+		given(goalHousingRepository.findByGoalId(1L)).willReturn(Optional.of(goalHousing));
+
+		ArgumentCaptor<GoalUpdatedEvent> captor = ArgumentCaptor.forClass(GoalUpdatedEvent.class);
+
+		// when
+		GoalResponse response = goalService.updateGoal(request, goal.getId(), user.getId());
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(1L);
+		verify(goalRepository).findByIdAndUserId(1L, 1L);
+		verify(goalHousingRepository).findByGoalId(1L);
+
+		verify(eventPublisher).publishEvent(captor.capture());
+		GoalUpdatedEvent event = captor.getValue();
+		assertThat(event.getGoalId()).isEqualTo(1L);
+
+		assertThat(response.getGoalId()).isEqualTo(1L);
+		assertThat(goal.getTitle()).isEqualTo("여의도 집 사기");
+		assertThat(goalHousing.getArea()).isEqualTo(100L);
 	}
 
 	@Test // to do
