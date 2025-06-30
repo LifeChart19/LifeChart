@@ -21,6 +21,10 @@ public class DistributedLockCommentService {
 	private final CommentService commentService;
 	private final CommentRepository commentRepository;
 	private final String defaultKey = "lock:goal:comment:";
+	private static final long LOCK_WAIT_TIME = 30L;
+	private static final long LOCK_LEASE_TIME_CREATE = 5L;
+	private static final long LOCK_LEASE_TIME_DELETE = 3L;
+
 
 	public CommentResponseDto createComment(Long authId, Long goalId, CommentRequestDto commentRequestDto) {
 		String key = defaultKey + "create:" + goalId;
@@ -31,7 +35,7 @@ public class DistributedLockCommentService {
 			long elapsedMs = (end - start) / 1_000_000;
 			log.info("댓글 생성 시간: {}ms", elapsedMs); // 동시성 제어할 때 댓글 생성의 평균 작업시간을 구하기 위함
 			return responseDto;
-			},30,  5, TimeUnit.SECONDS);
+			}, LOCK_WAIT_TIME,  LOCK_LEASE_TIME_CREATE, TimeUnit.SECONDS);
 	}
 
 	public void deleteComment(Long authId, Long commentId) {
@@ -44,6 +48,6 @@ public class DistributedLockCommentService {
 			long end = System.nanoTime();
 			long elapsedMs = (end - start) / 1_000_000;
 			log.info("댓글 삭제 시간: {}ms", elapsedMs);
-			}, 30, 3, TimeUnit.SECONDS);
+			}, LOCK_WAIT_TIME, LOCK_LEASE_TIME_DELETE, TimeUnit.SECONDS);
 	}
 }

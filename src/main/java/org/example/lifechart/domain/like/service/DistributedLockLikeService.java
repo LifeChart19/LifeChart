@@ -20,6 +20,9 @@ public class DistributedLockLikeService {
 	private final LikeService likeService;
 	private final LikeRepository likeRepository;
 	private final String defaultKey = "lock:goal:like:";
+	private static final long LOCK_WAIT_TIME_PLUS = 50L;
+	private static final long LOCK_WAIT_TIME_DELETE = 30L;
+	private static final long LOCK_LEASE_TIME = 5L;
 
 	public LikeResponseDto plusLike(Long authId, Long goalId) {
 		String key = defaultKey + "plus:" + goalId;
@@ -30,7 +33,7 @@ public class DistributedLockLikeService {
 			long elapsedMs = (end - start) / 1_000_000;
 			log.info("좋아요 생성 시간: {}ms", elapsedMs);
 			return responseDto;
-			}, 50, 5, TimeUnit.SECONDS);
+			}, LOCK_WAIT_TIME_PLUS, LOCK_LEASE_TIME, TimeUnit.SECONDS);
 	}
 
 	public void deleteLike(Long authId, Long likeId) {
@@ -43,6 +46,6 @@ public class DistributedLockLikeService {
 			long end = System.nanoTime();
 			long elapsedMs = (end - start) / 1_000_000;
 			log.info("좋아요 삭제 시간: {}ms", elapsedMs);
-			}, 30, 5, TimeUnit.SECONDS);
+			}, LOCK_WAIT_TIME_DELETE, LOCK_LEASE_TIME, TimeUnit.SECONDS);
 	}
 }
