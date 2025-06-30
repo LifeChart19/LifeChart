@@ -156,6 +156,7 @@ public enum ErrorCode implements BaseCode {
 
 	// shareGoal (Line#: 157~169)
 	SHARE_GOAL_KEYWORD_BAD_REQUEST(HttpStatus.BAD_REQUEST, "키워드는 공백이면 안 되고 길이가 2이상이여야 합니다"),
+	SHARE_GOAL_PREFIX_BAD_REQUEST(HttpStatus.BAD_REQUEST, "prefix는 null이거나 공백이면 안 됩니다."),
 
 
 
