@@ -27,7 +27,6 @@ public class CommentServiceImpl implements CommentService {
 	private final CommentRepository commentRepository;
 	private final UserRepository userRepository;
 	private final GoalRepository goalRepository;
-
 	private final SendSqsPort sqsPort;
 
 	@Transactional
@@ -40,8 +39,10 @@ public class CommentServiceImpl implements CommentService {
 		String contents = commentRequestDto.getContents();
 		Comment comment = Comment.createComment(foundUser, foundGoal, contents);
 		Comment savedComment = commentRepository.save(comment);
+		foundGoal.increaseComment();
 
-		sqsPort.sendNotification(foundGoal.getUser().getId(), "USER_NOTIFICATION", "New Comment", "댓글이 달렸습니다");
+		// sqsPort.sendNotification(foundGoal.getUser().getId(), "USER_NOTIFICATION", "New Comment",
+		// 	"댓글이 달렸습니다");
 
 		return CommentResponseDto.from(savedComment);
 	}
@@ -97,6 +98,7 @@ public class CommentServiceImpl implements CommentService {
 			throw new CustomException(ErrorCode.COMMENT_FORBIDDEN);
 		}
 		commentRepository.delete(foundComment);
+		foundComment.getGoal().decreaseComment();
 	}
 
 	private User validUser(Long userId) {

@@ -79,7 +79,7 @@ public class ShareGoalController {
 		@RequestParam String keyword
 	) {
 		if (keyword.trim().length() < 2) {
-			throw new CustomException(ErrorCode.SHARE_GOAL_KEYWORD_BAD_REQEUST);
+			throw new CustomException(ErrorCode.SHARE_GOAL_KEYWORD_BAD_REQUEST);
 		}
 		return ApiResponse.onSuccess(SuccessCode.GET_ALL_SHAREGOALS_SUCCESS,
 			shareGoalService.searchShareGoals(customUserPrincipal.getUserId(), cursorId, size, keyword));
