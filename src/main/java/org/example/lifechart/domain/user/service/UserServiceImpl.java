@@ -115,4 +115,9 @@ public class UserServiceImpl implements UserService {
         user.softDelete();
         return user.getId();
     }
+
+    @Override
+    public boolean existsById(Long userId) {
+        return userRepository.existsByIdAndIsDeletedFalse(userId);
+    }
 }
