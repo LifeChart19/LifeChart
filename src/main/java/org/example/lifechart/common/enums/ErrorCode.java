@@ -25,8 +25,9 @@ public enum ErrorCode implements BaseCode {
 	DELETED_USER_EXISTS(HttpStatus.BAD_REQUEST, "탈퇴 진행 중인 이메일입니다."),
 	EXIST_SAME_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재 하는 닉네임입니다."),
 	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST,"입력한 값의 형식이 잘못되었습니다."),
-
-
+	ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "계좌를 찾을 수 없습니다."),
+	TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "거래내역을 찾을 수 없습니다."),
+	NO_AUTHORIZATION(HttpStatus.NOT_FOUND, "권한이 없습니다."),
 
 
 
@@ -107,7 +108,6 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
 	// Simulation (Line#: 110~139)
 	SIMULATION_BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 	SIMULATION_INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
@@ -156,7 +156,7 @@ public enum ErrorCode implements BaseCode {
 
 
 	// shareGoal (Line#: 157~169)
-	SHARE_GOAL_KEYWORD_BAD_REQEUST(HttpStatus.BAD_REQUEST, "키워드는 공백이면 안 되고 길이가 2이상이여야 합니다"),
+	SHARE_GOAL_KEYWORD_BAD_REQUEST(HttpStatus.BAD_REQUEST, "키워드는 공백이면 안 되고 길이가 2이상이여야 합니다"),
 
 
 
@@ -183,9 +183,9 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
-
-
+	// Lock (Line#: 185~190)
+	LOCK_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "잠시 후 다시 시도해주세요."),
+	LOCK_INTERRUPTION(HttpStatus.SERVICE_UNAVAILABLE, "요청이 중단되었습니다. 다시 시도해주세요."),
 
 
 

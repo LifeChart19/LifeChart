@@ -42,6 +42,7 @@ class UserIntegrationTest {
         SignupRequest req1 = SignupRequest.builder()
                 .email("user1@email.com")
                 .password("pw1234")
+                .name("테스트유저1")
                 .nickname("nick1")
                 .birthDate(LocalDate.of(2000,1,1))
                 .gender("MALE")
@@ -55,6 +56,7 @@ class UserIntegrationTest {
         SignupRequest dupEmail = SignupRequest.builder()
                 .email("user1@email.com")
                 .password("pw9999")
+                .name("테스트유저2")
                 .nickname("othernick")
                 .birthDate(LocalDate.of(1999,1,1))
                 .build();
@@ -64,6 +66,7 @@ class UserIntegrationTest {
         SignupRequest dupNick = SignupRequest.builder()
                 .email("user2@email.com")
                 .password("pw1111")
+                .name("테스트유저3")
                 .nickname("nick1")
                 .birthDate(LocalDate.of(1998,1,1))
                 .build();
@@ -77,6 +80,7 @@ class UserIntegrationTest {
         SignupRequest rejoinDeleted = SignupRequest.builder()
                 .email("user1@email.com")
                 .password("pw2222")
+                .name("테스트유저4")
                 .nickname("newNick")
                 .birthDate(LocalDate.of(2002,2,2))
                 .build();
@@ -89,7 +93,7 @@ class UserIntegrationTest {
     void updateProfile_cases() {
         // 정상 회원가입
         User user = userService.signup(SignupRequest.builder()
-                .email("profile@test.com").password("pw1234").nickname("nick100").birthDate(LocalDate.of(2000,1,1)).build());
+                .email("profile@test.com").password("pw1234").name("프로필유저").nickname("nick100").birthDate(LocalDate.of(2000,1,1)).build());
 
         // 2-1. 성공
         UserUpdateRequest updateRequest = new UserUpdateRequest("newNick100", "FEMALE", "ENGINEER", "010-9999-0000");
@@ -99,7 +103,7 @@ class UserIntegrationTest {
 
         // 2-2. 닉네임 중복
         userService.signup(SignupRequest.builder()
-                .email("profile2@test.com").password("pw2222").nickname("dupNick").birthDate(LocalDate.of(1998,2,2)).build());
+                .email("profile2@test.com").password("pw2222").name("프로필유저2").nickname("dupNick").birthDate(LocalDate.of(1998,2,2)).build());
         UserUpdateRequest dupNick = new UserUpdateRequest("dupNick", "FEMALE", "STUDENT", "010-1111-9999");
         assertThrows(CustomException.class, () -> userService.updateProfile(user.getId(), dupNick));
 
@@ -113,7 +117,7 @@ class UserIntegrationTest {
     @DisplayName("회원 탈퇴 성공/비밀번호 불일치/이미 삭제/존재하지 않는 유저")
     void withdraw_cases() {
         User user = userService.signup(SignupRequest.builder()
-                .email("del@test.com").password("delpw").nickname("delNick").birthDate(LocalDate.of(1990,1,1)).build());
+                .email("del@test.com").password("delpw").name("탈퇴유저").nickname("delNick").birthDate(LocalDate.of(1990,1,1)).build());
 
         // 3-1. 성공
         userService.withdraw(user.getId(), new WithdrawalRequest("delpw"));
@@ -122,7 +126,7 @@ class UserIntegrationTest {
 
         // 3-2. 비밀번호 불일치
         User user2 = userService.signup(SignupRequest.builder()
-                .email("wrongpw@test.com").password("pwreal").nickname("wpNick").birthDate(LocalDate.of(1980,1,1)).build());
+                .email("wrongpw@test.com").password("pwreal").name("탈퇴유저2").nickname("wpNick").birthDate(LocalDate.of(1980,1,1)).build());
         assertThrows(CustomException.class, () -> userService.withdraw(user2.getId(), new WithdrawalRequest("wrongpw")));
 
         // 3-3. 이미 삭제된 유저

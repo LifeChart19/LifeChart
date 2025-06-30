@@ -4,6 +4,7 @@ import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.like.dto.response.LikeGetResponseDto;
 import org.example.lifechart.domain.like.dto.response.LikeResponseDto;
+import org.example.lifechart.domain.like.service.DistributedLockLikeService;
 import org.example.lifechart.domain.like.service.LikeService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LikeController {
 	private final LikeService likeService;
+	private final DistributedLockLikeService distributedLockLikeService;
 
 	@Operation(
 		summary = "좋아요 ++ API",
@@ -39,7 +41,7 @@ public class LikeController {
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
 		@PathVariable Long goalId) {
 		return ApiResponse.onSuccess(SuccessCode.CREATE_LIKE_SUCCESS,
-			likeService.plusLike(customUserPrincipal.getUserId(), goalId));
+			distributedLockLikeService.plusLike(customUserPrincipal.getUserId(), goalId));
 	}
 
 	@Operation(
@@ -79,8 +81,7 @@ public class LikeController {
 	public ResponseEntity<ApiResponse<Void>> deleteLike(
 		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
 		@PathVariable Long likeId) {
-		likeService.deleteLike(customUserPrincipal.getUserId(), likeId);
+		distributedLockLikeService.deleteLike(customUserPrincipal.getUserId(), likeId);
 		return ApiResponse.onSuccess(SuccessCode.DELETE_LIKE_SUCCESS, null);
 	}
-
 }

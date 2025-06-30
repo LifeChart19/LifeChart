@@ -38,6 +38,7 @@ public class LikeServiceImpl implements LikeService {
 		}
 		Like like = Like.createLike(foundUser, foundGoal);
 		Like savedLike = likeRepository.save(like);
+		foundGoal.increaseLike();
 		return LikeResponseDto.from(savedLike);
 	}
 
@@ -73,6 +74,7 @@ public class LikeServiceImpl implements LikeService {
 			throw new CustomException(ErrorCode.LIKE_FORBIDDEN);
 		}
 		likeRepository.delete(foundLike);
+		foundLike.getGoal().decreaseLike();
 	}
 
 	private User validUser(Long userId) {
