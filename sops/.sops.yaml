@@ -1,0 +1,9 @@
+
+creation_rules:
+  - path_regex: ".*\\.yaml"
+    encrypted_regex: ".*"
+#    unencrypted_suffix: ""
+    pgp: >-
+      89F22D81DBBFE2EAF602CEEC3E3D7E0CB06365A3,
+      771128D42298E25441E7EA66F7FBF3E34986C205
+    suffix: ".enc"
