@@ -37,8 +37,8 @@ public class UserServiceImpl implements UserService {
                 new AccountCreatedEvent(
                         savedUser.getId(),
                         savedUser.getEmail(),
-                        savedUser.getNickname(),
                         savedUser.getName(),
+                        savedUser.getSalary(),
                         savedUser.getCreatedAt().toString()
                 )
         );
@@ -83,7 +83,8 @@ public class UserServiceImpl implements UserService {
                 request.getNickname(),
                 request.getGender(),
                 request.getJob(),
-                request.getPhoneNumber()
+                request.getPhoneNumber(),
+                request.getSalary()
         );
 
         return user.getId();
