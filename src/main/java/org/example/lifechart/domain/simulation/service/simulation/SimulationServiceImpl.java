@@ -22,6 +22,7 @@ import org.example.lifechart.domain.simulation.repository.SimulationRepository;
 import org.example.lifechart.domain.simulation.service.calculator.CalculateAll;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.example.lifechart.infra.client.AccountClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,10 +46,20 @@ public class SimulationServiceImpl implements SimulationService {
     private final CalculateAll calculateAll;
     private final SimulationLogEventPublisher eventPublisher;
     private final GoalRetirementRepository goalRetirementRepository;
+    private final AccountClient accountClient;
 
     //사용자가 목표는 그대로 두고, 시뮬레이션만 새로운 파라미터로 돌림
     @Transactional
     public CreateSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, Long userId, List<Long> goalIds) {
+
+//        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
+//        AccountResponse account = accountResponse.getData();
+//
+//        if (accountResponse.getData() == null) {
+//            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
+//        }
+//
+//        long initialAsset = account.getBalance().longValue();
 
         //1. 소프트딜리트된 유저도 simulation생성 못하도록
         User user = validUser(userId);
@@ -171,8 +182,7 @@ public class SimulationServiceImpl implements SimulationService {
 
 
     //목표수정 -> 시뮬레이션 수정로직
-    @Transactional
-    //@EventListener //메서드가 최대 하나의 매개변수를 포함해야하는데, 골에서 이벤트 객체를 감싸서 한 개만 넘겨야함.
+    @Transactional//메서드가 최대 하나의 매개변수를 포함해야하는데, 골에서 이벤트 객체를 감싸서 한 개만 넘겨야함.
     public void updateSimulationsByGoalChange(Long userId, Long goalId) {
 
         User user = validUser(userId);

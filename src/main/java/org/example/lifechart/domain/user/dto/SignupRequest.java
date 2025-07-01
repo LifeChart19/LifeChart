@@ -7,12 +7,14 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Builder
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor(force = true)
 public class SignupRequest {
 
     @Email(message = "이메일 형식이 아닙니다.")
