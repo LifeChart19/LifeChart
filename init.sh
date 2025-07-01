@@ -9,14 +9,27 @@
 
 GIT_MESSAGE_DIR=".gitmessage.txt"
 
-SOPS_DIR="./sops"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+SOPS_DIR="$SCRIPT_DIR/sops"
 SOPS_BIN="$SOPS_DIR/sops"
 
+SOPS_YAML="$SOPS_DIR/.sops.yaml"
+PUBLIC_KEYS_DIR="$SOPS_DIR/public_keys"
+
 SOPS_VER="v3.10.2"
+
 
 PROJECT_NAME="LifeChart"
 
 echo "$PROJECT_NAME 초기 설정을 진행합니다."
+
+echo "SCRIPT_DIR : $SCRIPT_DIR"
+echo "SOPS_DIR : $SOPS_DIR"
+echo "SOPS_BIN : $SOPS_BIN"
+echo "SOPS_YAML : $SOPS_YAML"
+
+echo "PUBLIC_KEYS_DIR : $SOPS_YAML"
 
 
 template_ok=false
@@ -230,7 +243,7 @@ if [[ "$gpg_ok" == true ]]; then
   set -e  # 오류 발생 시 즉시 종료
 
   echo "Importing GPG public keys..."
-  for key in ./sops/public_keys/*.asc; do
+  for key in "$PUBLIC_KEYS_DIR/"*.asc; do
     echo ""
     gpg --import "$key" 2>/dev/null && echo "  Imported: $key"
   done
@@ -293,8 +306,7 @@ echo "-------------"
 
 set -e  # 오류 발생 시 즉시 종료
 
-SOPS_YAML="./sops/.sops.yaml"
-PUBLIC_KEYS_DIR="./sops/public_keys"
+
 mkdir -p "$PUBLIC_KEYS_DIR"
 
 # ▶ 1. .sops.yaml 없으면 초기 템플릿 생성
@@ -314,7 +326,7 @@ fi
 # ▶ 4. 메뉴 반복
 while true; do
   echo
-  echo "[ 내 비밀키 보유 GPG 키 목록 ]"
+  echo "[ 내 소유 GPG 키 목록 ]"
   for i in "${!MY_KEYS[@]}"; do
     echo "$((i+1)). ${MY_KEYS[$i]}"
   done
@@ -350,19 +362,62 @@ while true; do
 
     # ▶ pgp 배열 마지막 요소 앞에 줄바꿈과 쉼표 포함하여 추가
     # ▶ pgp 배열 마지막 요소 앞에 fingerprint 추가 (줄바꿈 후 쉼표는 앞에)
-    awk -v fpr="$fingerprint" '
-      BEGIN { in_pgp = 0 }
-      /^\s*pgp:\s*\[/ { in_pgp = 1; print; next }
-      in_pgp && /^\s*"/ {
-        print "      \"" fpr "\",";
-        in_pgp = 0
-      }
-      in_pgp && /\]/ {
-        print "      \"" fpr "\"";
-        in_pgp = 0
-      }
-      { print }
-    ' "$SOPS_YAML" > "$SOPS_YAML.tmp" && mv "$SOPS_YAML.tmp" "$SOPS_YAML"
+awk -v fpr="$fingerprint" '
+BEGIN {
+    in_pgp=0
+    n=0
+}
+/^[[:space:]]*pgp:[[:space:]]*>-/ {
+    print
+    in_pgp=1
+    n=0
+    next
+}
+in_pgp && /^[[:space:]]*$/ {
+    next
+}
+in_pgp && /^[[:space:]]*[^[:space:]]/ {
+    # 들여쓰기 없는 줄: pgp 블록 끝
+    for (i=1; i<=n; i++) {
+        if (i==n) {
+            sub(/^[[:space:]]*/, "      ", fingerprints[i])
+            if (fingerprints[i] !~ /,$/) {
+                fingerprints[i]=fingerprints[i] ","
+            }
+        }
+        print fingerprints[i]
+    }
+    print "      " fpr ","
+    in_pgp=0
+    print
+    next
+}
+{
+    if (in_pgp && !/^[[:space:]]*pgp:/) {
+        # fingerprint 라인을 저장
+        n++
+        fingerprints[n]=$0
+        next
+    }
+    print
+}
+END {
+    if (in_pgp) {
+        for (i=1; i<=n; i++) {
+            if (i==n) {
+                sub(/^[[:space:]]*/, "      ", fingerprints[i])
+                if (fingerprints[i] !~ /,$/) {
+                    fingerprints[i]=fingerprints[i] ","
+                }
+            }
+            print fingerprints[i]
+        }
+        print "      " fpr
+    }
+}
+' "$SOPS_YAML" > "$SOPS_YAML.tmp" && mv "$SOPS_YAML.tmp" "$SOPS_YAML"
+
+
 
     echo "[+] 완료: $email ($fingerprint)"
   else
