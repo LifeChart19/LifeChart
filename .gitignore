@@ -45,3 +45,4 @@ application-secret.properties
 
 .env
 .env.*
+.DS_Store
