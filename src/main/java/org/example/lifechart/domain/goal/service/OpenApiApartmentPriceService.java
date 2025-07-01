@@ -1,11 +1,8 @@
 package org.example.lifechart.domain.goal.service;
 
-import java.net.SocketTimeoutException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.response.ApartmentPriceDto;
@@ -15,11 +12,12 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import com.fasterxml.jackson.core.type.TypeReference;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.RequiredArgsConstructor;
+import java.net.SocketTimeoutException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +26,7 @@ public class OpenApiApartmentPriceService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("ZDM3MzA4OTgyOGVmOWViN2FjOGQ0NTViZmM0OTdmNTc=")
+    @Value("${openapi.kosis.key}")
     private String apiKey;
 
     private static final String BASE_URL = "https://kosis.kr/openapi/Param/statisticsParameterData.do";
