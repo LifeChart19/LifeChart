@@ -68,7 +68,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     // redisson
-    implementation 'org.redisson:redisson-spring-boot-starter:3.23.4'
+    implementation 'org.redisson:redisson-spring-boot-starter:3.50.0'
     //  Redisson을 Spring Boot와 통합해서 쉽게 사용할 수 있게 해줌. Redisson은 고급 분산 기능 제공.
 
     // lombok
@@ -81,6 +81,7 @@ dependencies {
     implementation 'software.amazon.awssdk:sqs'
     implementation 'software.amazon.awssdk:auth'
     implementation 'software.amazon.awssdk:sts'
+    implementation 'software.amazon.awssdk:imds'
 
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -102,6 +103,18 @@ dependencies {
     annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+
+    // feignclient 의존성 추가
+
+    dependencies {
+        implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.0"
+        }
+    }
 }
 
 tasks.named('test') {

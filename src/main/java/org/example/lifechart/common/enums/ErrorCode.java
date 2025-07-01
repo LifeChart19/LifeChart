@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode implements BaseCode {
 
-	CUSTOM_ERROR_STATUS(HttpStatus.INTERNAL_SERVER_ERROR, "Custom Error"),
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "예상치 못한 에러입니다."),
 
 
 
@@ -25,8 +25,9 @@ public enum ErrorCode implements BaseCode {
 	DELETED_USER_EXISTS(HttpStatus.BAD_REQUEST, "탈퇴 진행 중인 이메일입니다."),
 	EXIST_SAME_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재 하는 닉네임입니다."),
 	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST,"입력한 값의 형식이 잘못되었습니다."),
-
-
+	ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "계좌를 찾을 수 없습니다."),
+	TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "거래내역을 찾을 수 없습니다."),
+	NO_AUTHORIZATION(HttpStatus.NOT_FOUND, "권한이 없습니다."),
 
 
 
@@ -95,10 +96,9 @@ public enum ErrorCode implements BaseCode {
 	INVALID_REGION_MATCH(HttpStatus.BAD_REQUEST, "지역-세부지역 매칭에 실패했습니다."),
 	ONLY_ONE_RETIREMENT_GOAL(HttpStatus.BAD_REQUEST, "은퇴 목표는 반드시 하나가 존재해야 합니다."),
 	INVALID_EXPECTED_LIFESPAN(HttpStatus.BAD_REQUEST, "기대 수명은 현재 나이보다 큰 값이어야 합니다."),
-
-
-
-
+	GOAL_UPDATE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 수정 이벤트 발행에 실패했습니다."),
+	GOAL_DELETE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 삭제 이벤트 발행에 실패했습니다."),
+	GOAL_CREATE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 생성 이벤트 발행에 실패했습니다."),
 
 
 
@@ -156,7 +156,7 @@ public enum ErrorCode implements BaseCode {
 
 
 	// shareGoal (Line#: 157~169)
-	SHARE_GOAL_KEYWORD_BAD_REQEUST(HttpStatus.BAD_REQUEST, "키워드는 공백이면 안 되고 길이가 2이상이여야 합니다"),
+	SHARE_GOAL_KEYWORD_BAD_REQUEST(HttpStatus.BAD_REQUEST, "키워드는 공백이면 안 되고 길이가 2이상이여야 합니다"),
 
 
 
@@ -183,9 +183,9 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
-
-
+	// Lock (Line#: 185~190)
+	LOCK_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "잠시 후 다시 시도해주세요."),
+	LOCK_INTERRUPTION(HttpStatus.SERVICE_UNAVAILABLE, "요청이 중단되었습니다. 다시 시도해주세요."),
 
 
 
