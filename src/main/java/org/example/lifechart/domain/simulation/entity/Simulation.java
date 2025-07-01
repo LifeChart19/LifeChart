@@ -6,7 +6,6 @@ import org.example.lifechart.common.entity.BaseEntity;
 import org.example.lifechart.domain.simulation.converter.SimulationParamsConverter;
 import org.example.lifechart.domain.simulation.converter.SimulationResultsConverter;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
-import org.example.lifechart.domain.simulation.dto.request.SimulationRetirementCalculateRequest;
 import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
@@ -75,10 +74,10 @@ public class Simulation extends BaseEntity {
     private SimulationResults results;
 
     @Builder.Default
-    @Column(nullable = true)
+    @Column
     private boolean isDeleted = false;
 
-    @Column(nullable = true)
+    @Column
     private LocalDateTime deletedAt;
 
     //사용자 입력 연이율
@@ -112,7 +111,7 @@ public class Simulation extends BaseEntity {
     @ElementCollection
     private List<MonthlyAssetDto> monthlyAssets;
 
-    @Column(name = "months_to_goal", nullable = true)
+    @Column(name = "months_to_goal")
     private Integer monthsToGoal;
 
 
@@ -162,27 +161,6 @@ public class Simulation extends BaseEntity {
                 .build();
     }
 
-    public static Simulation ofDefault(SimulationRetirementCalculateRequest dto,
-                                       SimulationResults results,
-                                       User user) {
-        return Simulation.builder()
-                .title(dto.getTitle())
-                .baseDate(dto.getBaseDate())
-                .initialAsset(dto.getInitialAsset())
-                .monthlyIncome(dto.getMonthlyIncome())
-                .monthlyExpense(dto.getMonthlyExpense())
-                .monthlySaving(dto.getMonthlySaving())
-                .annualInterestRate(dto.getAnnualInterestRate())
-                .elapsedMonths(dto.getElapsedMonths())
-                .totalMonths(dto.getTotalMonths())
-                .requiredAmount(results.getRequiredAmount())
-                .estimatedAchieveMonth(results.getEstimatedAchieveMonth())
-                .currentAchievementRate(results.getCurrentAchievementRate())
-                .monthlyAchievements(results.getMonthlyAchievements())
-                .monthlyAssets(results.getMonthlyAssets())
-                .user(user)
-                .build();
-    }
 
     //프록시 객체만가져오기 위한 메서드
     public static Simulation withId(Long id) {
@@ -191,7 +169,7 @@ public class Simulation extends BaseEntity {
         return simulation;
     }
 
-    public void updateResults1(SimulationResults newResults, UpdateSimulationRequestDto dto) {
+    public void updateResults1(SimulationResults newResults) {
         this.requiredAmount = newResults.getRequiredAmount();
         this.estimatedAchieveMonth = newResults.getEstimatedAchieveMonth();
         this.currentAchievementRate = newResults.getCurrentAchievementRate();

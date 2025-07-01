@@ -7,10 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.validation.annotation.ValidGoalPeriod;
 import org.example.lifechart.validation.annotation.ValidTags;
@@ -24,8 +22,6 @@ import java.util.List;
 @Builder
 @ValidGoalPeriod
 @ValidTags
-@NoArgsConstructor
-@AllArgsConstructor
 public class GoalUpdateRequest implements HaSGoalPeriod, TagValidatable {
 
 	@Schema(description = "목표명", example = "강남 집사기")
@@ -46,9 +42,9 @@ public class GoalUpdateRequest implements HaSGoalPeriod, TagValidatable {
 	@Schema(description = "카테고리별 상세 정보", example = "housing: {} / retirement : {} / etc: {}")
 	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 	@JsonSubTypes({
-		@JsonSubTypes.Type(value = GoalHousingRequest.class, name = "housing"),
-		@JsonSubTypes.Type(value = GoalRetirementRequest.class, name = "retirement"),
-		@JsonSubTypes.Type(value = GoalEtcRequest.class, name = "etc")
+			@JsonSubTypes.Type(value = GoalHousingRequest.class, name = "housing"),
+			@JsonSubTypes.Type(value = GoalRetirementRequest.class, name = "retirement"),
+			@JsonSubTypes.Type(value = GoalEtcRequest.class, name = "etc")
 	})
 	@NotNull(message = "카테고리 상세 정보는 필수 입력입니다.")
 	private GoalDetailRequest detail;

@@ -288,7 +288,7 @@ public class SimulationServiceImpl implements SimulationService {
                 expectedDeathDate,
                 selectedGoals
         );
-        simulation.updateResults1(newResults, dto);
+        simulation.updateResults1(newResults);
 
         eventPublisher.publishUpdateEventBySimulationEdit(
                 user.getId(),

@@ -25,7 +25,7 @@ public class SimulationLog extends BaseEntity {
 
     //길이가 긴 데이터를 DB에 저장할 때 ->Lob 문자열 길이 제한을 넘길 수 있음.
     @Lob
-    @Column(nullable = false)
+    @Column(name = "goal_ids", columnDefinition = "TEXT", nullable = false)
     private String goalIds;
 
     @Lob
@@ -33,7 +33,7 @@ public class SimulationLog extends BaseEntity {
     private String params;
 
     @Lob
-    @Column(nullable = false)
+    @Column(name = "results", columnDefinition = "TEXT", nullable = false)
     private String results;
 
     @Enumerated(EnumType.STRING)
