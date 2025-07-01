@@ -62,6 +62,7 @@
                     .birthDate(request.getBirthDate())
                     .gender(request.getGender())
                     .job(request.getJob())
+                    .salary(request.getSalary())
                     .phoneNumber(request.getPhoneNumber())
                     .role("USER")
                     .isDeleted(false)
