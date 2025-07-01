@@ -18,7 +18,7 @@ public class AccountSnsEventPublisher implements AccountEventPublisherPort {
     private final SnsClient snsClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${aws.sns.account-topic}")
+    @Value("${aws.arn.sns.account}")
     private String topicArn;
 
     @Override
