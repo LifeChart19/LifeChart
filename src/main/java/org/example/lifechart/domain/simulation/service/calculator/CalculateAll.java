@@ -1,5 +1,6 @@
 package org.example.lifechart.domain.simulation.service.calculator;
 
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
@@ -22,11 +23,12 @@ public class CalculateAll {
             long initialAsset,
             long monthlyIncome,
             long monthlyExpense,
-            Long monthlySaving, // null이면 자동계산
+            Long monthlySaving,
             double annualInterestRate,
             int elapsedMonths,
             int totalMonths,
             LocalDate baseDate,
+            @Nullable LocalDate expectedDeathDate,
             List<Goal> goals
     ) {
         //연도와 월만 따고, localdate타입으로
@@ -57,7 +59,7 @@ public class CalculateAll {
 
         //매달 자산 추이
         List<MonthlyAssetDto> monthlyAssets = SimulationCalculator.simulateMonthlyAssetsWithInterest(
-                initialAsset, monthlySaving, annualInterestRate, totalMonths, baseMonth
+                initialAsset, monthlySaving, annualInterestRate, baseDate, expectedDeathDate
         );
 
         //dto클래스에 옮겨야할듯
@@ -68,5 +70,6 @@ public class CalculateAll {
                 .monthlyAchievements(monthlyAchievements)
                 .monthlyAssets(monthlyAssets) // List<Double> 또는 List<MonthlyAssetDto>
                 .build();
+
     }
 }

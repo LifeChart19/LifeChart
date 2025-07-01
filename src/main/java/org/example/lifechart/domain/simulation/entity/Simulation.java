@@ -3,9 +3,14 @@ package org.example.lifechart.domain.simulation.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.simulation.converter.SimulationParamsConverter;
+import org.example.lifechart.domain.simulation.converter.SimulationResultsConverter;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.dto.request.SimulationRetirementCalculateRequest;
+import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
+import org.example.lifechart.domain.simulation.dto.response.SimulationParams;
 import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
 import org.example.lifechart.domain.user.entity.User;
 
@@ -61,13 +66,13 @@ public class Simulation extends BaseEntity {
 
     //JPA가 해당 필드를 DB에 저장하거나 읽을 때 사용할 변환 로직(추후 수정예정)
     //파람은 복합객체라 이것을 직렬화, 역직렬화 해야 함.
-//    @Convert(converter = SimulationParamsConverter.class)
-//    @Column(columnDefinition = "json")
-//    private SimulationParams params;
-//
-//    @Convert(converter = SimulationResultsConverter.class)
-//    @Column(columnDefinition = "json")
-//    private SimulationResults results;
+    @Convert(converter = SimulationParamsConverter.class)
+    @Column(columnDefinition = "json")
+    private SimulationParams params;
+
+    @Convert(converter = SimulationResultsConverter.class)
+    @Column(columnDefinition = "json")
+    private SimulationResults results;
 
     @Builder.Default
     @Column(nullable = true)
@@ -107,25 +112,15 @@ public class Simulation extends BaseEntity {
     @ElementCollection
     private List<MonthlyAssetDto> monthlyAssets;
 
+    @Column(name = "months_to_goal", nullable = true)
+    private Integer monthsToGoal;
+
+
     //소프트릴리트 DB저장 필드 값 변경
     public void softDelete() {
         if (!this.isDeleted) {
             this.isDeleted = true;
             this.deletedAt = LocalDateTime.now();
-        }
-    }
-
-    // 기존 시뮬레이션 연결 끊고 전체 새로 연결. 업데이트할 때 필요함.
-    public void addSimulationGoals(List<SimulationGoal> simulationGoals) {
-        // 기존 SimulationGoal 들과 연결 끊기
-        for (SimulationGoal simulationGoal : this.simulationGoals) {
-            simulationGoal.setActive(false);
-        }
-        this.simulationGoals.clear();
-
-        // 새로운 SimulationGoal 들 추가 (양방향 동기화 포함)
-        for (SimulationGoal simulationGoal : simulationGoals) {
-            this.addSimulationGoal(simulationGoal);
         }
     }
 
@@ -144,6 +139,32 @@ public class Simulation extends BaseEntity {
     }
 
     public static Simulation createSimulation(BaseCreateSimulationRequestDto dto, SimulationResults results, User user) {
+        SimulationParams params = SimulationParams.from(dto);
+
+        return Simulation.builder()
+                .title(dto.getTitle())
+                .baseDate(dto.getBaseDate())
+                .initialAsset(dto.getInitialAsset())
+                .monthlyIncome(dto.getMonthlyIncome())
+                .monthlyExpense(dto.getMonthlyExpense())
+                .monthlySaving(dto.getMonthlySaving())
+                .annualInterestRate(dto.getAnnualInterestRate())
+                .elapsedMonths(dto.getElapsedMonths())
+                .totalMonths(dto.getTotalMonths())
+                .requiredAmount(results.getRequiredAmount())
+                .estimatedAchieveMonth(results.getEstimatedAchieveMonth())
+                .currentAchievementRate(results.getCurrentAchievementRate())
+                .monthlyAchievements(results.getMonthlyAchievements())
+                .monthlyAssets(results.getMonthlyAssets())
+                .params(params)
+                .results(results)
+                .user(user)
+                .build();
+    }
+
+    public static Simulation ofDefault(SimulationRetirementCalculateRequest dto,
+                                       SimulationResults results,
+                                       User user) {
         return Simulation.builder()
                 .title(dto.getTitle())
                 .baseDate(dto.getBaseDate())
@@ -170,13 +191,38 @@ public class Simulation extends BaseEntity {
         return simulation;
     }
 
+    public void updateResults1(SimulationResults newResults, UpdateSimulationRequestDto dto) {
+        this.requiredAmount = newResults.getRequiredAmount();
+        this.estimatedAchieveMonth = newResults.getEstimatedAchieveMonth();
+        this.currentAchievementRate = newResults.getCurrentAchievementRate();
+        this.monthlyAchievements = newResults.getMonthlyAchievements();
+        this.monthlyAssets = newResults.getMonthlyAssets();
+
+    }
+
+    public void updateFieldsFromDto(UpdateSimulationRequestDto dto) {
+        this.initialAsset = dto.getInitialAsset();
+        this.monthlyIncome = dto.getMonthlyIncome();
+        this.monthlyExpense = dto.getMonthlyExpense();
+        this.monthlySaving = dto.getMonthlySaving();
+        this.totalMonths = dto.getTotalMonths();
+        this.elapsedMonths = dto.getElapsedMonths();
+        this.annualInterestRate = dto.getAnnualInterestRate();
+        this.title = dto.getTitle();
+        this.baseDate = dto.getBaseDate();
+
+    }
+
+
     public void updateResults(SimulationResults newResults) {
         this.requiredAmount = newResults.getRequiredAmount();
         this.estimatedAchieveMonth = newResults.getEstimatedAchieveMonth();
         this.currentAchievementRate = newResults.getCurrentAchievementRate();
         this.monthlyAchievements = newResults.getMonthlyAchievements();
         this.monthlyAssets = newResults.getMonthlyAssets();
+
     }
+
 
 
 }

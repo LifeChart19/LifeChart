@@ -1,29 +1,31 @@
 package org.example.lifechart.domain.goal.dto.request;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.validation.annotation.ValidGoalPeriod;
 import org.example.lifechart.validation.annotation.ValidTags;
 import org.example.lifechart.validation.support.HaSGoalPeriod;
 import org.example.lifechart.validation.support.TagValidatable;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Getter;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
 @ValidGoalPeriod
 @ValidTags
+@NoArgsConstructor
+@AllArgsConstructor
 public class GoalUpdateRequest implements HaSGoalPeriod, TagValidatable {
 
 	@Schema(description = "목표명", example = "강남 집사기")

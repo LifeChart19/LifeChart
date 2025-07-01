@@ -54,9 +54,6 @@ public class BaseCreateSimulationRequestDto {
     @Min(value = 1, message = "시뮬레이션 개월 수(totalMonths)는 1 이상이어야 합니다.")
     private int totalMonths;
 
-//    @Schema(description = "시뮬레이션 파라미터", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-//    private SimulationParams params;
-
     @Schema(description = "연결할 목표 ID 리스트", example = "[1, 2, 3]")
     @NotEmpty(message = "goalIds는 하나 이상의 값을 포함해야 합니다.")
     private List<Long> goalIds = new ArrayList<>();

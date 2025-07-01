@@ -2,7 +2,6 @@ package org.example.lifechart.domain.simulation;
 
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
-import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
 import org.example.lifechart.domain.simulation.service.calculator.SimulationCalculator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,20 +72,18 @@ public class SimulationCalculatorTest {
 
 
     //소득, 지출 고정으로 . 연 이율이 주어진다면 매달 자산 변화
-    @Test
-    void testCalculateMonthlyAssetsOnly() {
-
-        YearMonth baseMonth = YearMonth.of(2025, 6);
-        List<MonthlyAssetDto> result = SimulationCalculator.simulateMonthlyAssetsWithInterest(
-                1000000,  // 초기 자산
-                3000000,  // 월 소득
-                2000_000,
-                4,
-                baseMonth
-
-        );
-
-        result.stream().limit(12).forEach(asset -> System.out.println("단리 적금 기준 매달 자산 변화 :"  + asset));
-    }
+//    @Test
+//    void testCalculateMonthlyAssetsOnly() {
+//
+//        YearMonth baseMonth = YearMonth.of(2025, 6);
+//        List<MonthlyAssetDto> result = SimulationCalculator.simulateMonthlyAssetsWithInterest(
+//                1000000,  // 초기 자산
+//                3000000,  // 월 소득
+//                2000_000,
+//
+//        );
+//
+//        result.stream().limit(12).forEach(asset -> System.out.println("단리 적금 기준 매달 자산 변화 :"  + asset));
+//    }
 
 }

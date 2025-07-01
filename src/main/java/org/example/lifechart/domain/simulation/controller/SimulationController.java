@@ -69,22 +69,21 @@ public class SimulationController {
     @Operation(summary = "시뮬레이션 안에서 업데이트", description = "시뮬레이션에서 목표에 해당하는 계산로직을 수행합니다.", security = @SecurityRequirement(name = "bearerAuth"))
     @PatchMapping("/simulations/{simulationId}")
     public ResponseEntity<ApiResponse<CreateSimulationResponseDto>> updateSimulation(@AuthenticationPrincipal CustomUserPrincipal principal, @PathVariable Long simulationId, @RequestBody UpdateSimulationRequestDto requestDto) {
-        CreateSimulationResponseDto simulation = simulationService.updateSimulationSettings(principal.getUserId(), simulationId, requestDto.getGoalIds() );
+        CreateSimulationResponseDto simulation = simulationService.updateSimulationSettings(principal.getUserId(), simulationId,  requestDto.getGoalIds(), requestDto  );
         return ApiResponse.onSuccess(SuccessCode.SIMULATION_PATCH_SUCCESS, simulation);
     }
 
-    //업데이트 로직은 컨트롤러 추후 수정필요.
     @Operation(summary = "시뮬레이션 업데이트", description = "시뮬레이션을 업데이트합니다.", security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/goals/{goalId}/simulations/recalculate")
     public  ResponseEntity<ApiResponse<Void>> updateSimulation(@AuthenticationPrincipal CustomUserPrincipal principal, @PathVariable Long goalId,
-                                                               @RequestBody BaseSimulationResponseDto requestDto) {
+                                                               @RequestParam(required = false) Long simulationId ) {
         simulationService.updateSimulationsByGoalChange(principal.getUserId(), goalId);
         return ApiResponse.onSuccess(SuccessCode.SIMULATION_PATCH_SUCCESS, null);
     }
 
     //시뮬레이션 소프트딜리트로 삭제하는 로직
     @Operation(summary = "시뮬레이션 소프트딜리트 삭제", description = "시뮬레이션을 소프트 딜리트 방식으로 삭제합니다.", security = @SecurityRequirement(name = "bearerAuth"))
-    @PatchMapping("/simulations/{simulationId}/soft-delete")
+    @PatchMapping("/simulatiobns/{simulationId}/soft-delete")
     public ResponseEntity<ApiResponse<DeletedSimulationResponseDto>> softDeleteSimulation(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @PathVariable Long simulationId) {

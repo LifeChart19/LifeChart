@@ -3,6 +3,7 @@ package org.example.lifechart.domain.simulation.service.simulation;
 //readonly주의할 것.
 
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.BaseSimulationResponseDto;
 import org.example.lifechart.domain.simulation.dto.response.CreateSimulationResponseDto;
 import org.example.lifechart.domain.simulation.dto.response.DeletedSimulationResponseDto;
@@ -17,7 +18,6 @@ public interface SimulationService {
      List<DeletedSimulationResponseDto> findAllSoftDeletedSimulations(Long userId);
      DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId);
      void deleteSimulation(Long userId, Long simulationId);
-     CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId,List<Long> goalIds);
      void updateSimulationsByGoalChange(Long userId, Long goalId);
-
+     CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId, List<Long> goalIds, UpdateSimulationRequestDto dto);
 }

@@ -2,6 +2,8 @@ package org.example.lifechart.domain.simulation.converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
@@ -11,7 +13,9 @@ import java.io.IOException;
 @Converter
 public class SimulationResultsConverter implements AttributeConverter<SimulationResults, String> {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Override
     public String convertToDatabaseColumn(SimulationResults attribute) {
