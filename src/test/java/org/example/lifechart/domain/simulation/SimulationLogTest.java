@@ -11,8 +11,10 @@ import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
 import org.example.lifechart.domain.simulation.entity.Simulation;
+import org.example.lifechart.domain.simulation.entity.SimulationGoal;
 import org.example.lifechart.domain.simulation.event.SimulationCreatedEvent;
 import org.example.lifechart.domain.simulation.listener.SimulationLogListener;
 import org.example.lifechart.domain.simulation.logging.dto.SimulationLogSaveDto;
@@ -34,11 +36,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +53,7 @@ public class SimulationLogTest {
     @Mock
     private SimulationLogServiceImpl simulationLogService;
 
-    @Mock
+    @InjectMocks
     private SimulationServiceImpl simulationService;
 
     @Mock
@@ -73,45 +78,21 @@ public class SimulationLogTest {
     private CalculateAll calculateAll;
 
     @Mock
-    private SimulationLogEventPublisher eventPublisher;
+    private SimulationLogEventPublisher simulationLogEventPublisher;
 
     @InjectMocks
     private SimulationLogListener simulationLogListener;
 
     @Test
-    void 시뮬레이션_로그가_저장로직에서_정상적으로_호출() throws JsonProcessingException {
-        User user2 = User.builder()
-                .id(1L)
-                .email("test@example.com")
-                .password("password")
-                .nickname("testuser")
-                .isDeleted(false)
-                .build();
-
-        //given(userRepository.findByIdAndDeletedAtIsNull(user2.getId())).willReturn(Optional.of(user2));
-
+    void 시뮬레이션로그_저장_이벤트_수신_정상_처리() throws JsonProcessingException {
+        // given
+        Long userId = 1L;
+        Long simulationId = 2L;
         Long goalId = 1L;
-        Goal mockGoal = Goal.builder()
-                .id(goalId)
-                .user(user2) // 꼭 넣어야 함 (nullable = false)
-                .title("테스트 목표")
-                .category(Category.HOUSING)
-                .targetAmount(1_000_000L)
-                .startAt(LocalDateTime.now())
-                .endAt(LocalDateTime.now().plusMonths(6))
-                .status(Status.ACTIVE)
-                .share(Share.PRIVATE)
-                .build();
-
-        //given(goalRepository.findAllWithUserByIdAndUserId(List.of(goalId), user2.getId()))
-        //.willReturn(List.of(mockGoal));
-
-        //simulationParam(json에 필요한 엔티티)
-        LocalDate baseDate = LocalDate.of(2025, 6, 16);
 
         var dto = new BaseCreateSimulationRequestDto(
                 "5년 뒤 내 집 마련",
-                baseDate,
+                LocalDate.of(2025, 6, 16),
                 1_000_000L,
                 3_000_000L,
                 2_000_000L,
@@ -119,7 +100,7 @@ public class SimulationLogTest {
                 3.0,
                 0,
                 60,
-                List.of(mockGoal.getId())
+                List.of(goalId)
         );
 
         SimulationResults mockResults = SimulationResults.builder()
@@ -137,106 +118,40 @@ public class SimulationLogTest {
         String paramsJson = objectMapper.writeValueAsString(dto);
         String resultsJson = objectMapper.writeValueAsString(mockResults);
 
-//        given(calculateAll.calculate(
-//                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
-//                anyInt(), anyInt(), any(LocalDate.class), any(LocalDate.class), anyList()
-//        )).willReturn(mockResults);
-
-        Simulation simulation = Simulation.builder()
-                .id(2L)
-                .user(user2)
-                .title("simulation")
-                .isDeleted(true) // 이미 soft delete 되어야 함
-                .build();
-
-        //given(simulationRepository.save(any(Simulation.class))).willReturn(simulation);
-
-        // when
-        simulationService.saveSimulation(dto, user2.getId(), List.of(mockGoal.getId()));
-
-        //이벤트 발행
         SimulationCreatedEvent event = new SimulationCreatedEvent(
-                user2.getId(),
-                simulation.getId(),
+                userId,
+                simulationId,
                 List.of(goalId),
                 paramsJson,
                 resultsJson,
                 ChangeType.CREATED
         );
 
-        //로그 저장 서비스 호출
+        // when
         simulationLogListener.handleSimulationCreated(event);
 
         // then
         verify(simulationLogService).saveLog(any(SimulationLogSaveDto.class));
     }
 
-
-
-
-    //목표 업데이트 -> 시뮬레이션 업데이트
     @Test
-    void 시뮬레이션_로그가_업데이트에서_정상적으로_호출() throws JsonProcessingException {
+    void 시뮬레이션로그_저장_이벤트_정상_발행() {
 
-        User user2 = User.builder()
-                .id(1L)
-                .email("test@example.com")
-                .password("password")
-                .nickname("testuser")
-                .isDeleted(false)
-                .build();
-
-        //given(userRepository.findByIdAndDeletedAtIsNull(user2.getId())).willReturn(Optional.of(user2));
         Long goalId = 1L;
-
-        //given(goalRepository.findAllWithUserByIdAndUserId(List.of(goalId), user2.getId()))
-        //.willReturn(List.of(mockGoal));
-
-        //simulationParam(json에 필요한 엔티티)
-        LocalDate baseDate = LocalDate.of(2025, 6, 16);
-
-        Simulation simulation = Simulation.builder()
-                .id(2L)
-                .user(user2)
-                .title("simulation")
-                .isDeleted(true) // 이미 soft delete 되어야 함
-                .build();
-
-        simulationService.updateSimulationsByGoalChange(user2.getId(), simulation.getId());
-
-        String paramsJson = "{\"param\": \"value\"}";
-        String resultsJson = "{\"result\": \"value\"}";
-
-        SimulationCreatedEvent event = new SimulationCreatedEvent(
-                user2.getId(),
-                simulation.getId(),
-                List.of(goalId),
-                paramsJson,
-                resultsJson,
-                ChangeType.CREATED
-        );
-
-        //로그 저장 서비스 호출
-        simulationLogListener.handleSimulationCreated(event);
-
-        verify(simulationLogService).saveLog(any(SimulationLogSaveDto.class));
-    }
-
-    @Test
-    void 리스너가_이벤트를_잘_처리하는지_확인() throws JsonProcessingException {
-        // given
-        User user2 = User.builder()
+        User user = User.builder()
                 .id(1L)
                 .email("test@example.com")
-                .password("password")
                 .nickname("testuser")
                 .isDeleted(false)
                 .build();
 
-                Goal mockGoal = Goal.builder()
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId()))
+                .willReturn(Optional.of(user));
+
+        Goal goal = Goal.builder()
                 .id(1L)
-                .user(user2) // 꼭 넣어야 함 (nullable = false)
-                .title("테스트 목표")
+                .user(user)
+                .title("목표")
                 .category(Category.HOUSING)
                 .targetAmount(1_000_000L)
                 .startAt(LocalDateTime.now())
@@ -245,21 +160,164 @@ public class SimulationLogTest {
                 .share(Share.PRIVATE)
                 .build();
 
+        given(goalRepository.findAllWithUserByIdAndUserId(List.of(1L), 1L))
+                .willReturn(List.of(goal));
+
+        var dto = new BaseCreateSimulationRequestDto(
+                "5년 뒤 내 집 마련",
+                LocalDate.of(2025, 6, 16),
+                1_000_000L,
+                3_000_000L,
+                2_000_000L,
+                1_000_000L,
+                3.0,
+                0,
+                60,
+                List.of(goalId)
+        );
+
+        SimulationResults mockResults = SimulationResults.builder()
+                .requiredAmount(8_000_000L)
+                .estimatedAchieveMonth("2025-6")
+                .currentAchievementRate(10.0f)
+                .monthlyAchievements(List.of())
+                .monthlyAssets(List.of())
+                .build();
+
+        given(calculateAll.calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(LocalDate.class), any(LocalDate.class), anyList()
+        )).willReturn(mockResults);
+
+        //서비스 코드 내에서 simulation.getid()가 null이 되니까 실제로 save에 전달된 simulation객체를 꺼내서 id필드 찾기
+        //테스트 할때 saveSImulation을 실제로 호출하면 테스트에서 만든 id와 불일치 문제
+        given(simulationRepository.save(any(Simulation.class)))
+                .willAnswer(invocation -> {
+                    Simulation sim = invocation.getArgument(0);
+                    // ID를 심어줌 (서비스 내부에서 getId()가 null 방지)
+                    Field idField = Simulation.class.getDeclaredField("id");
+                    idField.setAccessible(true);
+                    idField.set(sim, 2L);
+                    return sim;
+                });
+
+        simulationService.saveSimulation(dto, user.getId(), List.of(goalId));
+
+        verify(simulationLogEventPublisher).publishCreateEvent(
+                eq(1L),
+                eq(2L),
+                eq(List.of(goalId)),
+                eq(dto),
+                eq(mockResults)
+        );
+    }
+
+
+    @Test
+    void 목표수정_시뮬레이션수정_정상발행()  {
+        // given
+        Long goalId = 1L;
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .nickname("testuser")
+                .isDeleted(false)
+                .build();
+
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId()))
+                .willReturn(Optional.of(user));
+
+        Goal goal = Goal.builder()
+                .id(1L)
+                .user(user)
+                .title("목표")
+                .category(Category.HOUSING)
+                .targetAmount(1_000_000L)
+                .startAt(LocalDateTime.now())
+                .endAt(LocalDateTime.now().plusMonths(6))
+                .status(Status.ACTIVE)
+                .share(Share.PRIVATE)
+                .build();
+
+        given(goalRepository.findByIdAndUserId(goalId, user.getId()))
+                .willReturn(Optional.of(goal));
+
+                Simulation simulation = Simulation.builder()
+                .id(2L)
+                .user(user)
+                .title("테스트 시뮬레이션")
+                .isDeleted(false)
+                .initialAsset(1000000L)
+                .monthlyIncome(300000L)
+                .monthlyExpense(100000L)
+                .monthlySaving(200000L)
+                .annualInterestRate(2.5)
+                .elapsedMonths(0)
+                .totalMonths(60)
+                .baseDate(LocalDate.now())
+                .build();
+
+        SimulationGoal simulationGoal = SimulationGoal.builder()
+                .goal(goal)
+                .simulation(simulation)
+                .build();
+
+        given(simulationGoalRepository.findAllByGoalIdAndSimulationUserIdAndActiveTrue(user.getId(), goalId))
+                .willReturn(List.of(simulationGoal));
+
+        given(simulationGoalRepository.findActiveGoalsBySimulationId(simulation.getId()))
+                .willReturn(List.of(goal));
+
+        SimulationResults mockResults = SimulationResults.builder()
+                .requiredAmount(8_000_000L)
+                .estimatedAchieveMonth("2025-6")
+                .currentAchievementRate(10.0f)
+                .monthlyAchievements(List.of())
+                .monthlyAssets(List.of())
+                .build();
+
+        given(calculateAll.calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(LocalDate.class), any(LocalDate.class), anyList()
+        )).willReturn(mockResults);
+
+        simulationService.updateSimulationsByGoalChange(user.getId(), goalId);
+
+        verify(simulationLogEventPublisher).publishUpdateEventByGoalChange(
+                eq(1L),
+                eq(2L),
+                eq(1L),
+                eq(mockResults));
+    }
+
+    @Test
+    void 목표수정_시뮬레이션수정_이벤트_수신_정상_처리() throws JsonProcessingException{
+
+        Long userId = 1L;
+        Long simulationId = 2L;
+        Long goalId = 1L;
+
+        SimulationResults mockResults = SimulationResults.builder()
+                .requiredAmount(8_000_000L)
+                .estimatedAchieveMonth("2025-6")
+                .currentAchievementRate(10.0f)
+                .monthlyAchievements(List.of())
+                .monthlyAssets(List.of())
+                .build();
+
         ObjectMapper objectMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        String dummyParamsJson = objectMapper.writeValueAsString("업데이트된 파라미터");
-        String dummyResultsJson = objectMapper.writeValueAsString("업데이트된 결과");
+        String resultsJson = objectMapper.writeValueAsString(mockResults);
 
-        Long simulationId = 2L;
 
         SimulationCreatedEvent event = new SimulationCreatedEvent(
-                user2.getId(),
+                userId,
                 simulationId,
-                List.of(mockGoal.getId()),
-                dummyParamsJson,
-                dummyResultsJson,
+                List.of(goalId),
+                "{}",
+                resultsJson,
                 ChangeType.UPDATED_BY_GOAL_CHANGE
         );
 
@@ -268,8 +326,144 @@ public class SimulationLogTest {
 
         // then
         verify(simulationLogService).saveLog(any(SimulationLogSaveDto.class));
+
+
     }
 
+    @Test
+    void 시뮬레이션수정_시_이벤트_정상_발행() {
+
+        Long goalId = 1L;
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .nickname("testuser")
+                .isDeleted(false)
+                .build();
+
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId()))
+                .willReturn(Optional.of(user));
+
+        Goal goal = Goal.builder()
+                .id(1L)
+                .user(user)
+                .title("목표")
+                .category(Category.HOUSING)
+                .targetAmount(1_000_000L)
+                .startAt(LocalDateTime.now())
+                .endAt(LocalDateTime.now().plusMonths(6))
+                .status(Status.ACTIVE)
+                .share(Share.PRIVATE)
+                .build();
+
+        given(goalRepository.findAllWithUserByIdAndUserId(List.of(1L), 1L))
+                .willReturn(List.of(goal));
+
+        Simulation simulation = Simulation.builder()
+                .id(2L)
+                .user(user)
+                .title("테스트 시뮬레이션")
+                .isDeleted(false)
+                .initialAsset(1000000L)
+                .monthlyIncome(300000L)
+                .monthlyExpense(100000L)
+                .monthlySaving(200000L)
+                .annualInterestRate(2.5)
+                .elapsedMonths(0)
+                .totalMonths(60)
+                .baseDate(LocalDate.now())
+                .build();
+
+        given(simulationRepository.findById(2L)).willReturn(Optional.of(simulation));
+
+        UpdateSimulationRequestDto dto = new UpdateSimulationRequestDto(
+                "5년 뒤 내 집 마련",
+                LocalDate.of(2025, 6, 16),
+                1_000_000L,
+                3_000_000L,
+                2_000_000L,
+                1_000_000L,
+                3.0,
+                0,
+                60,
+                List.of(goalId)
+        );
+
+        SimulationResults mockResults = SimulationResults.builder()
+                .requiredAmount(8_000_000L)
+                .estimatedAchieveMonth("2025-6")
+                .currentAchievementRate(10.0f)
+                .monthlyAchievements(List.of())
+                .monthlyAssets(List.of())
+                .build();
+
+        given(calculateAll.calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(LocalDate.class), any(LocalDate.class), anyList()
+        )).willReturn(mockResults);
+
+        simulationService.updateSimulationSettings(user.getId(), simulation.getId(), List.of(goalId), dto);
+
+        verify(simulationLogEventPublisher).publishUpdateEventBySimulationEdit(
+                eq(1L),
+                eq(2L),
+                eq(List.of(1L)),
+                any(UpdateSimulationRequestDto.class),
+                any(SimulationResults.class)
+        );
+
+    }
+
+    @Test
+    void 시뮬레이션수정_이벤트_수신_정상_처리() throws JsonProcessingException{
+        // given
+        Long userId = 1L;
+        Long simulationId = 2L;
+        List<Long> goalIds = List.of(1L);
+
+        UpdateSimulationRequestDto dto = new UpdateSimulationRequestDto(
+                "5년 뒤 내 집 마련",
+                LocalDate.of(2025, 6, 16),
+                1_000_000L,
+                3_000_000L,
+                2_000_000L,
+                1_000_000L,
+                3.0,
+                0,
+                60,
+                goalIds
+        );
+
+        SimulationResults mockResults = SimulationResults.builder()
+                .requiredAmount(8_000_000L)
+                .estimatedAchieveMonth("2025-6")
+                .currentAchievementRate(10.0f)
+                .monthlyAchievements(List.of())
+                .monthlyAssets(List.of())
+                .build();
+
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        String paramsJson = objectMapper.writeValueAsString(dto);
+        String resultsJson = objectMapper.writeValueAsString(mockResults);
+
+        SimulationCreatedEvent event = new SimulationCreatedEvent(
+                userId,
+                simulationId,
+                goalIds,
+                paramsJson,
+                resultsJson,
+                ChangeType.UPDATED_BY_SIMULATION_EDIT
+        );
+
+        // when
+        simulationLogListener.handleSimulationCreated(event);
+
+        // then
+        verify(simulationLogService).saveLog(any(SimulationLogSaveDto.class));
+    }
 
 }
 

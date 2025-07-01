@@ -60,6 +60,8 @@ public class SimulationServiceImpl implements SimulationService {
         if (goals.size() != goalIds.size()) {
             throw new CustomException(ErrorCode.SIMULATION_GOAL_NOT_FOUND);
         }
+
+        //현재 디폴트 은퇴시뮬레이션이 비동기처리까지 완료된 상태가 아니라서 임의로 기대수명을 넣어두었습니다
         LocalDate expectedDeathDate = LocalDate.now().plusYears(60);
 
         //4. 계산로직 수행 -> 더 효율적인 방법 고민 필요

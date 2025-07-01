@@ -33,3 +33,4 @@ public class SimulationGoal {
     private boolean active;
 
 }
+
