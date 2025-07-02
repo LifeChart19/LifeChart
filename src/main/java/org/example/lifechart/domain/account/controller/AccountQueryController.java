@@ -28,24 +28,13 @@ public class AccountQueryController {
     private final AccountQueryService accountQueryService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<AccountResponse>> getAccount(@PathVariable Long userId, @AuthenticationPrincipal CustomUserPrincipal principal) {
-
-        // 권한 체크 (본인만 가능)
-        if (!principal.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.NO_AUTHORIZATION);
-        }
+    public ResponseEntity<ApiResponse<AccountResponse>> getAccount(@PathVariable Long userId) {
         AccountResponse response = accountQueryService.getAccount(userId);
         return ApiResponse.onSuccess(SuccessCode.GET_ACCOUNT_SUCCESS, response);
     }
 
     @GetMapping("/{userId}/transactions")
-    public ResponseEntity<ApiResponse<List<TransactionResponse>>> getTransactions(@PathVariable Long userId,
-                                                                                  @AuthenticationPrincipal CustomUserPrincipal principal) {
-
-        // 권한 체크 (본인만 가능)
-        if (!principal.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.NO_AUTHORIZATION);
-        }
+    public ResponseEntity<ApiResponse<List<TransactionResponse>>> getTransactions(@PathVariable Long userId) {
         List<TransactionResponse> list = accountQueryService.getTransactions(userId);
         return ApiResponse.onSuccess(SuccessCode.GET_TRANSACTIONS_SUCCESS, list);
     }
@@ -63,5 +52,6 @@ public class AccountQueryController {
         return ApiResponse.onSuccess(SuccessCode.GET_TRANSACTION_STATS_SUCCESS, resp);
     }
 }
+
 
 

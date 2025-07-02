@@ -30,17 +30,10 @@ public class AccountQueryService {
         return response.getData();    }
 
     public List<TransactionResponse> getTransactions(Long userId) {
-        // 유저 유효성 검사 (선택, 인증된 userId라면 생략 가능)
-        if (!userService.existsById(userId)) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
         MockBankApiResponse<List<TransactionResponse>> response = accountClient.getTransactions(userId);
-
         if (response == null || response.getData() == null) {
             throw new CustomException(ErrorCode.TRANSACTION_NOT_FOUND);
         }
-
         return response.getData();
     }
 
