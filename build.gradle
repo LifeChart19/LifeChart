@@ -115,6 +115,9 @@ dependencies {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.0"
         }
     }
+
+    // utility
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
 }
 
 tasks.named('test') {

@@ -42,13 +42,13 @@ public class CachedApartmentPriceServiceTest {
 			.period("202505")
 			.build();
 
-		given(redisRepository.find(region,subregion)).willReturn(Optional.of(cachedDto));
+		given(redisRepository.findLatest(region,subregion)).willReturn(Optional.of(cachedDto));
 
 		// when
 		Long result = service.getAveragePrice(region, subregion, area);
 
 		// then
-		verify(redisRepository).find(region,subregion);
+		verify(redisRepository).findLatest(region,subregion);
 		assertThat(result).isEqualTo(1500L * 100L * 10_000L);
 	}
 
@@ -67,14 +67,14 @@ public class CachedApartmentPriceServiceTest {
 			.period("202505")
 			.build();
 
-		given(redisRepository.find(region, subregion)).willReturn(Optional.empty());
+		given(redisRepository.findLatest(region, subregion)).willReturn(Optional.empty());
 		given(openApiService.fetchLatest(region, subregion)).willReturn(apiDto);
 
 		// when
 		Long result = service.getAveragePrice(region, subregion, area);
 
 		// then
-		verify(redisRepository).find(region, subregion);
+		verify(redisRepository).findLatest(region, subregion);
 		assertThat(result).isEqualTo(2000L * 50L * 10_000L);
 	}
 
@@ -97,8 +97,8 @@ public class CachedApartmentPriceServiceTest {
 
 		Pair<ApartmentPriceDto, ApartmentPriceDto> pair = Pair.of(start, end);
 
-		given(redisRepository.findStartAndEnd(region, subregion, duration)).willReturn(Optional.of(pair));
-		given(redisRepository.find(region, subregion)).willReturn(Optional.of(end));
+		given(redisRepository.findStartAndEnd(region, subregion)).willReturn(Optional.of(pair));
+		given(redisRepository.findLatest(region, subregion)).willReturn(Optional.of(end));
 
 		// when
 		Long result = service.getFuturePredictedPrice(region, subregion, area, yearsLater);
@@ -107,8 +107,8 @@ public class CachedApartmentPriceServiceTest {
 		double rate = Math.pow(1343.9 / 1000.0, 1.0/10) - 1;
 		Long expected = Math.round(1_343.9 * 100L * 10_000L *Math.pow(1 + rate, 10));
 
-		verify(redisRepository).find(region, subregion);
-		verify(redisRepository).findStartAndEnd(region, subregion, duration);
+		verify(redisRepository).findLatest(region, subregion);
+		verify(redisRepository).findStartAndEnd(region, subregion);
 		assertThat(result).isEqualTo(expected);
 	}
 }
