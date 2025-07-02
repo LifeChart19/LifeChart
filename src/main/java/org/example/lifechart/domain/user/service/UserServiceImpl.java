@@ -38,14 +38,12 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
 
         // SNS 발행
-        accountEventPublisherPort.publishAccountCreatedEvent(
-                new AccountCreatedEvent(
-                        savedUser.getId(),
-                        savedUser.getEmail(),
-                        savedUser.getName(),
-                        savedUser.getSalary(),
-                        savedUser.getCreatedAt().toString()
-                )
+        AccountCreatedEvent event = new AccountCreatedEvent(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getName(),
+                savedUser.getSalary(),
+                savedUser.getCreatedAt().toString()
         );
 
         accountEventPublisherPort.publishAccountCreatedEvent(event);
