@@ -7,16 +7,16 @@ import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.common.response.ApiResponse;
 import org.example.lifechart.domain.account.dto.AccountResponse;
 import org.example.lifechart.domain.account.dto.TransactionResponse;
+import org.example.lifechart.domain.account.dto.TransactionStatRequest;
+import org.example.lifechart.domain.account.dto.TransactionStatResponse;
 import org.example.lifechart.domain.account.service.AccountQueryService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
+import java.time.YearMonth;
 import java.util.List;
 
 
@@ -48,6 +48,19 @@ public class AccountQueryController {
         }
         List<TransactionResponse> list = accountQueryService.getTransactions(userId);
         return ApiResponse.onSuccess(SuccessCode.GET_TRANSACTIONS_SUCCESS, list);
+    }
+
+    @PostMapping("/{userId}/transactions/stats")
+    public ResponseEntity<ApiResponse<TransactionStatResponse>> getUserTransactionStats(
+            @PathVariable Long userId,
+            @RequestBody TransactionStatRequest request
+    ) {
+        TransactionStatResponse resp = accountQueryService.getUserTransactionStats(
+                userId,
+                request.getStartYM(),
+                request.getEndYM()
+        );
+        return ApiResponse.onSuccess(SuccessCode.GET_TRANSACTION_STATS_SUCCESS, resp);
     }
 }
 
