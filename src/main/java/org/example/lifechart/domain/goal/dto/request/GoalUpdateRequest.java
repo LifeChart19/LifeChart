@@ -1,6 +1,7 @@
 package org.example.lifechart.domain.goal.dto.request;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.example.lifechart.domain.goal.enums.Share;
@@ -38,8 +39,8 @@ public class GoalUpdateRequest implements HaSGoalPeriod, TagValidatable {
 	@NotNull(message = "종료일은 필수 입력입니다.")
 	private LocalDateTime endAt;
 
-	@Schema(description = "생성할 목표와 연동할 시뮬레이션 ID 목록(선택 사항)", example = "[11, 19, 21]")
-	private List<Long> simulationIds;
+	@Schema(description = "수정할 목표와 연동할 시뮬레이션 ID 목록(선택 사항)", example = "[11, 19, 21]")
+	private List<Long> simulationIds = new ArrayList<>();
 
 	@Schema(description = "카테고리별 상세 정보", example = "housing: {} / retirement : {} / etc: {}")
 	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)

@@ -1,6 +1,8 @@
 package org.example.lifechart.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.user.port.AccountEventPublisherPort;
@@ -8,10 +10,12 @@ import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.user.dto.*;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -21,6 +25,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final SendSqsPort sqsPort;
     private final AccountEventPublisherPort accountEventPublisherPort;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public User signup(SignupRequest request) {
@@ -33,15 +38,15 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
 
         // SNS 발행
-        accountEventPublisherPort.publishAccountCreatedEvent(
-                new AccountCreatedEvent(
-                        savedUser.getId(),
-                        savedUser.getEmail(),
-                        savedUser.getNickname(),
-                        savedUser.getName(),
-                        savedUser.getCreatedAt().toString()
-                )
+        AccountCreatedEvent event = new AccountCreatedEvent(
+            savedUser.getId(),
+            savedUser.getEmail(),
+            savedUser.getNickname(),
+            savedUser.getName(),
+            savedUser.getCreatedAt().toString()
         );
+
+        accountEventPublisherPort.publishAccountCreatedEvent(event);
 
         // 알림 SQS 전송
         sqsPort.sendNotification(
@@ -50,6 +55,12 @@ public class UserServiceImpl implements UserService {
                 "Welcome!",
                 "가입을 축하합니다!"
         );
+
+        try {
+            eventPublisher.publishEvent(event);
+        } catch (Exception e) {
+            log.warn("회원가입 Spring 이벤트 발행 실패 : {}", e.getMessage(), e);
+        }
 
         return savedUser;
     }
