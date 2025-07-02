@@ -22,6 +22,7 @@ import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.entity.GoalRetirement;
 import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.enums.Status;
+import org.example.lifechart.domain.goal.event.GoalCreatedEvent;
 import org.example.lifechart.domain.goal.event.GoalDeletedEvent;
 import org.example.lifechart.domain.goal.event.GoalUpdatedEvent;
 import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
@@ -67,6 +68,13 @@ public class GoalServiceImpl implements GoalService {
 		Goal savedGoal = goalRepository.save(newGoal);
 		saveGoalDetail(detail, savedGoal, user);
 
+		// 목표 생성 이벤트를 발행하고, 구독하는 쪽에서 카테고리에 따라 다른 로직 수행
+		try {
+			eventPublisher.publishEvent(new GoalCreatedEvent(savedGoal.getUser().getId(), savedGoal.getId(), requestDto.getSimulationIds()));
+		} catch (Exception e) {
+			log.warn(ErrorCode.GOAL_CREATE_EVENT_PUBLISH_FAILED.getMessage());
+		}
+
 		return GoalResponse.from(savedGoal);
 	}
 
@@ -111,11 +119,11 @@ public class GoalServiceImpl implements GoalService {
 		}
 		goal.delete();
 
-//		try {
-//			eventPublisher.publishEvent(new GoalDeletedEvent(goal.getId()));
-//		} catch (Exception e) {
-//			log.warn(ErrorCode.GOAL_DELETE_EVENT_PUBLISH_FAILED.getMessage());
-//		}
+		try {
+			eventPublisher.publishEvent(new GoalDeletedEvent(goal.getUser().getId(), goal.getId()));
+		} catch (Exception e) {
+			log.warn(ErrorCode.GOAL_DELETE_EVENT_PUBLISH_FAILED.getMessage());
+		}
 	}
 
 	@Transactional
@@ -133,11 +141,11 @@ public class GoalServiceImpl implements GoalService {
 		savedGoal.update(request); // 목표 수정 Entity 반영 > DB 갱신
 		updateGoalDetail(detail, savedGoal.getId(), user); // 목표 상세 수정 Entity > DB 갱신
 
-//		try {
-//			eventPublisher.publishEvent(new GoalUpdatedEvent(savedGoal.getId()));
-//		} catch (Exception e) {
-//			log.warn(ErrorCode.GOAL_UPDATE_EVENT_PUBLISH_FAILED.getMessage());
-//		}
+		try {
+			eventPublisher.publishEvent(new GoalUpdatedEvent(savedGoal.getUser().getId(), savedGoal.getId(), request.getSimulationIds()));
+		} catch (Exception e) {
+			log.warn(ErrorCode.GOAL_UPDATE_EVENT_PUBLISH_FAILED.getMessage());
+		}
 
 		return GoalResponse.from(savedGoal);
 	}
