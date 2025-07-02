@@ -57,9 +57,9 @@ class LikeServiceImplTest {
 		goalId = 1L;
 		status = Status.ACTIVE;
 		authUser = new User(me, "name", "email", "password", "nickname", "men", "0",
-			"job", false, null, LocalDate.now(), "user", "provider", "0");
+			"job", new java.math.BigDecimal("1500000"),false, null, LocalDate.now(), "user", "provider", "0");
 		user = new User(2L, "name1", "email2", "password2", "nickname2", "men", "2",
-			"job", false, null, LocalDate.now(), "user", "provider2", "2");
+			"job", new java.math.BigDecimal("1500000"),false, null, LocalDate.now(), "user", "provider2", "2");
 		goal = Goal.builder().id(goalId).user(authUser).status(Status.ACTIVE).build();
 		like = Like.createLike(authUser, goal);
 		ReflectionTestUtils.setField(like, "id", 1L);
