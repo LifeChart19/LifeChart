@@ -14,6 +14,8 @@ import lombok.Getter;
 public class ShareGoalSearchRequestDto {
 	@NotBlank(message = "검색어는 필수 입력입니다.")
 	private String keyword;
+	@NotBlank(message = "제목은 필수 입력입니다.")
+	private String title;
 	@NotEmpty(message = "태그는 필수 입력입니다.")
 	private List<@NotBlank String> tags;
 	@NotBlank(message = "카테고리는 필수 입력입니다.")

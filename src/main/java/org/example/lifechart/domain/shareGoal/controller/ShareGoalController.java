@@ -111,4 +111,22 @@ public class ShareGoalController {
 		return ApiResponse.onSuccess(SuccessCode.GET_POPULAR_KEYWORDS_SUCCESS,
 			shareGoalService.searchTop10Keyword(customUserPrincipal.getUserId()));
 	}
+
+	@Operation(
+		summary = "자동완성 API",
+		description = "인증된 유저가 검색어 한 글자를 칠 때마다 추천어를 띄워줍니다",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
+	@GetMapping("/search/autocomplete")
+	public ResponseEntity<ApiResponse<List<String>>> searchAutocomplete(
+		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+		@RequestParam String prefix
+	) {
+
+		if (prefix == null || prefix.trim().isEmpty()) {
+			throw new CustomException(ErrorCode.SHARE_GOAL_PREFIX_BAD_REQUEST);
+		}
+		return ApiResponse.onSuccess(SuccessCode.GET_AUTOCOMPLETE_SUCCESS,
+			shareGoalService.searchAutocomplete(customUserPrincipal.getUserId(), prefix));
+	}
 }
