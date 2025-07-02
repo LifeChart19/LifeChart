@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +28,7 @@ import org.example.lifechart.domain.goal.enums.HousingType;
 import org.example.lifechart.domain.goal.enums.RetirementType;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
+import org.example.lifechart.domain.goal.event.GoalCreatedEvent;
 import org.example.lifechart.domain.goal.event.GoalDeletedEvent;
 import org.example.lifechart.domain.goal.event.GoalUpdatedEvent;
 import org.example.lifechart.domain.goal.fetcher.GoalDetailFetcherFactory;
@@ -225,6 +227,62 @@ public class GoalServiceImplTest {
 		assertThat(response.getGoalId()).isEqualTo(1L);
 	}
 
+	@Test
+	@DisplayName("은퇴 목표 생성과 이벤트 발행에 성공한다.")
+	void createGoal_은퇴_목표_생성과_이벤트_발행에_성공한다() {
+		// given
+		User user = User.builder()
+			.id(1L)
+			.gender("male")
+			.birthDate(LocalDate.of(1990,01,01))
+			.isDeleted(false)
+			.build();
+
+		GoalRetirementRequest detail = GoalRetirementRequest.builder()
+			.expectedLifespan(90L)
+			.monthlyExpense(2_000_000L)
+			.retirementType(RetirementType.COUPLE)
+			.build();
+
+		LocalDateTime currentTime = LocalDateTime.now();
+
+		GoalCreateRequest request = GoalCreateRequest.builder()
+			.title("젊은 한량 되기")
+			.category(Category.RETIREMENT)
+			.startAt(currentTime)
+			.endAt(currentTime.plusMonths(6))
+			.detail(detail)
+			.targetAmount(502_000_000L)
+			.simulationIds(new ArrayList<>())
+			.share(Share.PRIVATE)
+			.build();
+
+		Goal goal = Goal.from(request, user);
+		goal = goal.toBuilder().id(1L).build();
+		GoalRetirement goalRetirement = GoalRetirement.from(goal, detail, user.getBirthDate().getYear());
+		goalRetirement = goalRetirement.toBuilder().id(1L).build();
+
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+		given(goalRepository.save(any())).willReturn(goal);
+		given(goalRetirementRepository.save(any())).willReturn(goalRetirement);
+		ArgumentCaptor<GoalCreatedEvent> captor = ArgumentCaptor.forClass(GoalCreatedEvent.class);
+
+		// when
+		GoalResponse response = goalService.createGoal(request, user.getId());
+
+		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
+		verify(goalRepository).save(any(Goal.class));
+		verify(goalRetirementRepository).save(any(GoalRetirement.class));
+		verify(eventPublisher).publishEvent(captor.capture());
+		assertThat(captor.getValue().getGoalId()).isEqualTo(response.getGoalId());
+		assertThat(captor.getValue().getSimulationIds().size()).isEqualTo(0L);
+
+		assertThat(goal.getTitle()).isEqualTo("젊은 한량 되기");
+		assertThat(goalRetirement.getGoal()).isEqualTo(goal);
+		assertThat(response.getGoalId()).isEqualTo(1L);
+	}
+
 	@Test // to do
 	@DisplayName("목표의 category와 detail의 입력 양식이 다르면 예외를 던진다.")
 	void createGoal_목표의_category와_detail의_양식이_다르면_GOAL_CATEGORY_DETAIL_MISMATCH_예외를_던진다() {
@@ -358,7 +416,9 @@ public class GoalServiceImplTest {
 		User user = User.builder()
 			.id(1L)
 			.build();
+
 		Goal goal = Goal.builder()
+			.user(user)
 			.id(1L)
 			.status(Status.ACTIVE)
 			.build();
@@ -372,6 +432,7 @@ public class GoalServiceImplTest {
 
 		// then
 		verify(eventPublisher).publishEvent(captor.capture());
+		assertThat(captor.getValue().getUserId()).isEqualTo(1L);
 		assertThat(captor.getValue().getGoalId()).isEqualTo(1L);
 		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
@@ -667,6 +728,7 @@ public class GoalServiceImplTest {
 			.endAt(currentTime.plusMonths(6))
 			.detail(detail)
 			.targetAmount(1_432_100_000L)
+			.simulationIds(List.of(1L, 2L))
 			.share(Share.PRIVATE)
 			.build();
 
@@ -687,6 +749,7 @@ public class GoalServiceImplTest {
 		verify(eventPublisher).publishEvent(captor.capture());
 		GoalUpdatedEvent event = captor.getValue();
 		assertThat(event.getGoalId()).isEqualTo(1L);
+		assertThat(event.getSimulationIds().size()).isEqualTo(2L);
 
 		assertThat(response.getGoalId()).isEqualTo(1L);
 		assertThat(goal.getTitle()).isEqualTo("여의도 집 사기");

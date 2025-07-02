@@ -155,4 +155,3 @@ checkstyle {
     // configProperties: 룰 중 예외 규칙(suppression) 지정 파일
     toolVersion = "8.24" // toolVersion: 사용할 Checkstyle 버전 지정 (8.24)
 }
-
