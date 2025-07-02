@@ -470,14 +470,12 @@ class ShareGoalServiceImplTest {
 		// given
 		ShareGoalSearchRequestDto requestDto = ShareGoalSearchRequestDto.builder()
 			.keyword("은퇴")
+			.title("은퇴 마렵다")
 			.tags(List.of("은퇴"))
 			.category(Category.RETIREMENT)
 			.build();
 		String category = requestDto.getCategory().toString();
-		String keyword = requestDto.getKeyword();
-
-		String accurateKeyword = requestDto.getTags().stream().filter(tag -> tag.equals(keyword))
-			.findFirst().orElse(null);
+		String accurateKeyword = "은퇴";
 
 		String key = "search:keywords";
 
@@ -488,7 +486,6 @@ class ShareGoalServiceImplTest {
 		ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<Double> scoreCaptor = ArgumentCaptor.forClass(Double.class);
-
 
 		// when
 		shareGoalService.plusSearchKeyword(authUser.getId(), requestDto);
@@ -506,6 +503,7 @@ class ShareGoalServiceImplTest {
 		// given
 		ShareGoalSearchRequestDto requestDto = ShareGoalSearchRequestDto.builder()
 			.keyword("은퇴")
+			.title("은퇴")
 			.tags(List.of("은퇴"))
 			.category(Category.RETIREMENT)
 			.build();
@@ -524,13 +522,13 @@ class ShareGoalServiceImplTest {
 		// given
 		ShareGoalSearchRequestDto requestDto = ShareGoalSearchRequestDto.builder()
 			.keyword("주거")
+			.title("은퇴 마렵다")
 			.tags(List.of("은퇴"))
 			.category(Category.RETIREMENT)
 			.build();
 		String category = requestDto.getCategory().toString();
 		String keyword = requestDto.getKeyword();
-		String accurateKeyword = requestDto.getTags().stream().filter(tag -> tag.equals(keyword))
-			.findFirst().orElse(null);
+		String accurateKeyword = null;
 		String key = "search:keywords";
 		String value = String.format("%s:%s", category, accurateKeyword);
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
@@ -576,4 +574,33 @@ class ShareGoalServiceImplTest {
 		assertEquals("유저를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
 	}
 
+	@Test
+	@DisplayName("자동완성 조회 성공")
+	void searchAutocomplete_Ok() {
+		// given
+		String key = "search:keywords";
+		Set<String> fake = Set.of("category:tag", "category:tt");
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+		given(redisTemplate.opsForZSet()).willReturn(zSetOperations);
+		given(redisTemplate.opsForZSet().reverseRange(key, 0, -1)).willReturn(fake);
+
+		// when
+		List<String> result = shareGoalService.searchAutocomplete(authUser.getId(), "t");
+
+		// then
+		assertEquals(2, result.size());
+		assertThat(result).contains("tt", "tag");
+	}
+
+	@Test
+	@DisplayName("자동완성 조회 실패 - 로그인 유저 x")
+	void searchAutocomplete_Fail() {
+		// given
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.empty());
+
+		// when then
+		CustomException exception = assertThrows(CustomException.class,
+			() -> shareGoalService.searchAutocomplete(authUser.getId(), "t"));
+		assertEquals("유저를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+	}
 }

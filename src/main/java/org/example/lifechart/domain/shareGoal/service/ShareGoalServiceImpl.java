@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ShareGoalServiceImpl implements ShareGoalService {
@@ -84,9 +86,12 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 
 		String keyword = shareGoalSearchRequestDto.getKeyword();
 
+		String title = shareGoalSearchRequestDto.getTitle();
+
 		String accurateKeyword = shareGoalSearchRequestDto.getTags()
 			.stream()
-			.filter(tag -> tag.equals(keyword))
+			.filter(title::contains)
+			.filter(tag -> similarity(tag, keyword))
 			.findFirst()
 			.orElse(null);
 
@@ -118,8 +123,46 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 			.toList();
 	}
 
+	@Override
+	public List<String> searchAutocomplete(Long authId, String prefix) {
+
+		User foundUser = validUser(authId);
+
+		String key = "search:keywords";
+
+		Set<String> allValue = redisTemplate.opsForZSet().reverseRange(key, 0, -1);
+
+		if (allValue == null) {
+			return List.of();
+		}
+
+		return allValue.stream()
+
+			// value가 category:tag 이런 식으로 저장되어 있어서 :로 분리
+			.map(value -> value.split(":")[1])
+			.filter(value -> value.startsWith(prefix))
+			.toList();
+	}
+
 	private User validUser(Long userId) {
 		return userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	private boolean similarity(String tag, String keyword) {
+		if (tag.equals(keyword)) {
+			return true;
+		}
+		if (tag.startsWith(keyword)) {
+			return true;
+		}
+
+		if (tag.contains(keyword)) {
+			return true;
+		}
+
+		// 검색하고 점수를 올리는 것이 한 묶음인데 예외처리를 던지게 되면 사용자 입장에서 불편할 것 같아서 내부적으로만 로그
+		log.info("태그와 키워드가 일치하지 않습니다");
+		return false;
 	}
 }

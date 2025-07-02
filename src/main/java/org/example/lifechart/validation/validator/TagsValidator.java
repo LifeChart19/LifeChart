@@ -13,21 +13,23 @@ public class TagsValidator implements ConstraintValidator<ValidTags, TagValidata
 	public boolean isValid(TagValidatable dto, ConstraintValidatorContext constraintValidatorContext) {
 		// 강남 집 샀다. / 강남 집을 드디어 샀다. / 강남집 샀다.
 		String title = dto.getTitle();
-		// [집], [바나나]면 false;
+		// [집], [바나나]면 true, [바나나], [필리핀]이면 false
 		List<String> tags = dto.getTags();
 
-		for (String tag : tags) {
+		boolean leastOneMatch = false;
 
-			// 태그는 제목에 키워드를 포함해야 함
-			if (!title.contains(tag)) {
-				return false;
-			}
+		for (String tag : tags) {
 
 			// 특수문자, 이모지, 공백 x
 			if (!tag.matches("^[가-힣a-zA-Z0-9]+$")) {
 				return false;
 			}
+
+			// 태그는 제목에 키워드를 포함해야 함
+			if (title.contains(tag)) {
+				leastOneMatch = true;
+			}
 		}
-		return true;
+		return leastOneMatch;
 	}
 }

@@ -160,6 +160,7 @@ public enum SuccessCode implements BaseCode {
 	GET_ALL_SHAREGOALS_SUCCESS(HttpStatus.OK, "공유 목표 목록을 조회합니다"),
 	KEYWORD_SCORE_PLUS_SUCCESS(HttpStatus.OK, "검색어 점수를 증가시킵니다"),
 	GET_POPULAR_KEYWORDS_SUCCESS(HttpStatus.OK, "인기 검색어 Top10을 조회합니다."),
+	GET_AUTOCOMPLETE_SUCCESS(HttpStatus.OK, "자동완성 추천어를 조회합니다"),
 
 
 
