@@ -23,6 +23,8 @@ public class ShareGoalResponseDto {
 	private Float progressRate;
 	private Share share;
 	private List<String> tags;
+	private long commentCount;
+	private long likeCount;
 	private LocalDateTime createdAt;
 
 	public static ShareGoalResponseDto from(Goal goal) {
@@ -42,6 +44,8 @@ public class ShareGoalResponseDto {
 			.progressRate(null)
 			.share(goal.getShare())
 			.tags(goal.getTags())
+			.commentCount(goal.getCommentCount())
+			.likeCount(goal.getLikeCount())
 			.createdAt(goal.getCreatedAt())
 			.build();
 	}
