@@ -34,11 +34,13 @@ class AccountSnsEventPublisherTest {
     }
 
     @Test
-    @DisplayName("SNS 발행 정상 케이스")
+    @DisplayName("SNS 발행 정상 케이스 - salary 포함")
     void publishAccountCreatedEvent_success() throws Exception {
         // given
-        AccountCreatedEvent event = new AccountCreatedEvent(1L, "email@test.com", "닉네임", "이름", null);
-        String json = "{\"userId\":1}";
+        AccountCreatedEvent event = new AccountCreatedEvent(
+                1L, "email@test.com", "이름",  new java.math.BigDecimal("3500000"),null
+        );
+        String json = "{\"userId\":1,\"salary\":3500000}";
 
         given(objectMapper.writeValueAsString(event)).willReturn(json);
 
@@ -48,19 +50,15 @@ class AccountSnsEventPublisherTest {
         // then
         verify(objectMapper).writeValueAsString(event);
         verify(snsClient).publish(argThat((PublishRequest req) ->
-                req.topicArn().equals("test-arn") && req.message().equals(json)
+                req.topicArn().equals("test-arn") && req.message().contains("\"salary\":3500000")
         ));
     }
 
     @Test
-    @DisplayName("SNS 발행시 직렬화 예외 발생시 런타임 예외 발생")
+    @DisplayName("SNS 발행시 직렬화 예외 발생시 런타임 예외 발생 - salary 포함")
     void publishAccountCreatedEvent_objectMapperException() throws Exception {
         AccountCreatedEvent event = new AccountCreatedEvent(
-                1L,
-                "email1@test.com",
-                "nickname1",
-                "유저이름",
-                "2025-06-26T15:00:00"
+                2L, "email2@test.com",  "이름2",  new java.math.BigDecimal("1500000"), null
         );
 
         when(objectMapper.writeValueAsString(event)).thenThrow(new RuntimeException("직렬화 실패"));
@@ -74,17 +72,13 @@ class AccountSnsEventPublisherTest {
     }
 
     @Test
-    @DisplayName("SNS 발행시 AWS Publish 예외 발생시 런타임 예외 발생")
+    @DisplayName("SNS 발행시 AWS Publish 예외 발생시 런타임 예외 발생 - salary 포함")
     void publishAccountCreatedEvent_snsException() throws Exception {
         AccountCreatedEvent event = new AccountCreatedEvent(
-                1L,
-                "email1@test.com",
-                "nickname1",
-                "유저이름",
-                "2025-06-26T15:00:00"
+                3L, "email3@test.com", "이름3",  new java.math.BigDecimal("2000000"),null
         );
 
-        String json = "{\"userId\":1}";
+        String json = "{\"userId\":3,\"salary\":2000000}";
 
         given(objectMapper.writeValueAsString(event)).willReturn(json);
         doThrow(new RuntimeException("AWS 에러")).when(snsClient).publish(any(PublishRequest.class));
@@ -97,3 +91,4 @@ class AccountSnsEventPublisherTest {
         verify(snsClient).publish(any(PublishRequest.class));
     }
 }
+

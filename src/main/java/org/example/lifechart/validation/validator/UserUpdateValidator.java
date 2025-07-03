@@ -12,6 +12,7 @@ public class UserUpdateValidator implements ConstraintValidator<org.example.life
         return StringUtils.hasText(request.getNickname())
                 || StringUtils.hasText(request.getGender())
                 || StringUtils.hasText(request.getJob())
-                || StringUtils.hasText(request.getPhoneNumber());
+                || StringUtils.hasText(request.getPhoneNumber())
+                || request.getSalary() != null;
     }
 }
