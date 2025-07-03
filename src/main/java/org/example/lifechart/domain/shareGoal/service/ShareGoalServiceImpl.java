@@ -35,7 +35,7 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 	private final UserRepository userRepository;
 	private final RedisTemplate<String, String> redisTemplate;
 
-	@Transactional
+	@Transactional(readOnly = true)
 	@Override
 	public ShareGoalCursorResponseDto getShareGoals(
 		Long authId, Long cursorId, int size, Category category, Share share, Sort sort, Period period
@@ -67,7 +67,7 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 		return ShareGoalCursorResponseDto.from(shareGoalList);
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	@Override
 	public List<ShareGoalResponseDto> getShareGoalsToUser(Long authId, Long userId) {
 
@@ -80,7 +80,7 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 			.toList();
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	@Override
 	public ShareGoalCursorResponseDto searchShareGoals(Long authId, Long cursorId, int size, String keyword) {
 
@@ -123,6 +123,7 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<ShareGoalSearchResponseDto> searchTop10Keyword(Long authId) {
 
@@ -142,6 +143,7 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 			.toList();
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<String> searchAutocomplete(Long authId, String prefix) {
 

@@ -49,7 +49,7 @@ public class ShareGoalController {
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(required = false) Category category,
 		@RequestParam(required = false) Share share,
-		@RequestParam(required = false)Sort sort,
+		@RequestParam(required = false) Sort sort,
 		@RequestParam(required = false) Period period
 	) {
 		return ApiResponse.onSuccess(SuccessCode.GET_ALL_SHAREGOALS_SUCCESS,
