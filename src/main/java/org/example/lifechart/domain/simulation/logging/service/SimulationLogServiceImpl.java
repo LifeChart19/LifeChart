@@ -17,6 +17,7 @@ public class SimulationLogServiceImpl implements SimulationLogService{
     private final ObjectMapper objectMapper;
 
     //로그를 저장하기 위한 로직
+    @Override
     @Transactional
     public void saveLog(SimulationLogSaveDto dto) throws JsonProcessingException {
 

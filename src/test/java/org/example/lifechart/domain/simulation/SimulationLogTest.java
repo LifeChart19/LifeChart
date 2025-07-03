@@ -262,7 +262,7 @@ public class SimulationLogTest {
                 .simulation(simulation)
                 .build();
 
-        given(simulationGoalRepository.findAllByGoalIdAndSimulationUserIdAndActiveTrue(user.getId(), goalId))
+        given(simulationGoalRepository.findAllByGoalIdAndSimulationUserIdAndActiveTrue(goalId, user.getId()))
                 .willReturn(List.of(simulationGoal));
 
         given(simulationGoalRepository.findActiveGoalsBySimulationId(simulation.getId()))

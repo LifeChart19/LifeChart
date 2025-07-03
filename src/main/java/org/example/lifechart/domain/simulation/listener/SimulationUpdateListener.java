@@ -20,6 +20,8 @@ public class SimulationUpdateListener {
     @Async
     @EventListener
     public void handleGoalUpdatedEvent(GoalUpdatedEvent event) {
+
+        System.out.println("GoalUpdatedEvent 수신됨: " + event);
         try {
             simulationService.updateSimulationsByGoalChange(event.getUserId(), event.getGoalId());
         } catch (Exception e) {

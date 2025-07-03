@@ -121,7 +121,7 @@ public enum ErrorCode implements BaseCode {
 	INVALID_GOAL_CATEGORY(HttpStatus.BAD_REQUEST,"지원하지 않는 카테고리입니다."),
 	SIMULATION_NOT_FOUND_BY_GOAL(HttpStatus.NOT_FOUND, "업데이트 가능한 목표가 아닙니다. "),
 	RETIREMENT_GOAL_SIMULATION_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "은퇴 목표가 있는 시뮬레이션은 삭제할 수 없습니다."),
-
+	RETIREMENT_GOAL_REQUIRED(HttpStatus.BAD_REQUEST,"은퇴 목표는 연결을 끊을 수 없습니다."),
 
 
 
@@ -231,7 +231,12 @@ public enum ErrorCode implements BaseCode {
 
 	// Notification (Line#: 230~259)
 	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
-	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다.");
+	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
+
+
+
+	// Json
+	JSON_PROCESSING_FAILED(HttpStatus.BAD_REQUEST, "JSON 파싱 중 오류가 발생했습니다.");
 
 	// 본 코드
 	private final HttpStatus httpStatus;

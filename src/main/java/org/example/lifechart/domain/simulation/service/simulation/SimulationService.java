@@ -12,6 +12,7 @@ import org.example.lifechart.domain.simulation.dto.response.SimulationSummaryDto
 import java.util.List;
 
 public interface SimulationService {
+
      CreateSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, Long userId, List<Long> goalIds);
      List<SimulationSummaryDto> findAllSimulationsByUserId(Long userId);
      BaseSimulationResponseDto findSimulationByUserIdAndSimulationId(Long userId, Long simulationId);

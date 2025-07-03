@@ -3,13 +3,13 @@ package org.example.lifechart.domain.simulation.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.lifechart.common.entity.BaseEntity;
-import org.example.lifechart.domain.simulation.converter.SimulationParamsConverter;
-import org.example.lifechart.domain.simulation.converter.SimulationResultsConverter;
+import org.example.lifechart.domain.simulation.converter.MonthlyAchievementListConverter;
+import org.example.lifechart.domain.simulation.converter.MonthlyAssetListConverter;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.dto.request.SimulationRetirementCalculateRequest;
 import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
-import org.example.lifechart.domain.simulation.dto.response.SimulationParams;
 import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
 import org.example.lifechart.domain.user.entity.User;
 
@@ -63,15 +63,6 @@ public class Simulation extends BaseEntity {
     @OneToMany(mappedBy = "simulation", orphanRemoval = true)
     private List<SimulationGoal> simulationGoals = new ArrayList<>();
 
-    //JPA가 해당 필드를 DB에 저장하거나 읽을 때 사용할 변환 로직(추후 수정예정)
-    //파람은 복합객체라 이것을 직렬화, 역직렬화 해야 함.
-    @Convert(converter = SimulationParamsConverter.class)
-    @Column(columnDefinition = "json")
-    private SimulationParams params;
-
-    @Convert(converter = SimulationResultsConverter.class)
-    @Column(columnDefinition = "json")
-    private SimulationResults results;
 
     @Builder.Default
     @Column
@@ -105,11 +96,13 @@ public class Simulation extends BaseEntity {
     private Long monthlySaving;
 
     //시뮬레이션 테이블에 list로 저장하고싶으면 필요한 어노테이션.
-    @ElementCollection
-    private List<MonthlyAchievement> monthlyAchievements;
-
-    @ElementCollection
+    @Convert(converter = MonthlyAssetListConverter.class)
+    @Column(columnDefinition = "json")
     private List<MonthlyAssetDto> monthlyAssets;
+
+    @Convert(converter = MonthlyAchievementListConverter.class)
+    @Column(columnDefinition = "json")
+    private List<MonthlyAchievement> monthlyAchievements;
 
     @Column(name = "months_to_goal")
     private Integer monthsToGoal;
@@ -138,7 +131,6 @@ public class Simulation extends BaseEntity {
     }
 
     public static Simulation createSimulation(BaseCreateSimulationRequestDto dto, SimulationResults results, User user) {
-        SimulationParams params = SimulationParams.from(dto);
 
         return Simulation.builder()
                 .title(dto.getTitle())
@@ -155,27 +147,37 @@ public class Simulation extends BaseEntity {
                 .currentAchievementRate(results.getCurrentAchievementRate())
                 .monthlyAchievements(results.getMonthlyAchievements())
                 .monthlyAssets(results.getMonthlyAssets())
-                .params(params)
-                .results(results)
                 .user(user)
                 .build();
     }
 
+    public static Simulation ofDefault(SimulationRetirementCalculateRequest dto,
+                                       SimulationResults results,
+                                       User user) {
+        return Simulation.builder()
+                .title(dto.getTitle())
+                .baseDate(dto.getBaseDate())
+                .initialAsset(dto.getInitialAsset())
+                .monthlyIncome(dto.getMonthlyIncome())
+                .monthlyExpense(dto.getMonthlyExpense())
+                .monthlySaving(dto.getMonthlySaving())
+                .annualInterestRate(dto.getAnnualInterestRate())
+                .elapsedMonths(dto.getElapsedMonths())
+                .totalMonths(dto.getTotalMonths())
+                .requiredAmount(results.getRequiredAmount())
+                .estimatedAchieveMonth(results.getEstimatedAchieveMonth())
+                .currentAchievementRate(results.getCurrentAchievementRate())
+                .monthlyAchievements(results.getMonthlyAchievements())
+                .monthlyAssets(results.getMonthlyAssets())
+                .user(user)
+                .build();
+    }
 
     //프록시 객체만가져오기 위한 메서드
     public static Simulation withId(Long id) {
         Simulation simulation = new Simulation();
         simulation.setId(id);
         return simulation;
-    }
-
-    public void updateResults1(SimulationResults newResults) {
-        this.requiredAmount = newResults.getRequiredAmount();
-        this.estimatedAchieveMonth = newResults.getEstimatedAchieveMonth();
-        this.currentAchievementRate = newResults.getCurrentAchievementRate();
-        this.monthlyAchievements = newResults.getMonthlyAchievements();
-        this.monthlyAssets = newResults.getMonthlyAssets();
-
     }
 
     public void updateFieldsFromDto(UpdateSimulationRequestDto dto) {
@@ -191,7 +193,6 @@ public class Simulation extends BaseEntity {
 
     }
 
-
     public void updateResults(SimulationResults newResults) {
         this.requiredAmount = newResults.getRequiredAmount();
         this.estimatedAchieveMonth = newResults.getEstimatedAchieveMonth();
@@ -200,7 +201,5 @@ public class Simulation extends BaseEntity {
         this.monthlyAssets = newResults.getMonthlyAssets();
 
     }
-
-
 
 }

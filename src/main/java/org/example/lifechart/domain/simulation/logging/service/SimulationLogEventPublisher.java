@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.lifechart.common.enums.ErrorCode;
+import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
@@ -36,7 +38,7 @@ public class SimulationLogEventPublisher {
             );
 
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("시뮬레이션 로그 직렬화 중 오류 발생", e);
+            throw new CustomException(ErrorCode.JSON_PROCESSING_FAILED);
         }
     }
 
@@ -51,7 +53,7 @@ public class SimulationLogEventPublisher {
             );
 
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("시뮬레이션 로그 직렬화 중 오류 발생", e);
+            throw new CustomException(ErrorCode.JSON_PROCESSING_FAILED);
         }
     }
 
@@ -66,7 +68,7 @@ public class SimulationLogEventPublisher {
             );
 
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("목표 수정 기반 시뮬레이션 로그 직렬화 중 오류 발생", e);
+            throw new CustomException(ErrorCode.JSON_PROCESSING_FAILED);
         }
     }
 }

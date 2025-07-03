@@ -24,4 +24,5 @@ public interface SimulationRepository extends JpaRepository<Simulation, Long> {
     @Modifying
     @Query("UPDATE Simulation s SET s.deletedAt = CURRENT_TIMESTAMP WHERE s.id = :simulationId")
     void softDeleteById(@Param("simulationId") Long simulationId);
+
 }

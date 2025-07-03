@@ -1,11 +1,9 @@
 package org.example.lifechart.domain.simulation.service.calculator;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -14,9 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 //이자율로직을 고쳤습니다. 이전 계산에는 마지막 달에는 저축이자 안붙었었음 -> 모든 달에 저축이자 붙도록
+
 @Log4j2
-@Component
-@RequiredArgsConstructor
 public class SimulationCalculator {
     //단리  정기적금 마지막 달도 저축 이자가 붙음.
     private static double calculateAccumulatedAssetWithSimpleInterest(
@@ -52,18 +49,17 @@ public class SimulationCalculator {
             return baseMonth;
         }
 
-        //200개월이면 100프로가 되니까 에러를 던지기엔 애매하지 않을까하대 16-17년
-        double savingRatio = monthlySaving / targetAmount;
-        if (savingRatio < 0.0014) { //0.5가 아니라 0.05였어야 했음. ->대충 50년 정도됨.
-            //이 부분은 경고메시지로 바꿀 예정 응답에 경고 메시지 포함으로 추후 반영
-            System.out.println("계산은 완료되었지만 저축액이 너무 적어 목표달성까지 장기간 소요됨");
-        }
+        //double savingRatio = monthlySaving / targetAmount;
+        //        if (savingRatio < 0.0014) { //0.5가 아니라 0.05였어야 했음. ->대충 50년 정도됨.
+        //            //이 부분은 경고메시지로 바꿀 예정 응답에 경고 메시지 포함으로 추후 반영
+        //            System.out.println("계산은 완료되었지만 저축액이 너무 적어 목표달성까지 장기간 소요됨");
+
 
         // a = C * r연 / 2400 -> 소수점 처리 반영
         double a = monthlySaving * (annualInterestRate / 2400.0);
 
         // b = C * (1 - r연 / 2400)
-        double b = monthlySaving * 1 - (annualInterestRate / 2400.0);
+        double b = monthlySaving * (1 - (annualInterestRate / 2400.0));
 
         // c = -B
         double c = -(targetAmount - initialAsset);
@@ -79,15 +75,16 @@ public class SimulationCalculator {
         // 근의 공식 부분
         double n = (-b + Math.sqrt(discriminant)) / (2 * a);
 
-        //이후에 더 늘려봐도 좋을 것 같다.
-        if (n > 600) {
-            throw new IllegalArgumentException("50년 이상 소요되는 목표입니다. 저축액을 늘려주세요.");
-        }
+        //경고메시지를 만드려고 했는데, 테스트가 잘 안돼서 하지 못했습니다. 오늘 PR검토하면서 계속 알아봐볼게요
+    //    if (n > 600) {
+    //        throw new IllegalArgumentException("50년 이상 소요되는 목표입니다. 저축액을 늘려주세요.");//   }
+
 
         int monthsToAchieve = (int) Math.ceil(n);
 
         return baseMonth.plusMonths(monthsToAchieve);
     }
+
 
     // 3. 현재 달성률 (%) 계산
     // 모든 달의 저축에 이자가 붙는 형식
@@ -180,7 +177,7 @@ public class SimulationCalculator {
 
             monthlyAssets.add(new MonthlyAssetDto(targetMonth, Math.round(total)));
         }
-
+        //total = monthlySaving * months + monthlySaving * monthlyRate * (months * (months + 1)) / 2;
         return monthlyAssets;
     }
 }
