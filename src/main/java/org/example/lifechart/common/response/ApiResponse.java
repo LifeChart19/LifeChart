@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 public class ApiResponse<T> {
     private final Boolean isSuccess;        // 성공 여부
     private final String message;           // 응답 메시지
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final ErrorCode errorCode;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final T payload;                // 실제 응답 데이터 (성공 시 포함)

@@ -121,6 +121,7 @@ public class GoalServiceImpl implements GoalService {
 			&& goalRepository.countByUserIdAndCategory(userId, Category.RETIREMENT) <= 1) {
 			throw new CustomException(ErrorCode.ONLY_ONE_RETIREMENT_GOAL);
 		}
+
 		commentRepository.deleteAllByGoalId(goal.getId());
 		goal.clearComment();
 		likeRepository.deleteAllByGoalId(goal.getId());
