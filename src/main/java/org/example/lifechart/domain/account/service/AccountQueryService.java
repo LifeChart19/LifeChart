@@ -27,7 +27,8 @@ public class AccountQueryService {
         if (response == null || response.getData() == null) {
             throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
-        return response.getData();    }
+        return response.getData();
+    }
 
     public List<TransactionResponse> getTransactions(Long userId) {
         MockBankApiResponse<List<TransactionResponse>> response = accountClient.getTransactions(userId);
@@ -37,14 +38,11 @@ public class AccountQueryService {
         return response.getData();
     }
 
-    public TransactionStatResponse getUserTransactionStats(Long userId, YearMonth startYM, YearMonth endYM) {
-        TransactionStatRequest req = new TransactionStatRequest(startYM, endYM);
+    public TransactionStatResponse getUserTransactionStats(Long userId, TransactionStatRequest req) {
         MockBankApiResponse<TransactionStatResponse> response = accountClient.getTransactionStats(userId, req);
-
         if (response == null || response.getData() == null) {
             throw new CustomException(ErrorCode.TRANSACTION_NOT_FOUND);
         }
-
         return response.getData();
     }
 }

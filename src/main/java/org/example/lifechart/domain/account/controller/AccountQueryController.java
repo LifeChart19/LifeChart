@@ -50,8 +50,7 @@ public class AccountQueryController {
         AuthUtil.validateUserAccess(userId);
         TransactionStatResponse resp = accountQueryService.getUserTransactionStats(
                 userId,
-                request.getStartYM(),
-                request.getEndYM()
+                request
         );
         return ApiResponse.onSuccess(SuccessCode.GET_TRANSACTION_STATS_SUCCESS, resp);
     }
