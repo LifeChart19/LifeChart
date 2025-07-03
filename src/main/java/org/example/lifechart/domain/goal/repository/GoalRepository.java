@@ -37,4 +37,11 @@ public interface GoalRepository extends JpaRepository<Goal, Long>,
     WHERE g.id IN :goalIds AND g.user.id = :userId
     """)
     List<Goal> findAllWithUserByIdAndUserId(@Param("goalIds") List<Long> goalIds, @Param("userId") Long userId);
+
+    List<Goal> findAllById(Iterable<Long> ids);
+
+    @Query("SELECT g.category FROM Goal g WHERE g.id = :goalId")
+    Optional<Category> findCategoryById(@Param("goalId") Long goalId);
+
+    Optional<Goal> findByIdAndUserIdAndStatus(Long id, Long userId, Status status);
 }
