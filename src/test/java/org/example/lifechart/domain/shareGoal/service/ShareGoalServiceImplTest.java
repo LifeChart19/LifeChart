@@ -4,11 +4,14 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.example.lifechart.common.entity.BaseEntity;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.follow.entity.Follow;
 import org.example.lifechart.domain.follow.repository.FollowRepository;
@@ -21,6 +24,7 @@ import org.example.lifechart.domain.shareGoal.dto.reqeust.ShareGoalSearchRequest
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalCursorResponseDto;
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalResponseDto;
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalSearchResponseDto;
+import org.example.lifechart.domain.shareGoal.enums.Sort;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +75,7 @@ class ShareGoalServiceImplTest {
 	Follow follow2;
 
 	@BeforeEach
-	void setUp() {
+	void setUp() throws NoSuchFieldException, IllegalAccessException {
 		authUser = User.builder().id(1L).build();
 		user1 = User.builder().id(2L).build();
 		user2 = User.builder().id(3L).build();
@@ -88,7 +92,12 @@ class ShareGoalServiceImplTest {
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.HOUSING)
 			.tags(List.of("집"))
+			.commentCount(5)
+			.likeCount(5)
 			.build();
+		Field createdAt = BaseEntity.class.getDeclaredField("createdAt");
+		createdAt.setAccessible(true);
+		createdAt.set(authUserGoalAll, LocalDateTime.now().minus(Period.ofDays(6)));
 
 		authUserGoalFollower = Goal.builder()
 			.id(2L)
@@ -100,6 +109,8 @@ class ShareGoalServiceImplTest {
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.RETIREMENT)
 			.tags(List.of("은퇴"))
+			.commentCount(5)
+			.likeCount(5)
 			.build();
 
 		user1GoalAll = Goal.builder()
@@ -112,7 +123,10 @@ class ShareGoalServiceImplTest {
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.HOUSING)
 			.tags(List.of("집"))
+			.commentCount(5)
+			.likeCount(5)
 			.build();
+		createdAt.set(user1GoalAll, LocalDateTime.now().minus(Period.ofDays(6)));
 
 		user1GoalFollower = Goal.builder()
 			.id(4L)
@@ -124,7 +138,11 @@ class ShareGoalServiceImplTest {
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.RETIREMENT)
 			.tags(List.of("은퇴"))
+			.commentCount(5)
+			.likeCount(5)
 			.build();
+		createdAt.setAccessible(true);
+		createdAt.set(user1GoalFollower, LocalDateTime.now().minus(Period.ofDays(3)));
 
 		user2GoalAll = Goal.builder()
 			.id(5L)
@@ -136,7 +154,10 @@ class ShareGoalServiceImplTest {
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.HOUSING)
 			.tags(List.of("집"))
+			.commentCount(5)
+			.likeCount(5)
 			.build();
+		createdAt.set(user2GoalAll, LocalDateTime.now().minus(Period.ofDays(6)));
 
 		user2GoalFollower = Goal.builder()
 			.id(6L)
@@ -148,7 +169,11 @@ class ShareGoalServiceImplTest {
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.RETIREMENT)
 			.tags(List.of("은퇴"))
+			.commentCount(5)
+			.likeCount(5)
 			.build();
+		createdAt.setAccessible(true);
+		createdAt.set(user2GoalFollower, LocalDateTime.now().minus(Period.ofDays(3)));
 
 		user3GoalAll = Goal.builder()
 			.id(7L)
@@ -160,7 +185,10 @@ class ShareGoalServiceImplTest {
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.HOUSING)
 			.tags(List.of("집"))
+			.commentCount(2)
+			.likeCount(5)
 			.build();
+		createdAt.set(user2GoalAll, LocalDateTime.now().minus(Period.ofDays(10)));
 
 		user3GoalFollower = Goal.builder()
 			.id(8L)
@@ -172,7 +200,11 @@ class ShareGoalServiceImplTest {
 			.endAt(LocalDateTime.now().plusDays(7))
 			.category(Category.RETIREMENT)
 			.tags(List.of("은퇴"))
+			.commentCount(1)
+			.likeCount(1)
 			.build();
+		createdAt.setAccessible(true);
+		createdAt.set(user3GoalFollower, LocalDateTime.now().minus(Period.ofDays(3)));
 	}
 
 	@Test
@@ -187,12 +219,12 @@ class ShareGoalServiceImplTest {
 			.toList();
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
 		given(goalRepository.findByAuthIdAndCursorAndFilters(
-			authUser.getId(), null, 10, null, null)).willReturn(goalList
-		);
+			authUser.getId(), null, null, 10, null, null, Sort.RECENT, null))
+			.willReturn(goalList);
 
 		// when
 		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(
-			authUser.getId(), null, 10, null, null
+			authUser.getId(), null, 10, null, null, Sort.RECENT, null
 		);
 
 		//then
@@ -213,12 +245,12 @@ class ShareGoalServiceImplTest {
 			.toList();
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
 		given(goalRepository.findByAuthIdAndCursorAndFilters(
-			authUser.getId(), null, 2, null, null)).willReturn(goalList
-		);
+			authUser.getId(), null, null, 2, null, null, Sort.RECENT, null))
+			.willReturn(goalList);
 
 		// when
 		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(
-			authUser.getId(), null, 2, null, null
+			authUser.getId(), null, 2, null, null, Sort.RECENT, null
 		);
 
 		//then
@@ -238,13 +270,14 @@ class ShareGoalServiceImplTest {
 			.map(ShareGoalResponseDto::from)
 			.toList();
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+		given(goalRepository.findByIdAndStatus(6L, Status.ACTIVE)).willReturn(Optional.of(user2GoalFollower));
 		given(goalRepository.findByAuthIdAndCursorAndFilters(
-			authUser.getId(), 6L, 2, null, null)).willReturn(goalList
-		);
+			authUser.getId(), user2GoalFollower, 6L, 2, null, null, Sort.RECENT, null))
+			.willReturn(goalList);
 
 		// when
 		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(
-			authUser.getId(), 6L, 2, null, null
+			authUser.getId(), 6L, 2, null, null, Sort.RECENT, null
 		);
 
 		//then
@@ -265,12 +298,12 @@ class ShareGoalServiceImplTest {
 			.toList();
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
 		given(goalRepository.findByAuthIdAndCursorAndFilters(
-			authUser.getId(), null, 10, Category.RETIREMENT, null)).willReturn(goalList
+			authUser.getId(), null, null, 10, Category.RETIREMENT, null, Sort.RECENT, null)).willReturn(goalList
 		);
 
 		// when
 		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(
-			authUser.getId(), null, 10, Category.RETIREMENT, null
+			authUser.getId(), null, 10, Category.RETIREMENT, null, Sort.RECENT, null
 		);
 
 		//then
@@ -291,12 +324,12 @@ class ShareGoalServiceImplTest {
 			.toList();
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
 		given(goalRepository.findByAuthIdAndCursorAndFilters(
-			authUser.getId(), null, 10, null, Share.ALL)).willReturn(goalList
+			authUser.getId(), null, null, 10, null, Share.ALL, Sort.RECENT, null)).willReturn(goalList
 		);
 
 		// when
 		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(
-			authUser.getId(), null, 10, null, Share.ALL
+			authUser.getId(), null, 10, null, Share.ALL, Sort.RECENT, null
 		);
 
 		//then
@@ -317,12 +350,12 @@ class ShareGoalServiceImplTest {
 			.toList();
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
 		given(goalRepository.findByAuthIdAndCursorAndFilters(
-			authUser.getId(), null, 10, null, Share.FOLLOWER)).willReturn(goalList
+			authUser.getId(), null, null, 10, null, Share.FOLLOWER, Sort.RECENT, null)).willReturn(goalList
 		);
 
 		// when
 		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(
-			authUser.getId(), null, 10, null, Share.FOLLOWER
+			authUser.getId(), null, 10, null, Share.FOLLOWER, Sort.RECENT, null
 		);
 
 		//then
@@ -333,7 +366,7 @@ class ShareGoalServiceImplTest {
 	}
 
 	@Test
-	@DisplayName("공유 목표 조회 성공 - 모든 값을 줬을 때 제대로 작동하는지")
+	@DisplayName("공유 목표 조회 성공 - 모든 값을 줬을 때 제대로 작동하는지 - oldVersion")
 	void getShareGoals_Ok6() {
 		// given
 		List<Goal> goalList = List.of(user2GoalFollower, user1GoalFollower);
@@ -342,13 +375,14 @@ class ShareGoalServiceImplTest {
 			.map(ShareGoalResponseDto::from)
 			.toList();
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+		given(goalRepository.findByIdAndStatus(8L, Status.ACTIVE)).willReturn(Optional.of(user3GoalFollower));
 		given(goalRepository.findByAuthIdAndCursorAndFilters(
-			authUser.getId(), 8L, 6, Category.RETIREMENT, Share.FOLLOWER)).willReturn(goalList
+			authUser.getId(), user3GoalFollower, 8L, 6, Category.RETIREMENT, Share.FOLLOWER, Sort.RECENT, null)).willReturn(goalList
 		);
 
 		// when
 		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(
-			authUser.getId(), 8L, 6, Category.RETIREMENT, Share.FOLLOWER
+			authUser.getId(), 8L, 6, Category.RETIREMENT, Share.FOLLOWER, Sort.RECENT, null
 		);
 
 		//then
@@ -359,13 +393,87 @@ class ShareGoalServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("공유 목표 조회 성공 - 인기순으로 정렬했을 때 제대로 작동하는지 만약 댓글 수와 좋아요 수가 같다면 최신순으로 되는지")
+	void getShareGoals_Ok7() {
+		// given
+		List<Goal> goalList = List.of(user2GoalAll, user1GoalAll, authUserGoalAll, user3GoalAll);
+		List<ShareGoalResponseDto> responseDtoList = goalList.stream().map(ShareGoalResponseDto::from).toList();
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+		given(goalRepository.findByAuthIdAndCursorAndFilters(authUser.getId(), null, null, 10,
+			Category.HOUSING, null, Sort.POPULAR, null)).willReturn(goalList);
+
+		// when
+		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(authUser.getId(), null, 10,
+			Category.HOUSING,
+			null, Sort.POPULAR, null);
+
+		// then
+		assertThat(result.getContent())
+			.usingRecursiveComparison()
+			.isEqualTo(responseDtoList);
+		assertEquals(7, result.getNextCursor());
+	}
+
+	@Test
+	@DisplayName("공유 목표 조회 성공 - 기간을 줬을 때 제대로 작동하는지")
+	void getShareGoals_Ok8() {
+		// given
+		List<Goal> goalList = List.of(user1GoalAll, authUserGoalAll, user2GoalAll);
+		List<ShareGoalResponseDto> responseDtoList = goalList.stream().map(ShareGoalResponseDto::from).toList();
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+		given(goalRepository.findByAuthIdAndCursorAndFilters(authUser.getId(), null, null, 10,
+			Category.HOUSING, null, Sort.RECENT, Period.ofDays(7))).willReturn(goalList);
+
+		// when
+		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(authUser.getId(), null, 10,
+			Category.HOUSING,
+			null, Sort.RECENT, Period.ofDays(7));
+
+		// then
+		assertThat(result.getContent())
+			.usingRecursiveComparison()
+			.isEqualTo(responseDtoList);
+		assertEquals(5, result.getNextCursor());
+	}
+
+	@Test
+	@DisplayName("공유 목표 조회 성공 - 모든 값을 줬을 때 제대로 작동하는지 - newVersion")
+	void getShareGoals_Ok9() {
+		// given
+		List<Goal> goalList = List.of(user1GoalFollower);
+		List<ShareGoalResponseDto> goalResponseDtoList = goalList
+			.stream()
+			.map(ShareGoalResponseDto::from)
+			.toList();
+		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.of(authUser));
+		given(goalRepository.findByIdAndStatus(6L, Status.ACTIVE)).willReturn(Optional.of(user2GoalFollower));
+		given(goalRepository.findByAuthIdAndCursorAndFilters(
+			authUser.getId(), user2GoalFollower, 6L, 1, Category.RETIREMENT, Share.FOLLOWER, Sort.POPULAR,
+			Period.ofDays(7))).willReturn(goalList
+		);
+
+		// when
+		ShareGoalCursorResponseDto result = shareGoalService.getShareGoals(
+			authUser.getId(), 6L, 1, Category.RETIREMENT, Share.FOLLOWER, Sort.POPULAR, Period.ofDays(7)
+		);
+
+		//then
+		assertThat(result.getContent())
+			.usingRecursiveComparison()
+			.isEqualTo(goalResponseDtoList);
+		assertEquals(4, result.getNextCursor());
+	}
+
+
+
+	@Test
 	@DisplayName("공유 목표 조회 실패")
 	void getShareGoals_Fail() {
 		// given
 		given(userRepository.findByIdAndDeletedAtIsNull(authUser.getId())).willReturn(Optional.empty());
 		//when then
 		CustomException exception = assertThrows(CustomException.class, () -> shareGoalService.getShareGoals(
-			authUser.getId(), null, 10, null, null)
+			authUser.getId(), null, 10, null, null, Sort.RECENT, null)
 		);
 		assertEquals("유저를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
 	}
