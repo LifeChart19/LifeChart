@@ -164,7 +164,8 @@ public enum ErrorCode implements BaseCode {
 
 
 
-
+	// convert (Line#: 167~169)
+	CONVERT_BAD_REQUEST(HttpStatus.BAD_REQUEST, "유효하지 않은 값입니다"),
 
 
 
