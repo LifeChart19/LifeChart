@@ -4,8 +4,10 @@ import java.net.SocketTimeoutException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.response.ApartmentPriceDto;
@@ -20,7 +22,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OpenApiApartmentPriceService {
@@ -53,36 +57,84 @@ public class OpenApiApartmentPriceService {
 			List<Map<String, Object>> dataList = objectMapper.readValue(response, new TypeReference<>() {});
 
 			// 최신 데이터 추출
-			Optional<Map<String, Object>> latestEntry = dataList.stream()
+			Map<String, Object> latestEntry = dataList.stream()
 				.filter(item -> subregion.equals(item.get("C1_NM")))
-				.max(Comparator.comparing(item -> (String) item.get("PRD_DE")));
-
-			if (latestEntry.isEmpty()) {
-				throw new CustomException(ErrorCode.DATA_NOT_FOUND);
-			}
-
-			Map<String, Object> entry = latestEntry.get();
+				.max(Comparator.comparing(item -> (String) item.get("PRD_DE")))
+				.orElseThrow(() -> new CustomException(ErrorCode.DATA_NOT_FOUND));
 
 			// 지역 코드 -> RegionCode enum 매핑
-			String code = (String) entry.get("C1"); //
-			RegionCode regionCode = RegionCode.fromCode(code);
+			RegionCode regionCode = RegionCode.fromCode((String) latestEntry.get("C1"));
 
 			if (!regionCode.getRegion().equals(region) || !regionCode.getSubregion().equals(subregion)) {
+				log.warn("지역 불일치. 기대값: {}:{}, 실제값: {}: {}",
+					region, subregion, regionCode.getRegion(), regionCode.getSubregion());
 				throw new CustomException(ErrorCode.INVALID_REGION_MATCH);
 			}
 
-			return ApartmentPriceDto.builder()
-				.region(regionCode.getRegion()) // 예 : "서울"
-				.subregion(regionCode.getSubregion()) // 예 : "동남권"
-				.period((String) entry.get("PRD_DE")) // 예: "202504"
-				.price(Double.parseDouble((String) entry.get("DT"))) // 예: "1639.3"
-				.unit((String) entry.get("UNIT_NM")) // 예: "만원/m^2"
-				.build();
+			return mapToDto(latestEntry, regionCode);
 		} catch (CustomException e) {
+			log.warn("CustomException 발생: {}", e.getMessage(), e); // 로그 남기기
 			throw e;
 		} catch (Exception e) {
+			log.error("최신 아파트 가격을 호출하는 데 실패. 지역: {}, 세부지역: {}, 원인: {}",
+				region, subregion, e.getMessage());
 			throw new CustomException(ErrorCode.EXTERNAL_API_FAILURE);
 		}
+	}
+
+	/**
+	 *
+	 * @param months : N개월 동안의 데이터를 불러오기 위한 입력 필드
+	 * @return
+	 */
+	public Map<RegionCode, Pair<ApartmentPriceDto, ApartmentPriceDto>> fetchDurationAll(int months) {
+		String url = buildUrl(months);
+		try {
+			String response = restTemplate.getForObject(url, String.class);
+			List<Map<String, Object>> dataList = objectMapper.readValue(response, new TypeReference<>() {});
+
+			return RegionCode.getValidCodes().stream() // 등록된 모든 지역 코드를 반복
+				.map(code -> {
+					List<Map<String, Object>> regionData = dataList.stream()
+						.filter(item -> code.getSubregion().equals(item.get("C1_NM"))) // 데이터의 C1_NM과 RegionCode의 subregion같은 값을 매칭
+						.collect(Collectors.toList()); // subregion별로 데이터를 모아서 List<Map<String, Object>> 형태로 저장
+
+					if (regionData.isEmpty()) return null; // 데이터가 없으면 null을 리턴 (null인 경우 아래 filter에서 제거됨)
+
+					Map<String, Object> oldest = regionData.stream()
+						.min(Comparator.comparing(item -> (String) item.get("PRD_DE"))).orElse(null); // 가장 오래된 데이터 뽑기
+					Map<String, Object> latest = regionData.stream()
+						.max(Comparator.comparing(item -> (String) item.get("PRD_DE"))).orElse(null); // 가장 최신 데이터 뽑기
+
+
+					// null 체크 추가
+					if (oldest == null || latest == null) {
+						log.warn("oldest 혹은 latest 데이터가 없습니다. 지역: {}", code.name());
+						return null;
+					}
+
+					return Map.entry(code, Pair.of(
+						mapToDto(oldest, code),
+						mapToDto(latest, code)
+					));
+				})
+				.filter((Objects::nonNull))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		} catch (Exception e) {
+			log.warn("KOSIS 데이터 동기화 실패: {}", e.getMessage());
+			throw new CustomException(ErrorCode.EXTERNAL_API_FAILURE);
+		}
+	}
+
+	private ApartmentPriceDto mapToDto(Map<String, Object> entry, RegionCode code) {
+		return ApartmentPriceDto.builder()
+			.region(code.getRegion())
+			.subregion(code.getSubregion())
+			.period((String) entry.get("PRD_DE"))
+			.price(Double.parseDouble((String) entry.get("DT")))
+			.unit((String) entry.get("UNIT_NM"))
+			.build();
 	}
 
 	private String buildUrl(int months) {

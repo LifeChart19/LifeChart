@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
+import org.example.lifechart.domain.comment.repository.CommentRepository;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalDetailRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalEtcRequest;
@@ -30,6 +31,7 @@ import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
+import org.example.lifechart.domain.like.repository.LikeRepository;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,6 +53,8 @@ public class GoalServiceImpl implements GoalService {
 	private final UserRepository userRepository;
 	private final GoalDetailFetcherFactory goalDetailFetcherFactory;
 	private final ApplicationEventPublisher eventPublisher;
+	private final CommentRepository commentRepository;
+	private final LikeRepository likeRepository;
 
 	@Transactional
 	@Override
@@ -117,6 +121,11 @@ public class GoalServiceImpl implements GoalService {
 			&& goalRepository.countByUserIdAndCategory(userId, Category.RETIREMENT) <= 1) {
 			throw new CustomException(ErrorCode.ONLY_ONE_RETIREMENT_GOAL);
 		}
+
+		commentRepository.deleteAllByGoalId(goal.getId());
+		goal.clearComment();
+		likeRepository.deleteAllByGoalId(goal.getId());
+		goal.clearLike();
 		goal.delete();
 
 		try {

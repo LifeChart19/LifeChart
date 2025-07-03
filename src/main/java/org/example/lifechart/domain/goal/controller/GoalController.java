@@ -22,6 +22,7 @@ import org.example.lifechart.domain.goal.service.GoalRetirementCalculateService;
 import org.example.lifechart.domain.goal.service.GoalServiceImpl;
 import org.example.lifechart.domain.goal.service.RetirementReferenceValueService;
 import org.example.lifechart.security.CustomUserPrincipal;
+import org.example.lifechart.validation.annotation.ValidGoalPeriod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -65,7 +66,7 @@ public class GoalController {
 	// 은퇴 목표 금액 계산 API (값 입력 후 프론트에서 '계산' 버튼 클릭 시 호출됩니다.)
 	@PostMapping("/retirement/calculate")
 	public ResponseEntity<ApiResponse<Long>> calculateRetirementTargetAmount(
-		@RequestBody GoalRetirementCalculateRequest request,
+		@Valid @RequestBody GoalRetirementCalculateRequest request,
 		@AuthenticationPrincipal CustomUserPrincipal principal
 	) {
 		Long calculatedTargetAmount = goalRetirementCalculateService.calculateTargetAmount(request, principal.getUserId());
@@ -79,7 +80,7 @@ public class GoalController {
 	)
 	@PostMapping("/housing/calculate")
 	public ResponseEntity<ApiResponse<Long>> calculateHousingTargetAmount(
-		@RequestBody GoalHousingCalculateRequest request,
+		@Valid @RequestBody GoalHousingCalculateRequest request,
 		@AuthenticationPrincipal CustomUserPrincipal principal
 	) {
 		Long targetAmount = goalHousingCalculateService.calculateTargetAmount(request);
@@ -157,7 +158,7 @@ public class GoalController {
 	public ResponseEntity<ApiResponse<GoalResponse>> updateGoal(
 		@PathVariable Long goalId,
 		@AuthenticationPrincipal CustomUserPrincipal principal,
-		@RequestBody GoalUpdateRequest request
+		@Valid @RequestBody GoalUpdateRequest request
 	) {
 		GoalResponse response = goalService.updateGoal(request, goalId, principal.getUserId());
 		return ApiResponse.onSuccess(SuccessCode.GOAL_UPDATE_SUCCESS, response);
