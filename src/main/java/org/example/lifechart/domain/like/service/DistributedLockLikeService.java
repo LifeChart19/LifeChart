@@ -36,10 +36,7 @@ public class DistributedLockLikeService {
 			}, LOCK_WAIT_TIME_PLUS, LOCK_LEASE_TIME, TimeUnit.SECONDS);
 	}
 
-	public void deleteLike(Long authId, Long likeId) {
-		Long goalId = likeRepository.findGoalIdByLikeId(likeId).orElseThrow(() ->
-			new CustomException(ErrorCode.LIKE_NOT_FOUND));
-		String key = defaultKey + "delete:" + goalId;
+	public void deleteLikeWithKey(String key, Long authId, Long likeId) {
 		lockExecutor.executeWithLock(key, () -> {
 			long start = System.nanoTime();
 			likeService.deleteLike(authId, likeId);
@@ -47,5 +44,22 @@ public class DistributedLockLikeService {
 			long elapsedMs = (end - start) / 1_000_000;
 			log.info("좋아요 삭제 시간: {}ms", elapsedMs);
 			}, LOCK_WAIT_TIME_DELETE, LOCK_LEASE_TIME, TimeUnit.SECONDS);
+	}
+
+	public void deleteLike(Long authId, Long likeId) {
+		Long goalId = findGoalId(likeId);
+		String key = defaultKey + "delete:" + goalId;
+		deleteLikeWithKey(key, authId, likeId);
+	}
+
+	// public void deleteLikeByGoal(Long authId, Long likeId) {
+	// 	Long goalId = findGoalId(likeId);
+	// 	String key = "lock:goal:" + goalId;
+	// 	deleteLikeWithKey(key, authId, likeId);
+	// }
+
+	private Long findGoalId(Long likeId) {
+		return likeRepository.findGoalIdByLikeId(likeId).orElseThrow(() ->
+			new CustomException(ErrorCode.LIKE_NOT_FOUND));
 	}
 }
