@@ -39,11 +39,11 @@ public class UserServiceImpl implements UserService {
 
         // SNS 발행
         AccountCreatedEvent event = new AccountCreatedEvent(
-            savedUser.getId(),
-            savedUser.getEmail(),
-            savedUser.getNickname(),
-            savedUser.getName(),
-            savedUser.getCreatedAt().toString()
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getName(),
+                savedUser.getSalary(),
+                savedUser.getCreatedAt().toString()
         );
 
         accountEventPublisherPort.publishAccountCreatedEvent(event);
@@ -94,7 +94,8 @@ public class UserServiceImpl implements UserService {
                 request.getNickname(),
                 request.getGender(),
                 request.getJob(),
-                request.getPhoneNumber()
+                request.getPhoneNumber(),
+                request.getSalary()
         );
 
         return user.getId();

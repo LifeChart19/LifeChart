@@ -50,9 +50,9 @@ class FollowServiceImplTest {
 		me = 1L;
 		you = 2L;
 		authUser = new User(me, "name", "email", "password", "nickname", "men", "0",
-			"job", false, null, LocalDate.now(), "user", "provider", "0");
+			"job", new java.math.BigDecimal("1500000"),false, null, LocalDate.now(), "user", "provider", "0");
 		user = new User(you, "name1", "email1", "password1", "nickname1", "men1", "1",
-			"job", false, null, LocalDate.now(), "user", "provider1", "1");
+			"job", new java.math.BigDecimal("1500000"),false, null, LocalDate.now(), "user", "provider1", "1");
 		follow = Follow.createFollow(authUser, user);
 		ReflectionTestUtils.setField(follow, "id", 1L);
 	}

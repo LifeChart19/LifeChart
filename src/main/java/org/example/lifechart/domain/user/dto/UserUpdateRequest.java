@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.example.lifechart.validation.annotation.ValidUserUpdate;
 
+import java.math.BigDecimal;
+
 @ValidUserUpdate
 @AllArgsConstructor
 @Getter
@@ -12,4 +14,6 @@ public class UserUpdateRequest {
     private String gender;
     private String job;
     private String phoneNumber;
+    private BigDecimal salary;
+
 }

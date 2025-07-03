@@ -5,6 +5,7 @@
     import org.example.lifechart.common.entity.BaseEntity;
     import org.example.lifechart.domain.user.dto.SignupRequest;
 
+    import java.math.BigDecimal;
     import java.time.LocalDate;
     import java.time.LocalDateTime;
 
@@ -40,6 +41,9 @@
         @Column
         private String job;
 
+        @Column
+        private BigDecimal salary;
+
         @Column(nullable = false)
         private Boolean isDeleted = false;
 
@@ -58,6 +62,7 @@
                     .birthDate(request.getBirthDate())
                     .gender(request.getGender())
                     .job(request.getJob())
+                    .salary(request.getSalary())
                     .phoneNumber(request.getPhoneNumber())
                     .role("USER")
                     .isDeleted(false)
@@ -76,11 +81,12 @@
             }
         }
 
-        public void updateProfile(String nickname, String gender, String job, String phoneNumber) {
+        public void updateProfile(String nickname, String gender, String job, String phoneNumber, BigDecimal salary) {
             if (nickname != null)this.nickname = nickname;
             if (gender != null) this.gender = gender;
             if (job != null) this.job = job;
             if (phoneNumber != null) this.phoneNumber = phoneNumber;
+            if (salary != null) this.salary = salary;
         }
 
         @Builder.Default
