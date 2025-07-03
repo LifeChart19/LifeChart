@@ -73,6 +73,7 @@ public class OpenApiApartmentPriceService {
 
 			return mapToDto(latestEntry, regionCode);
 		} catch (CustomException e) {
+			log.warn("CustomException 발생: {}", e.getMessage(), e); // 로그 남기기
 			throw e;
 		} catch (Exception e) {
 			log.error("최신 아파트 가격을 호출하는 데 실패. 지역: {}, 세부지역: {}, 원인: {}",
@@ -105,8 +106,17 @@ public class OpenApiApartmentPriceService {
 					Map<String, Object> latest = regionData.stream()
 						.max(Comparator.comparing(item -> (String) item.get("PRD_DE"))).orElse(null); // 가장 최신 데이터 뽑기
 
-					return Map.entry(code,
-						Pair.of(mapToDto(oldest, code), mapToDto(latest, code)));
+
+					// null 체크 추가
+					if (oldest == null || latest == null) {
+						log.warn("oldest 혹은 latest 데이터가 없습니다. 지역: {}", code.name());
+						return null;
+					}
+
+					return Map.entry(code, Pair.of(
+						mapToDto(oldest, code),
+						mapToDto(latest, code)
+					));
 				})
 				.filter((Objects::nonNull))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

@@ -130,4 +130,12 @@ public class Goal extends BaseEntity {
 			this.likeCount--;
 		}
 	}
+
+	public void clearComment() {
+		this.commentCount = 0;
+	}
+
+	public void clearLike() {
+		this.likeCount = 0;
+	}
 }
