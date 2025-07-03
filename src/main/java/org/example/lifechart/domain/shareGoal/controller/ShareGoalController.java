@@ -1,5 +1,6 @@
 package org.example.lifechart.domain.shareGoal.controller;
 
+import java.time.Period;
 import java.util.List;
 
 import org.example.lifechart.common.enums.ErrorCode;
@@ -12,6 +13,7 @@ import org.example.lifechart.domain.shareGoal.dto.reqeust.ShareGoalSearchRequest
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalCursorResponseDto;
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalResponseDto;
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalSearchResponseDto;
+import org.example.lifechart.domain.shareGoal.enums.Sort;
 import org.example.lifechart.domain.shareGoal.service.ShareGoalService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
@@ -46,10 +48,13 @@ public class ShareGoalController {
 		@RequestParam(required = false) Long cursorId,
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(required = false) Category category,
-		@RequestParam(required = false) Share share
+		@RequestParam(required = false) Share share,
+		@RequestParam(required = false) Sort sort,
+		@RequestParam(required = false) Period period
 	) {
 		return ApiResponse.onSuccess(SuccessCode.GET_ALL_SHAREGOALS_SUCCESS,
-			shareGoalService.getShareGoals(customUserPrincipal.getUserId(), cursorId, size, category, share));
+			shareGoalService.getShareGoals(customUserPrincipal.getUserId(),
+				cursorId, size, category, share, sort, period));
 	}
 
 	@Operation(

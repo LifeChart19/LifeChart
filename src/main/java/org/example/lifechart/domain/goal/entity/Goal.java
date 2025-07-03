@@ -72,13 +72,13 @@ public class Goal extends BaseEntity {
 	private Share share;
 
 	@Column(nullable = false)
-	private int commentCount = 0;
+	private long commentCount = 0;
 
 	@Column(nullable = false)
-	private int likeCount = 0;
+	private long likeCount = 0;
 
 	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
+	@CollectionTable(name = "goal_tags", joinColumns = @JoinColumn(name = "goal_id"))
 	@Column(name = "tag")
 	private List<String> tags = new ArrayList<>();
 
