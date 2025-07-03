@@ -42,7 +42,7 @@ class UserServiceTest {
     @Test
     @DisplayName("회원가입 성공")
     void signup_success() {
-        SignupRequest request = new SignupRequest("test@email.com", "pass", "테스터","nick", LocalDate.now(), "MALE", "JOB", "01012345678");
+        SignupRequest request = new SignupRequest("test@email.com", "pass", "테스터","nick", LocalDate.now(), new java.math.BigDecimal("1500000"),"MALE", "JOB", "01012345678");
 
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(userRepository.existsByNickname(any())).thenReturn(false);
@@ -60,7 +60,7 @@ class UserServiceTest {
     void signup_fail_duplicate_email() {
         when(userRepository.existsByEmail("duplicate@email.com")).thenReturn(true);
 
-        assertThatThrownBy(() -> userService.signup(new SignupRequest("duplicate@email.com", "pw","테스터", "nick", LocalDate.now(), null, null, null)))
+        assertThatThrownBy(() -> userService.signup(new SignupRequest("duplicate@email.com", "pw","테스터", "nick", LocalDate.now(), new java.math.BigDecimal("1500000"),null, null, null)))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.EXIST_SAME_EMAIL.getMessage());
     }
@@ -71,7 +71,7 @@ class UserServiceTest {
         when(userRepository.existsByEmail("deleted@email.com")).thenReturn(false);
         when(userRepository.existsByEmailAndIsDeletedTrue("deleted@email.com")).thenReturn(true);
 
-        assertThatThrownBy(() -> userService.signup(new SignupRequest("deleted@email.com", "pw", "테스터","nick", LocalDate.now(), null, null, null)))
+        assertThatThrownBy(() -> userService.signup(new SignupRequest("deleted@email.com", "pw", "테스터","nick", LocalDate.now(), new java.math.BigDecimal("1500000"),null, null, null)))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.DELETED_USER_EXISTS.getMessage());
     }
@@ -83,7 +83,7 @@ class UserServiceTest {
         when(userRepository.existsByEmailAndIsDeletedTrue(any())).thenReturn(false);
         when(userRepository.existsByNickname("nickname")).thenReturn(true);
 
-        assertThatThrownBy(() -> userService.signup(new SignupRequest("email@test.com", "pw", "테스터","nickname", LocalDate.now(), null, null, null)))
+        assertThatThrownBy(() -> userService.signup(new SignupRequest("email@test.com", "pw", "테스터","nickname", LocalDate.now(), new java.math.BigDecimal("1500000"),null, null, null)))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.EXIST_SAME_NICKNAME.getMessage());
     }
@@ -95,7 +95,7 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.existsByNickname("newNick")).thenReturn(false);
 
-        UserUpdateRequest request = new UserUpdateRequest("newNick", "FEMALE", "DEV", "01099998888");
+        UserUpdateRequest request = new UserUpdateRequest("newNick", "FEMALE", "DEV", "01099998888",new java.math.BigDecimal("1500000"));
         userService.updateProfile(1L, request);
 
         assertThat(user.getNickname()).isEqualTo("newNick");
@@ -107,7 +107,7 @@ class UserServiceTest {
     void updateProfile_fail_user_not_found() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.updateProfile(999L, new UserUpdateRequest("nick", null, null, null)))
+        assertThatThrownBy(() -> userService.updateProfile(999L, new UserUpdateRequest("nick", null, null, null,new java.math.BigDecimal("1500000"))))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.USER_NOT_FOUND.getMessage());
     }
@@ -119,7 +119,7 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.existsByNickname("newNick")).thenReturn(true);
 
-        assertThatThrownBy(() -> userService.updateProfile(1L, new UserUpdateRequest("newNick", null, null, null)))
+        assertThatThrownBy(() -> userService.updateProfile(1L, new UserUpdateRequest("newNick", null, null,null,new java.math.BigDecimal("1500000"))))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.EXIST_SAME_NICKNAME.getMessage());
     }

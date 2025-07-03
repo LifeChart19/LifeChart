@@ -1,5 +1,6 @@
 package org.example.lifechart.domain.shareGoal.controller;
 
+import java.time.Period;
 import java.util.List;
 
 import org.example.lifechart.common.enums.ErrorCode;
@@ -12,6 +13,7 @@ import org.example.lifechart.domain.shareGoal.dto.reqeust.ShareGoalSearchRequest
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalCursorResponseDto;
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalResponseDto;
 import org.example.lifechart.domain.shareGoal.dto.response.ShareGoalSearchResponseDto;
+import org.example.lifechart.domain.shareGoal.enums.Sort;
 import org.example.lifechart.domain.shareGoal.service.ShareGoalService;
 import org.example.lifechart.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
@@ -46,10 +48,13 @@ public class ShareGoalController {
 		@RequestParam(required = false) Long cursorId,
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(required = false) Category category,
-		@RequestParam(required = false) Share share
+		@RequestParam(required = false) Share share,
+		@RequestParam(required = false) Sort sort,
+		@RequestParam(required = false) Period period
 	) {
 		return ApiResponse.onSuccess(SuccessCode.GET_ALL_SHAREGOALS_SUCCESS,
-			shareGoalService.getShareGoals(customUserPrincipal.getUserId(), cursorId, size, category, share));
+			shareGoalService.getShareGoals(customUserPrincipal.getUserId(),
+				cursorId, size, category, share, sort, period));
 	}
 
 	@Operation(
@@ -110,5 +115,23 @@ public class ShareGoalController {
 	) {
 		return ApiResponse.onSuccess(SuccessCode.GET_POPULAR_KEYWORDS_SUCCESS,
 			shareGoalService.searchTop10Keyword(customUserPrincipal.getUserId()));
+	}
+
+	@Operation(
+		summary = "자동완성 API",
+		description = "인증된 유저가 검색어 한 글자를 칠 때마다 추천어를 띄워줍니다",
+		security = @SecurityRequirement(name = "bearerAuth")
+	)
+	@GetMapping("/search/autocomplete")
+	public ResponseEntity<ApiResponse<List<String>>> searchAutocomplete(
+		@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+		@RequestParam String prefix
+	) {
+
+		if (prefix == null || prefix.trim().isEmpty()) {
+			throw new CustomException(ErrorCode.SHARE_GOAL_PREFIX_BAD_REQUEST);
+		}
+		return ApiResponse.onSuccess(SuccessCode.GET_AUTOCOMPLETE_SUCCESS,
+			shareGoalService.searchAutocomplete(customUserPrincipal.getUserId(), prefix));
 	}
 }

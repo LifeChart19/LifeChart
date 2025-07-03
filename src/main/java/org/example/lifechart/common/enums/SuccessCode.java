@@ -25,7 +25,7 @@ public enum SuccessCode implements BaseCode {
 	GET_USER_PROFILE_SUCCESS(HttpStatus.OK, "유저 프로필을 조회했습니다."),
 	GET_ACCOUNT_SUCCESS(HttpStatus.OK, "계좌 잔액 조회를 성공했습니다."),
 	GET_TRANSACTIONS_SUCCESS(HttpStatus.OK, "거래 내역 조회를 성공했습니다."),
-
+	GET_TRANSACTION_STATS_SUCCESS(HttpStatus.OK, "거래 내역 통계 조회를 성공했습니다."),
 
 
 
@@ -160,6 +160,7 @@ public enum SuccessCode implements BaseCode {
 	GET_ALL_SHAREGOALS_SUCCESS(HttpStatus.OK, "공유 목표 목록을 조회합니다"),
 	KEYWORD_SCORE_PLUS_SUCCESS(HttpStatus.OK, "검색어 점수를 증가시킵니다"),
 	GET_POPULAR_KEYWORDS_SUCCESS(HttpStatus.OK, "인기 검색어 Top10을 조회합니다."),
+	GET_AUTOCOMPLETE_SUCCESS(HttpStatus.OK, "자동완성 추천어를 조회합니다"),
 
 
 

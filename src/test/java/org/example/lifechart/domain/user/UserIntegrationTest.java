@@ -96,7 +96,7 @@ class UserIntegrationTest {
                 .email("profile@test.com").password("pw1234").name("프로필유저").nickname("nick100").birthDate(LocalDate.of(2000,1,1)).build());
 
         // 2-1. 성공
-        UserUpdateRequest updateRequest = new UserUpdateRequest("newNick100", "FEMALE", "ENGINEER", "010-9999-0000");
+        UserUpdateRequest updateRequest = new UserUpdateRequest("newNick100", "FEMALE", "ENGINEER", "010-9999-0000",new java.math.BigDecimal("1500000"));
         userService.updateProfile(user.getId(), updateRequest);
         User updated = userRepository.findById(user.getId()).orElseThrow();
         assertThat(updated.getNickname()).isEqualTo("newNick100");
@@ -104,11 +104,11 @@ class UserIntegrationTest {
         // 2-2. 닉네임 중복
         userService.signup(SignupRequest.builder()
                 .email("profile2@test.com").password("pw2222").name("프로필유저2").nickname("dupNick").birthDate(LocalDate.of(1998,2,2)).build());
-        UserUpdateRequest dupNick = new UserUpdateRequest("dupNick", "FEMALE", "STUDENT", "010-1111-9999");
+        UserUpdateRequest dupNick = new UserUpdateRequest("dupNick", "FEMALE", "STUDENT", "010-1111-9999", new java.math.BigDecimal("1500000"));
         assertThrows(CustomException.class, () -> userService.updateProfile(user.getId(), dupNick));
 
         // 2-3. 존재하지 않는 유저
-        UserUpdateRequest req = new UserUpdateRequest("noone", "M", null, null);
+        UserUpdateRequest req = new UserUpdateRequest("noone", "M", null, null, new java.math.BigDecimal("1500000"));
         assertThrows(CustomException.class, () -> userService.updateProfile(987654L, req));
     }
 

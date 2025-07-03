@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Builder
@@ -35,7 +36,9 @@ public class SignupRequest {
     @NotNull(message = "생년월일은 필수입니다.")
     private LocalDate birthDate;
 
+
     // 선택 입력
+    private BigDecimal salary;
     private String gender;
     private String job;
     private String phoneNumber;

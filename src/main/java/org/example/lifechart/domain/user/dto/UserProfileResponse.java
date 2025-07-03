@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.AllArgsConstructor;
 import org.example.lifechart.domain.user.entity.User;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -16,6 +17,7 @@ public class UserProfileResponse {
     private String gender;
     private String job;
     private String phoneNumber;
+    private BigDecimal salary;
     private LocalDate birthDate;
 
     public UserProfileResponse(User user) {
@@ -26,6 +28,7 @@ public class UserProfileResponse {
         this.gender = user.getGender();
         this.job = user.getJob();
         this.phoneNumber = user.getPhoneNumber();
+        this.salary = user.getSalary();
         this.birthDate = user.getBirthDate();
     }
 }
