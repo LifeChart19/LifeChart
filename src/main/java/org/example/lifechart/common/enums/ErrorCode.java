@@ -28,6 +28,7 @@ public enum ErrorCode implements BaseCode {
 	ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "계좌를 찾을 수 없습니다."),
 	TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "거래내역을 찾을 수 없습니다."),
 	NO_AUTHORIZATION(HttpStatus.NOT_FOUND, "권한이 없습니다."),
+	INVALID_SALARY(HttpStatus.NOT_FOUND, "월급은 0이상이어야 합니다."),
 
 
 
