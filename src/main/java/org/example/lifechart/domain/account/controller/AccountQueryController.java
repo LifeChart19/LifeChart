@@ -5,6 +5,7 @@ import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.enums.SuccessCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.common.response.ApiResponse;
+import org.example.lifechart.common.util.AuthUtil;
 import org.example.lifechart.domain.account.dto.AccountResponse;
 import org.example.lifechart.domain.account.dto.TransactionResponse;
 import org.example.lifechart.domain.account.dto.TransactionStatRequest;
@@ -29,12 +30,14 @@ public class AccountQueryController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<AccountResponse>> getAccount(@PathVariable Long userId) {
+        AuthUtil.validateUserAccess(userId);
         AccountResponse response = accountQueryService.getAccount(userId);
         return ApiResponse.onSuccess(SuccessCode.GET_ACCOUNT_SUCCESS, response);
     }
 
     @GetMapping("/{userId}/transactions")
     public ResponseEntity<ApiResponse<List<TransactionResponse>>> getTransactions(@PathVariable Long userId) {
+        AuthUtil.validateUserAccess(userId);
         List<TransactionResponse> list = accountQueryService.getTransactions(userId);
         return ApiResponse.onSuccess(SuccessCode.GET_TRANSACTIONS_SUCCESS, list);
     }
@@ -44,6 +47,7 @@ public class AccountQueryController {
             @PathVariable Long userId,
             @RequestBody TransactionStatRequest request
     ) {
+        AuthUtil.validateUserAccess(userId);
         TransactionStatResponse resp = accountQueryService.getUserTransactionStats(
                 userId,
                 request.getStartYM(),
