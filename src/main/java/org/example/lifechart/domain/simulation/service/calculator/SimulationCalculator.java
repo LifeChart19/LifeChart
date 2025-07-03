@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 //이자율로직을 고쳤습니다. 이전 계산에는 마지막 달에는 저축이자 안붙었었음 -> 모든 달에 저축이자 붙도록
-
+@Component
 @Log4j2
 public class SimulationCalculator {
     //단리  정기적금 마지막 달도 저축 이자가 붙음.
