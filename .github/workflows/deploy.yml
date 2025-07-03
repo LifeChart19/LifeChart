@@ -108,9 +108,10 @@ jobs:
             
             docker compose pull
 
-            docker compose down
+            docker compose stop spring-container mysql redis
+            docker compose rm -f spring-container mysql redis
 
-            docker compose up -d
+            docker compose up -d spring-container mysql redis
 
             docker image prune -f
           EOF
@@ -118,7 +119,7 @@ jobs:
         # SSH를 통해 EC2 인스턴스에 접속 (비공개 키, 사용자, 호스트 정보 사용)
         # 애플리케이션이 위치한 디렉토리로 이동
         # Docker Hub에서 docker-compose.yml에 명시된 최신 이미지 pull
-        # 현재 실행 중인 모든 컨테이너 중지 및 삭제
+        # prometheus와 grafana를 제외한 컨테이너들을 재시작하여 최신화
         # 최신 이미지를 기반으로 컨테이너 재시작 (백그라운드 모드)
         # 더 이상 사용되지 않는 Docker 이미지 강제 삭제 (디스크 공간 확보)
         # EOF는 원래 ssh는 한 줄로 명령하지만 저렇게 사용하므로써 그 사이를 순차적으로 실행
