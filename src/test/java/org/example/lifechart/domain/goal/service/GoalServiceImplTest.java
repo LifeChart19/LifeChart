@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
+import org.example.lifechart.domain.comment.repository.CommentRepository;
 import org.example.lifechart.domain.goal.dto.request.*;
 import org.example.lifechart.domain.goal.dto.response.CursorPageResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
@@ -36,6 +37,7 @@ import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
 import org.example.lifechart.domain.goal.repository.GoalHousingRepository;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
+import org.example.lifechart.domain.like.repository.LikeRepository;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -75,6 +77,12 @@ public class GoalServiceImplTest {
 	private GoalServiceImpl goalService;
 
 	LocalDateTime fixedNow = LocalDateTime.of(2025,9,1,0,0);
+
+	@Mock
+	private CommentRepository commentRepository;
+
+	@Mock
+	private LikeRepository likeRepository;
 
 	@Test
 	@DisplayName("은퇴 목표 생성에 성공한다.")
@@ -407,6 +415,10 @@ public class GoalServiceImplTest {
 		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
 		assertThat(goal.getStatus()).isEqualTo(Status.DELETED);
+
+		verify(commentRepository).deleteAllByGoalId(goal.getId());
+		verify(likeRepository).deleteAllByGoalId(goal.getId());
+		assertThat(goal.getStatus()).isEqualTo(Status.DELETED);
 	}
 
 	@Test
@@ -437,6 +449,10 @@ public class GoalServiceImplTest {
 		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
 		assertThat(goal.getStatus()).isEqualTo(Status.DELETED);
+
+		verify(commentRepository).deleteAllByGoalId(goal.getId());
+		verify(likeRepository).deleteAllByGoalId(goal.getId());
+		verify(eventPublisher).publishEvent(captor.capture());
 	}
 
 	@Test

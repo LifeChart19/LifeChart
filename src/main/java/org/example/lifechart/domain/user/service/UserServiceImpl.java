@@ -29,6 +29,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User signup(SignupRequest request) {
+        if (request.getSalary() != null && request.getSalary().signum() < 0) {
+            throw new CustomException(ErrorCode.INVALID_SALARY);
+        }
+
         validateEmailDuplication(request.getEmail());
         validateNicknameDuplication(request.getNickname());
 

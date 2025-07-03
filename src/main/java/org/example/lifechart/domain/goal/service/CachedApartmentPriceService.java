@@ -16,9 +16,9 @@ public class CachedApartmentPriceService implements ApartmentPriceService {
 	private final ApartmentPriceCacheRepository redisRepository;
 	private final OpenApiApartmentPriceService openApiService;
 
-	@Override // 현재 시점의 가격 계싼
+	@Override // 현재 시점의 가격 계산
 	public Long getAveragePrice(String region, String subregion, Long area) {
-		ApartmentPriceDto dto = redisRepository.find(region, subregion)
+		ApartmentPriceDto dto = redisRepository.findLatest(region, subregion)
 			.orElseGet(() -> {
 				ApartmentPriceDto fetched = openApiService.fetchLatest(region, subregion);
 				redisRepository.save(fetched);
@@ -27,7 +27,7 @@ public class CachedApartmentPriceService implements ApartmentPriceService {
 		return Math.round(dto.getPrice() * area * 10_000L); // price 단위가 만원으로, 원 단위 환산
 	}
 
-	@Override // 미래 시점의 가격 계싼
+	@Override // 미래 시점의 가격 계산
 	public Long getFuturePredictedPrice(String region, String subregion, Long area, int yearsLater) {
 		Long current = getAveragePrice(region, subregion, area);
 		double rate = calculateAnnualGrowthRate(region, subregion, 10);
@@ -36,7 +36,7 @@ public class CachedApartmentPriceService implements ApartmentPriceService {
 
 	private double calculateAnnualGrowthRate(String region, String subregion, int years) {
 		// 1. 과거 N년 데이터 중 가장 최신/오래된 데이터 가져오기
-		Optional<Pair<ApartmentPriceDto, ApartmentPriceDto>> pairOpt = redisRepository.findStartAndEnd(region, subregion, years);
+		Optional<Pair<ApartmentPriceDto, ApartmentPriceDto>> pairOpt = redisRepository.findStartAndEnd(region, subregion);
 
 		if (pairOpt.isEmpty()) return 0.03; // fallback
 
@@ -47,5 +47,4 @@ public class CachedApartmentPriceService implements ApartmentPriceService {
 		// 3. CAGR (복리 성장률) 계산
 		return Math.pow(end.getPrice() / start.getPrice(), 1.0/ years) - 1 ;
 	}
-
 }
