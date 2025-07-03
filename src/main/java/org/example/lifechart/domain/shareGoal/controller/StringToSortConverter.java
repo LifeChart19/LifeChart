@@ -1,5 +1,7 @@
 package org.example.lifechart.domain.shareGoal.controller;
 
+import org.example.lifechart.common.enums.ErrorCode;
+import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.shareGoal.enums.Sort;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -8,6 +10,10 @@ import org.springframework.stereotype.Component;
 public class StringToSortConverter implements Converter<String, Sort> {
 	@Override
 	public Sort convert(String source) {
-		return Sort.valueOf(source.toUpperCase());
+		try {
+			return Sort.valueOf(source.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			throw new CustomException(ErrorCode.CONVERT_BAD_REQUEST);
+		}
 	}
 }
