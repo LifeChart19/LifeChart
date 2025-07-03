@@ -6,6 +6,7 @@ import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalRetirement;
+import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.event.GoalDeletedEvent;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
@@ -58,12 +59,15 @@ public class SimulationOnGoalDeletedListener {
             Simulation simulation = simulationRepository.findById(simulationId)
                     .orElseThrow(() -> new CustomException(ErrorCode.SIMULATION_NOT_FOUND));
 
-            GoalRetirement retirementDetail = goalRetirementRepository.findByGoalId(goalId)
+            Goal representativeGoal = selectedGoals.stream()
+                    .filter(goal -> goal.getCategory() == Category.RETIREMENT)
+                    .findFirst()
+                    .orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
+
+            GoalRetirement retirementDetail = goalRetirementRepository.findByGoalId(representativeGoal.getId())
                     .orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
 
             LocalDate expectedDeathDate = retirementDetail.getExpectedDeathDate();
-
-            //초기자산 가져오는 로직 필요
 
             SimulationResults results = calculateAll.calculate(
                     simulation.getInitialAsset(),

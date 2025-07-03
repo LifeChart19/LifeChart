@@ -104,10 +104,6 @@ public class Simulation extends BaseEntity {
     @Column(columnDefinition = "json")
     private List<MonthlyAchievement> monthlyAchievements;
 
-    @Column(name = "months_to_goal")
-    private Integer monthsToGoal;
-
-
     //소프트릴리트 DB저장 필드 값 변경
     public void softDelete() {
         if (!this.isDeleted) {

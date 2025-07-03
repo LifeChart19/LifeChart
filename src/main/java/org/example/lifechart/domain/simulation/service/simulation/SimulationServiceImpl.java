@@ -54,7 +54,7 @@ public class SimulationServiceImpl implements SimulationService {
     @Override
     @Transactional
     public CreateSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, Long userId, List<Long> goalIds) {
- //       AuthUtil.validateUserAccess(userId);
+//        AuthUtil.validateUserAccess(userId);
 //        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
 //        AccountResponse account = accountResponse.getData();
 //

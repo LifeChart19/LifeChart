@@ -38,7 +38,6 @@ public class DefaultRetirementSimulationService {
     private final GoalRetirementRepository goalRetirementRepository;
 
     //goalId가져옴 은퇴목표
-    //@EventListener
     @Transactional
     public void initializeDefaultSimulation(Long userId, Long goalId) {
 
