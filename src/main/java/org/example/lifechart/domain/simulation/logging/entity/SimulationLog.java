@@ -1,9 +1,12 @@
 package org.example.lifechart.domain.simulation.logging.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.lifechart.common.entity.BaseEntity;
 import org.example.lifechart.domain.simulation.logging.enums.ChangeType;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -39,6 +42,9 @@ public class SimulationLog extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "change_type", nullable = false)
     private ChangeType changeType;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdAt;
 
 
 }

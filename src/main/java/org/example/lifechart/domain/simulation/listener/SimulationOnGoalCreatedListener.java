@@ -6,9 +6,10 @@ import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.event.GoalCreatedEvent;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.simulation.service.simulation.DefaultRetirementSimulationService;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
@@ -19,7 +20,7 @@ public class SimulationOnGoalCreatedListener {
     private final DefaultRetirementSimulationService retirementSimulationService;
 
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleGoalCreatedEvent(GoalCreatedEvent event) {
         Long userId = event.getUserId();
         Long goalId = event.getGoalId();
@@ -33,7 +34,7 @@ public class SimulationOnGoalCreatedListener {
                 log.info("[SimulationOnGoalCreatedListener] 은퇴 목표 감지 → 시뮬레이션 생성 ");
                 retirementSimulationService.initializeDefaultSimulation(userId, goalId);
             } catch (Exception e) {
-                log.error("[SimulationOnGoalCreatedListener] 은퇴 시뮬레이션 생성 실패", e);
+                log.error("[SimulationOnGoalCreatedListener] 은퇴 시뮬레이션 생성 실패", e.getMessage());
             }
         }
     }

@@ -100,6 +100,7 @@ public enum ErrorCode implements BaseCode {
 	GOAL_UPDATE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 수정 이벤트 발행에 실패했습니다."),
 	GOAL_DELETE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 삭제 이벤트 발행에 실패했습니다."),
 	GOAL_CREATE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 생성 이벤트 발행에 실패했습니다."),
+	GOAL_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 리소스 접근 권한이 없습니다."),
 
 
 

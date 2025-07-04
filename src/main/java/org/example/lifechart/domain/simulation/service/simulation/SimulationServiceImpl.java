@@ -54,6 +54,7 @@ public class SimulationServiceImpl implements SimulationService {
     @Override
     @Transactional
     public CreateSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, Long userId, List<Long> goalIds) {
+
 //        AuthUtil.validateUserAccess(userId);
 //        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
 //        AccountResponse account = accountResponse.getData();
@@ -67,7 +68,8 @@ public class SimulationServiceImpl implements SimulationService {
         //1. 소프트딜리트된 유저도 simulation생성 못하도록
         User user = validUser(userId);
 
-        List<Goal> goals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId).stream()
+        List<Goal> goals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId)
+                .stream()
                 .filter(goal -> goal.getStatus() == Status.ACTIVE)
                 .toList();
 
@@ -224,7 +226,7 @@ public class SimulationServiceImpl implements SimulationService {
                     .orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
 
             if (!retirementGoal.getUser().getId().equals(user.getId())) {
-                throw new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND);
+                throw new CustomException(ErrorCode.GOAL_FORBIDDEN);
             }
 
             //기대수명 정보 조회
@@ -260,9 +262,10 @@ public class SimulationServiceImpl implements SimulationService {
     //시뮬레이션 안에서 update
     @Override
     @Transactional
-    public CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId, List<Long> goalIds, UpdateSimulationRequestDto dto) {
+    public CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId, UpdateSimulationRequestDto dto) {
 
         User user = validUser(userId);
+        List<Long> goalIds = dto.getGoalIds();
         //삭제된 goalId는 가져오면 안됨.
         List<Goal> goals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId).stream()
                 .filter(goal -> goal.getStatus() == Status.ACTIVE)

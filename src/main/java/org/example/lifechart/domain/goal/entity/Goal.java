@@ -1,9 +1,7 @@
 package org.example.lifechart.domain.goal.entity;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import jakarta.persistence.*;
+import lombok.*;
 import org.example.lifechart.common.entity.BaseEntity;
 import org.example.lifechart.domain.goal.dto.request.GoalCreateRequest;
 import org.example.lifechart.domain.goal.dto.request.GoalUpdateRequest;
@@ -12,24 +10,9 @@ import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.user.entity.User;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -38,6 +21,10 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true) // 객체2 = 객체1.toBuilder()...를 사용하면 이미 생성된 객체로부터 Builder를 생성해 값 일부만 수정한 새 객체를 만들 수 있음
 @Table(name="goal")
 public class Goal extends BaseEntity {
+
+	public boolean isRetirementCategory() {
+		return this.category == Category.RETIREMENT;
+	}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

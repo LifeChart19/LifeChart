@@ -1,5 +1,5 @@
 package org.example.lifechart.domain.simulation.service.simulation;
-import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.example.lifechart.common.enums.ErrorCode;
@@ -9,6 +9,7 @@ import org.example.lifechart.domain.goal.entity.GoalRetirement;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
 import org.example.lifechart.domain.simulation.dto.request.SimulationRetirementCalculateRequest;
+import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
 import org.example.lifechart.domain.simulation.entity.Simulation;
 import org.example.lifechart.domain.simulation.entity.SimulationGoal;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalJdbcRepository;
@@ -16,6 +17,7 @@ import org.example.lifechart.domain.simulation.repository.SimulationRepository;
 import org.example.lifechart.domain.simulation.service.calculator.CalculateAll;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.example.lifechart.infra.client.AccountClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,10 +38,21 @@ public class DefaultRetirementSimulationService {
     private final SimulationGoalJdbcRepository simulationGoalJdbcRepository;
     private final CalculateAll calculateAll;
     private final GoalRetirementRepository goalRetirementRepository;
+    private final AccountClient accountClient;
 
     //goalId가져옴 은퇴목표
     @Transactional
     public void initializeDefaultSimulation(Long userId, Long goalId) {
+
+//        AuthUtil.validateUserAccess(userId);
+//        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
+//        AccountResponse account = accountResponse.getData();
+//
+//        if (accountResponse.getData() == null) {
+//            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
+//        }
+//
+//        long initialAsset = account.getBalance().longValue();
 
         //계산로직 디폴트 만들기
         User user = validUser(userId);
@@ -52,7 +65,7 @@ public class DefaultRetirementSimulationService {
                 SimulationRetirementCalculateRequest.builder()
                         .title("기본 은퇴 시뮬레이션")
                         .baseDate(LocalDate.now())
-                        .initialAsset(50_000_000L)
+                        .initialAsset(3_000_000L)
                         .monthlyIncome(3_000_000L)
                         .monthlyExpense(retirementDetail.getMonthlyExpense())
                         .monthlySaving(1_500_000L)
