@@ -5,9 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.lifechart.domain.simulation.event.SimulationCreatedEvent;
 import org.example.lifechart.domain.simulation.logging.dto.SimulationLogSaveDto;
 import org.example.lifechart.domain.simulation.logging.service.SimulationLogService;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +25,7 @@ public class SimulationLogListener {
 
 
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSimulationCreated(SimulationCreatedEvent event) {
         try {
             SimulationLogSaveDto dto = SimulationLogSaveDto.builder()
