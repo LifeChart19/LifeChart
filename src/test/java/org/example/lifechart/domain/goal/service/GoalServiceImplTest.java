@@ -73,16 +73,16 @@ public class GoalServiceImplTest {
 	@Mock
 	private ApplicationEventPublisher eventPublisher;
 
-	@InjectMocks
-	private GoalServiceImpl goalService;
-
-	LocalDateTime fixedNow = LocalDateTime.of(2025,9,1,0,0);
-
 	@Mock
 	private CommentRepository commentRepository;
 
 	@Mock
 	private LikeRepository likeRepository;
+
+	@InjectMocks
+	private GoalServiceImpl goalService;
+
+	LocalDateTime fixedNow = LocalDateTime.of(2025,9,1,0,0);
 
 	@Test
 	@DisplayName("은퇴 목표 생성에 성공한다.")
@@ -414,8 +414,6 @@ public class GoalServiceImplTest {
 		// then
 		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
-		assertThat(goal.getStatus()).isEqualTo(Status.DELETED);
-
 		verify(commentRepository).deleteAllByGoalId(goal.getId());
 		verify(likeRepository).deleteAllByGoalId(goal.getId());
 		assertThat(goal.getStatus()).isEqualTo(Status.DELETED);
@@ -443,16 +441,14 @@ public class GoalServiceImplTest {
 		goalService.deleteGoal(goal.getId(), user.getId());
 
 		// then
+		verify(commentRepository).deleteAllByGoalId(goal.getId());
+		verify(likeRepository).deleteAllByGoalId(goal.getId());
 		verify(eventPublisher).publishEvent(captor.capture());
 		assertThat(captor.getValue().getUserId()).isEqualTo(1L);
 		assertThat(captor.getValue().getGoalId()).isEqualTo(1L);
 		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		verify(goalRepository).findByIdAndUserId(goal.getId(), user.getId());
 		assertThat(goal.getStatus()).isEqualTo(Status.DELETED);
-
-		verify(commentRepository).deleteAllByGoalId(goal.getId());
-		verify(likeRepository).deleteAllByGoalId(goal.getId());
-		verify(eventPublisher).publishEvent(captor.capture());
 	}
 
 	@Test

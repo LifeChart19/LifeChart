@@ -15,4 +15,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, CustomC
 	@Modifying
 	@Query("DELETE FROM Comment c WHERE c.goal.id =:goalId")
 	void deleteAllByGoalId(@Param("goalId")Long goalId);
+
+	// @Query("SELECT c.id FROM Comment c WHERE c.user.id =:userId AND c.goal.id =:goalId")
+	// Optional<Long> findByUserId(@Param("userId") Long userId, @Param("goalId") Long goalId);
 }

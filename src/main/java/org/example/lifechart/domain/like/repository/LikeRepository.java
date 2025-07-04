@@ -21,5 +21,8 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 	@Modifying
 	@Query("DELETE FROM Like l WHERE l.goal.id =:goalId")
 	void deleteAllByGoalId(@Param("goalId")Long goalId);
+
+	// @Query("SELECT l.id FROM Like l WHERE l.user.id = :userId AND l.goal.id	=:goalId")
+	// Optional<Long> findByUserId(@Param("userId") Long userId, @Param("goalId") Long goalId);
 }
 

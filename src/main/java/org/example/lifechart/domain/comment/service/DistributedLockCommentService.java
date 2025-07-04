@@ -38,16 +38,32 @@ public class DistributedLockCommentService {
 			}, LOCK_WAIT_TIME,  LOCK_LEASE_TIME_CREATE, TimeUnit.SECONDS);
 	}
 
-	public void deleteComment(Long authId, Long commentId) {
-		Long goalId = commentRepository.findGoalIdByCommentId(commentId).orElseThrow(() ->
-			new CustomException(ErrorCode.COMMENT_NOT_FOUND)); // goalId를 키로 넣어야 하는데 받는 로직이 없어서 가져옴
-		String key = defaultKey + "delete:" + goalId;
+	public void deleteCommentWithKey(String key, Long authId, Long commentId) {
 		lockExecutor.executeWithLock(key, () -> {
 			long start = System.nanoTime();
 			commentService.deleteComment(authId, commentId);
 			long end = System.nanoTime();
 			long elapsedMs = (end - start) / 1_000_000;
 			log.info("댓글 삭제 시간: {}ms", elapsedMs);
-			}, LOCK_WAIT_TIME, LOCK_LEASE_TIME_DELETE, TimeUnit.SECONDS);
+		}, LOCK_WAIT_TIME, LOCK_LEASE_TIME_DELETE, TimeUnit.SECONDS);
+	}
+
+	// 댓글 동시 삭제시 필요
+	public void deleteComment(Long authId, Long commentId) {
+		Long goalId = findGoalId(commentId); // goalId를 키로 넣어야 하는데 받는 로직이 없어서 가져옴
+		String key = defaultKey + "delete:" + goalId;
+		deleteCommentWithKey(key, authId, commentId);
+	}
+
+	// // 골이 삭제될 때 댓글과 좋아요 동시에 접근하지 못하게 할 때 필요
+	// public void deleteCommentByGoal(Long authId, Long commentId) {
+	// 	Long goalId = findGoalId(commentId);
+	// 	String key = "lock:goal:" + goalId;
+	// 	deleteCommentWithKey(key, authId, commentId);
+	// }
+
+	private Long findGoalId(Long commentId) {
+		return commentRepository.findGoalIdByCommentId(commentId).orElseThrow(() ->
+			new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 	}
 }
