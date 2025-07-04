@@ -135,13 +135,11 @@ public class SimulationServiceImpl implements SimulationService {
         //10. 배치인서트로 insert
         simulationGoalJdbcRepository.batchInsertSimulationGoals(simulationGoals);
 
-        eventPublisher.publishCreateEvent(
-                user.getId(),
-                simulation.getId(),
-                goalIds,
-                dto,
-                results
-        );
+        try {
+            eventPublisher.publishCreateEvent(user.getId(), simulation.getId(), goalIds, dto, results);
+        } catch (Exception e) {
+            log.warn("시뮬레이션 생성 이벤트 발행 실패: {}", e.getMessage());
+        }
 
         return CreateSimulationResponseDto.from(simulation);
     }
@@ -257,14 +255,12 @@ public class SimulationServiceImpl implements SimulationService {
                     relatedGoals
             );
 
-            simulation.updateResults(newResults);
+            try {
+                eventPublisher.publishUpdateEventByGoalChange(user.getId(), simulation.getId(), updateGoal.getId(), newResults);
 
-            eventPublisher.publishUpdateEventByGoalChange(
-                    user.getId(),
-                    simulation.getId(),
-                    updateGoal.getId(),
-                    newResults
-            );
+            } catch (Exception e) {
+                log.warn("시뮬레이션 생성 이벤트 발행 실패: {}", e.getMessage());
+            }
         }
     }
 
@@ -342,14 +338,12 @@ public class SimulationServiceImpl implements SimulationService {
                 selectedGoals
         );
         simulation.updateResults(newResults);
-
-        eventPublisher.publishUpdateEventBySimulationEdit(
-                user.getId(),
-                simulation.getId(),
-                goalIds,
-                dto,
-                newResults
+        try {
+        eventPublisher.publishUpdateEventBySimulationEdit(user.getId(), simulation.getId(), goalIds, dto, newResults
         );
+        } catch (Exception e) {
+            log.warn("시뮬레이션 생성 이벤트 발행 실패: {}", e.getMessage());
+        }
 
         return CreateSimulationResponseDto.from(simulation);
     }

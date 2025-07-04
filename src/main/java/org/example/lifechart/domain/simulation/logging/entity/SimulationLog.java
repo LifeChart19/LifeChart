@@ -26,7 +26,11 @@ public class SimulationLog extends BaseEntity {
     @Column(nullable = false)
     private Long simulationId;
 
-    //길이가 긴 데이터를 DB에 저장할 때 ->Lob 문자열 길이 제한을 넘길 수 있음.
+    /**
+     *  JPA에서는 컬렉션(List<Long> 등)을 직접 DB에 매핑하기 어려워서
+     *  JSON 문자열(String)로 변환하여 저장합니다.
+     *  직렬화/역직렬화는 ObjectMapper 등을 통해 처리합니다.
+     */
     @Lob
     @Column(name = "goal_ids", columnDefinition = "TEXT", nullable = false)
     private String goalIds;

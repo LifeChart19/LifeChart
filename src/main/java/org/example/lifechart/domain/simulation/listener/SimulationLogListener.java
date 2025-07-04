@@ -22,9 +22,7 @@ public class SimulationLogListener {
 
     private final SimulationLogService simulationLogService;
 
-    //비동기 + 트랜잭션 이후 처리까지 구성 가능.
-    //트랜잭션이 커밋된 이후에 이벤트를 처리해야 로그가 저장됨. -> 안하면 save부분 트랜잭션까지 롤백됨.
-    //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+
     @Async
     @EventListener
     public void handleSimulationCreated(SimulationCreatedEvent event) {
