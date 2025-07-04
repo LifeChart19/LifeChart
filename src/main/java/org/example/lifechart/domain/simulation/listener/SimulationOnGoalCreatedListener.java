@@ -34,7 +34,7 @@ public class SimulationOnGoalCreatedListener {
                 log.info("[SimulationOnGoalCreatedListener] 은퇴 목표 감지 → 시뮬레이션 생성 ");
                 retirementSimulationService.initializeDefaultSimulation(userId, goalId);
             } catch (Exception e) {
-                log.error("[SimulationOnGoalCreatedListener] 은퇴 시뮬레이션 생성 실패", e.getMessage());
+                log.error("[SimulationOnGoalCreatedListener] 은퇴 시뮬레이션 생성 실패", e);
             }
         }
     }
