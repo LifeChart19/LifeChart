@@ -200,6 +200,15 @@ public class SimulationServiceImpl implements SimulationService {
     @Transactional
     public void updateSimulationsByGoalChange(Long userId, Long goalId) {
 
+//        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
+//        AccountResponse account = accountResponse.getData();
+//
+//        if (accountResponse.getData() == null) {
+//            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
+//        }
+//
+//        long initialAsset = account.getBalance().longValue();
+
         User user = validUser(userId);
         Goal updateGoal = validGoal(goalId, user.getId());
 
@@ -263,6 +272,16 @@ public class SimulationServiceImpl implements SimulationService {
     @Override
     @Transactional
     public CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId, UpdateSimulationRequestDto dto) {
+
+//        AuthUtil.validateUserAccess(userId);
+//        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
+//        AccountResponse account = accountResponse.getData();
+//
+//        if (accountResponse.getData() == null) {
+//            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
+//        }
+//
+//        long initialAsset = account.getBalance().longValue();
 
         User user = validUser(userId);
         List<Long> goalIds = dto.getGoalIds();

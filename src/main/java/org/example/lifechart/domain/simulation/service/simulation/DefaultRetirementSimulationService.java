@@ -24,9 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -100,13 +97,10 @@ public class DefaultRetirementSimulationService {
 
         simulationRepository.save(simulation);
 
-        Map<Long, Goal> goalMap = goals.stream()
-                .collect(Collectors.toMap(Goal::getId, Function.identity()));
-
         List<SimulationGoal> simulationGoals = calculateRequest.getGoalIds().stream()
                 .map(gid -> SimulationGoal.builder()
                         .simulation(simulation)
-                        .goal(goalMap.get(gid)) // goalMap은 위에서 만들었음
+                        .goal(goal) // goalMap은 위에서 만들었음
                         .active(true)
                         .linkedAt(LocalDateTime.now())
                         .build())

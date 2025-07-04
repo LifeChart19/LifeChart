@@ -22,10 +22,6 @@ import java.util.List;
 @Table(name="goal")
 public class Goal extends BaseEntity {
 
-	public boolean isRetirementCategory() {
-		return this.category == Category.RETIREMENT;
-	}
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -125,4 +121,11 @@ public class Goal extends BaseEntity {
 	public void clearLike() {
 		this.likeCount = 0;
 	}
+
+
+	public boolean isRetirementCategory()
+	{
+		return this.category == Category.RETIREMENT;
+	}
+
 }

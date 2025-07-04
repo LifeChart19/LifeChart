@@ -131,7 +131,7 @@ public class Simulation extends BaseEntity {
         return Simulation.builder()
                 .title(dto.getTitle())
                 .baseDate(dto.getBaseDate())
-                .initialAsset(dto.getInitialAsset())
+                .initialAsset(dto.getInitialAsset()) //이후에 바꿔야.
                 .monthlyIncome(dto.getMonthlyIncome())
                 .monthlyExpense(dto.getMonthlyExpense())
                 .monthlySaving(dto.getMonthlySaving())

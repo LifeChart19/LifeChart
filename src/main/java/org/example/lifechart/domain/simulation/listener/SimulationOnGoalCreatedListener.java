@@ -6,6 +6,7 @@ import org.example.lifechart.domain.goal.enums.Category;
 import org.example.lifechart.domain.goal.event.GoalCreatedEvent;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.simulation.service.simulation.DefaultRetirementSimulationService;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -21,6 +22,7 @@ public class SimulationOnGoalCreatedListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleGoalCreatedEvent(GoalCreatedEvent event) {
         Long userId = event.getUserId();
         Long goalId = event.getGoalId();

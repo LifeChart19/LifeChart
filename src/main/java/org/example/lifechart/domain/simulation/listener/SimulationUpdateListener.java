@@ -4,9 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.lifechart.domain.goal.event.GoalUpdatedEvent;
 import org.example.lifechart.domain.simulation.service.simulation.SimulationService;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
@@ -18,7 +19,7 @@ public class SimulationUpdateListener {
 
     //골 로직에서 이벤트 발행하면 이 메서드가 자동으로 실행될 것.
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleGoalUpdatedEvent(GoalUpdatedEvent event) {
 
         System.out.println("GoalUpdatedEvent 수신됨: " + event);
