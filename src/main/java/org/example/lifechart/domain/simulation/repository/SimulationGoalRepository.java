@@ -23,18 +23,18 @@ public interface SimulationGoalRepository extends JpaRepository<SimulationGoal, 
     List<SimulationGoal> findBySimulationIdAndActiveTrue(Long simulationId);
 
     @Query("""
-    SELECT sg
-    FROM SimulationGoal sg
-    WHERE sg.goal.id = :goalId
-    AND sg.active = true
-""")
-    List<SimulationGoal> findAllByGoalIdAndActiveTrue(@Param("goalId") Long goalId);
-
-    @Query("""
     SELECT sg FROM SimulationGoal sg
     WHERE sg.goal.id = :goalId
-      AND sg.goal.user.id = :userId
+      AND sg.simulation.user.id = :userId
       AND sg.active = true
 """)
-    List<SimulationGoal> findAllByGoalIdAndUserIdAndActiveTrue(Long goalId, Long userId);
+    List<SimulationGoal> findAllByGoalIdAndSimulationUserIdAndActiveTrue(Long goalId, Long userId);
+
+    @Query("SELECT sg.simulation.id FROM SimulationGoal sg WHERE sg.goal.id = :goalId")
+    List<Long> findSimulationIdsByGoalId(@Param("goalId") Long goalId);
+
+    @Query("SELECT sg.goal.id FROM SimulationGoal sg WHERE sg.simulation.id = :simulationId")
+    List<Long> findGoalIdsBySimulationId(@Param("simulationId") Long simulationId);
+
+    void deleteByGoalId(Long goalId);
 }

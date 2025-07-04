@@ -6,23 +6,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.entity.Goal;
+import org.example.lifechart.domain.goal.entity.GoalRetirement;
+import org.example.lifechart.domain.goal.enums.Category;
+import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
+import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.*;
 import org.example.lifechart.domain.simulation.entity.Simulation;
 import org.example.lifechart.domain.simulation.entity.SimulationGoal;
+import org.example.lifechart.domain.simulation.logging.service.SimulationLogEventPublisher;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalJdbcRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationRepository;
 import org.example.lifechart.domain.simulation.service.calculator.CalculateAll;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
+import org.example.lifechart.infra.client.AccountClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,22 +46,46 @@ public class SimulationServiceImpl implements SimulationService {
     private final UserRepository userRepository;
     private final SimulationGoalRepository simulationGoalRepository;
     private final CalculateAll calculateAll;
+    private final SimulationLogEventPublisher eventPublisher;
+    private final GoalRetirementRepository goalRetirementRepository;
+    private final AccountClient accountClient;
 
     //사용자가 목표는 그대로 두고, 시뮬레이션만 새로운 파라미터로 돌림
+    @Override
     @Transactional
     public CreateSimulationResponseDto saveSimulation(BaseCreateSimulationRequestDto dto, Long userId, List<Long> goalIds) {
 
+//        AuthUtil.validateUserAccess(userId);
+//        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
+//        AccountResponse account = accountResponse.getData();
+//
+//        if (accountResponse.getData() == null) {
+//            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
+//        }
+//
+//        long initialAsset = account.getBalance().longValue();
+
         //1. 소프트딜리트된 유저도 simulation생성 못하도록
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = validUser(userId);
 
-        //2. Goal 목록 조회하면서 user도 같이 갖고옴.
-        List<Goal> goals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId);
+        List<Goal> goals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId)
+                .stream()
+                .filter(goal -> goal.getStatus() == Status.ACTIVE)
+                .toList();
 
-        //3. 존재하지 않는 goalId 검증
         if (goals.size() != goalIds.size()) {
             throw new CustomException(ErrorCode.SIMULATION_GOAL_NOT_FOUND);
         }
+
+        Goal representativeGoal = goals.stream()
+                .filter(goal -> goal.getCategory() == Category.RETIREMENT)
+                .findFirst()
+                .orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
+
+        GoalRetirement retirementDetail = goalRetirementRepository.findByGoalId(representativeGoal .getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
+
+        LocalDate expectedDeathDate = retirementDetail.getExpectedDeathDate();
 
         //4. 계산로직 수행 -> 더 효율적인 방법 고민 필요
         SimulationResults results = calculateAll.calculate(
@@ -64,6 +97,7 @@ public class SimulationServiceImpl implements SimulationService {
                 dto.getElapsedMonths(),
                 dto.getTotalMonths(),
                 dto.getBaseDate(),
+                expectedDeathDate, //기대수명은 업데이트에서 받아야하고 save에서는 없어야 함.
                 goals
         );
 
@@ -87,9 +121,9 @@ public class SimulationServiceImpl implements SimulationService {
         //8. simulationGoal 목표랑 연결되기 위한 필드 목록
         //unlinked는 null이 됨.
         List<SimulationGoal> simulationGoals = goalIds.stream()
-                .map(goalId -> SimulationGoal.builder()
+                .map(createGoalId -> SimulationGoal.builder()
                         .simulation(simulation)
-                        .goal(goalMap.get(goalId))
+                        .goal(goalMap.get(createGoalId))
                         .active(true)
                         .linkedAt(LocalDateTime.now())
                         .build())
@@ -101,15 +135,21 @@ public class SimulationServiceImpl implements SimulationService {
         //10. 배치인서트로 insert
         simulationGoalJdbcRepository.batchInsertSimulationGoals(simulationGoals);
 
+        try {
+            eventPublisher.publishCreateEvent(user.getId(), simulation.getId(), goalIds, dto, results);
+        } catch (Exception e) {
+            log.warn("시뮬레이션 생성 이벤트 발행 실패: {}", e.getMessage());
+        }
+
         return CreateSimulationResponseDto.from(simulation);
     }
 
-    //모든 정보가 아니라 어떤 목록이 있는지 id와 title만
+    //모든 정보가 아니라 어떤 목록이 있는지 id와
+    @Override
     @Transactional(readOnly = true)
     public List<SimulationSummaryDto> findAllSimulationsByUserId(Long userId) {
 
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = validUser(userId);
 
         return simulationRepository.findAllByUser(user)
                 .stream()
@@ -119,11 +159,11 @@ public class SimulationServiceImpl implements SimulationService {
     }
 
     //id에 해당하는 단건 조회.
+    @Override
     @Transactional(readOnly = true)
     public BaseSimulationResponseDto findSimulationByUserIdAndSimulationId(Long userId, Long simulationId) {
 
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = validUser(userId);
 
         Simulation simulation = simulationRepository.findById(simulationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SIMULATION_NOT_FOUND));
@@ -136,11 +176,11 @@ public class SimulationServiceImpl implements SimulationService {
     }
 
     //소프트딜리트 조회
+    @Override
     @Transactional(readOnly = true)
     public List<DeletedSimulationResponseDto> findAllSoftDeletedSimulations(Long userId) {
 
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = validUser(userId);
 
         if (user.getIsDeleted()) {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
@@ -153,34 +193,54 @@ public class SimulationServiceImpl implements SimulationService {
                 .collect(Collectors.toList());
     }
 
-
-    //    수정로직
-    //비즈니스 로직(재계산, 업데이트)만 수행.
-    //하나의 goalId와 연결된 여러 개의 Simulation을 찾아
-    //각 Simulation의 계산을 재수행하고,
-    //내부 값을 updateResults()로 갱신함
-    //void로 바꾸면 클라이언트는 따로 조회해야하고 후속 비동기처리 할때 좋음.
+    //목표 수정->시뮬레이션 수정 로직
+    @Override
     @Transactional
     public void updateSimulationsByGoalChange(Long userId, Long goalId) {
 
+//        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
+//        AccountResponse account = accountResponse.getData();
+//
+//        if (accountResponse.getData() == null) {
+//            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
+//        }
+//
+//        long initialAsset = account.getBalance().longValue();
+
         User user = validUser(userId);
-        Goal goal = validGoal(goalId, user.getId());
-        // 시뮬레이션 골에서 ACTIVE인 것만
-        //goalid에 연결된 시뮬레이션id를 갖고와야함.
+        Goal updateGoal = validGoal(goalId, user.getId());
+
+        // 시뮬레이션골 연결된 ACTIVE 항목만 조회
         List<SimulationGoal> simulationGoals =
-                simulationGoalRepository.findAllByGoalIdAndUserIdAndActiveTrue(user.getId(), goal.getId());
+                simulationGoalRepository.findAllByGoalIdAndSimulationUserIdAndActiveTrue(updateGoal.getId(), user.getId());
 
         if (simulationGoals.isEmpty()) {
             throw new CustomException(ErrorCode.SIMULATION_NOT_FOUND_BY_GOAL);
         }
 
-        //다른 사용자의 simulation에 연결된 goal을 통해 접근하면 안됨.
         for (SimulationGoal sg : simulationGoals) {
             Simulation simulation = sg.getSimulation();
 
-            // 해당 simulation에 연결된 Goal만 조회 활성화된 goal만 갖고옴.
+            // 시뮬레이션에 연결된 모든 활성화된 Goal 가져오기
             List<Goal> relatedGoals = simulationGoalRepository
                     .findActiveGoalsBySimulationId(simulation.getId());
+
+            //기대수명을 위한 은퇴 카테고리 Goal 필수 조회
+            Goal retirementGoal = relatedGoals.stream()
+                    .filter(Objects::nonNull)
+                    .filter(Goal::isRetirementCategory)
+                    .findFirst()
+                    .orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
+
+            if (!retirementGoal.getUser().getId().equals(user.getId())) {
+                throw new CustomException(ErrorCode.GOAL_FORBIDDEN);
+            }
+
+            //기대수명 정보 조회
+            GoalRetirement retirementDetail = goalRetirementRepository.findByGoalId(retirementGoal.getId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.GOAL_RETIREMENT_NOT_FOUND));
+
+            LocalDate newExpectedDeathDate = retirementDetail.getExpectedDeathDate();
 
             SimulationResults newResults = calculateAll.calculate(
                     simulation.getInitialAsset(),
@@ -191,22 +251,40 @@ public class SimulationServiceImpl implements SimulationService {
                     simulation.getElapsedMonths(),
                     simulation.getTotalMonths(),
                     simulation.getBaseDate(),
+                    newExpectedDeathDate,
                     relatedGoals
             );
 
-            simulation.updateResults(newResults);
+            try {
+                eventPublisher.publishUpdateEventByGoalChange(user.getId(), simulation.getId(), updateGoal.getId(), newResults);
+
+            } catch (Exception e) {
+                log.warn("시뮬레이션 생성 이벤트 발행 실패: {}", e.getMessage());
+            }
         }
     }
 
-
-//    어떤 목표랑 연결되어있는지, 시뮬레이션 하나에 복수 목표를 가지고 있지 않은지 판단하는 로직 필요.
-
     //시뮬레이션 안에서 update
+    @Override
     @Transactional
-    public CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId, List<Long> goalIds) {
+    public CreateSimulationResponseDto updateSimulationSettings(Long userId, Long simulationId, UpdateSimulationRequestDto dto) {
 
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+//        AuthUtil.validateUserAccess(userId);
+//        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
+//        AccountResponse account = accountResponse.getData();
+//
+//        if (accountResponse.getData() == null) {
+//            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
+//        }
+//
+//        long initialAsset = account.getBalance().longValue();
+
+        User user = validUser(userId);
+        List<Long> goalIds = dto.getGoalIds();
+        //삭제된 goalId는 가져오면 안됨.
+        List<Goal> goals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId).stream()
+                .filter(goal -> goal.getStatus() == Status.ACTIVE)
+                .toList();
 
         Simulation simulation = simulationRepository.findById(simulationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SIMULATION_NOT_FOUND));
@@ -215,11 +293,37 @@ public class SimulationServiceImpl implements SimulationService {
             throw new CustomException(ErrorCode.SIMULATION_BAD_REQUEST);
         }
 
+        //여기서 은퇴가 연결이 끊기면 안됨. noneMatch는 조건을 만족하는게 없어야함.
+        if (goals.stream().noneMatch(goal -> goal.getCategory() == Category.RETIREMENT)) {
+            throw new CustomException(ErrorCode.RETIREMENT_GOAL_REQUIRED);
+        }
+
+        //시뮬레이션에서 기존에 [1,2,3]의 목표를 담고 있었다면 여기서 [1,2]로 변경했을 때 3은 연결이 끊기게 됨
+        simulationGoalJdbcRepository.deactivateSimulationGoals(simulationId);
+
         //연결할 목표 조회
+        //goalRepository에서 시뮬레이션
         List<Goal> selectedGoals = goalRepository.findAllWithUserByIdAndUserId(goalIds, userId);
 
-        //기존 연결은 끊기 goal은 끊을 필요가 x
-        simulationGoalJdbcRepository.deactivateSimulationGoals(simulationId);
+        if (selectedGoals.size() != goalIds.size()) {
+            throw new CustomException(ErrorCode.GOAL_NOT_FOUND);
+        }
+
+        List<SimulationGoal> newSimulationGoals = selectedGoals.stream()
+                .map(goal -> SimulationGoal.builder()
+                        .simulation(Simulation.withId(simulationId))
+                        .goal(goal)
+                        .active(true)
+                        .linkedAt(LocalDateTime.now())
+                        .build())
+                .toList();
+
+        simulationGoalJdbcRepository.batchInsertSimulationGoals(newSimulationGoals);
+
+        simulation.updateFieldsFromDto(dto);
+
+        //현재 디폴트 은퇴시뮬레이션이 비동기처리까지 완료된 상태가 아니라서 임의로 기대수명을 넣어두었습니다
+        LocalDate expectedDeathDate = LocalDate.now().plusYears(60);
 
         SimulationResults newResults = calculateAll.calculate(
                 simulation.getInitialAsset(),
@@ -230,34 +334,26 @@ public class SimulationServiceImpl implements SimulationService {
                 simulation.getElapsedMonths(),
                 simulation.getTotalMonths(),
                 simulation.getBaseDate(),
+                expectedDeathDate,
                 selectedGoals
         );
-
-        //임시 프록시 객체를 생성 -> sismulation전체를 조회하면 또 쿼리발생. id만 이용할거라 프록시객체로 갖고옴
-        List<SimulationGoal> simulationGoals = selectedGoals.stream()
-                .map(goal -> SimulationGoal.builder()
-                        .simulation(Simulation.withId(simulationId))
-                        .goal(goal)
-                        .active(true)
-                        .linkedAt(LocalDateTime.now())
-                        .build())
-                .toList();
-
-        //새로 연결
-        simulationGoalJdbcRepository.batchInsertSimulationGoals(simulationGoals);
-
         simulation.updateResults(newResults);
+        try {
+        eventPublisher.publishUpdateEventBySimulationEdit(user.getId(), simulation.getId(), goalIds, dto, newResults
+        );
+        } catch (Exception e) {
+            log.warn("시뮬레이션 생성 이벤트 발행 실패: {}", e.getMessage());
+        }
 
         return CreateSimulationResponseDto.from(simulation);
-
     }
 
     //    소프트딜리트용
+    @Override
     @Transactional
     public DeletedSimulationResponseDto softDeleteSimulation(Long userId, Long simulationId) {
 
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = validUser(userId);
 
         Simulation simulation = simulationRepository.findById(simulationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SIMULATION_NOT_FOUND));
@@ -269,6 +365,14 @@ public class SimulationServiceImpl implements SimulationService {
         //이미 소프트딜리트가 되었을 경우에도
         if (simulation.isDeleted()) {
             throw new CustomException(ErrorCode.SIMULATION_BAD_REQUEST);
+        }
+
+        //더 간편한 예외처리가 있는지 생각해보기,
+        List<Goal> linkedGoals = simulationGoalRepository.findActiveGoalsBySimulationId(simulationId);
+
+        //여기서 은퇴가 연결이 끊기면 안됨. anyMatch는 하나라도 조건이 만족하면 true
+        if (linkedGoals.stream().anyMatch(goal -> goal.getCategory() == Category.RETIREMENT)) {
+            throw new CustomException(ErrorCode.RETIREMENT_GOAL_SIMULATION_CANNOT_BE_DELETED);
         }
 
         //시뮬레이션에 연결되어있는 목표가 모두 사라진다면
@@ -284,12 +388,11 @@ public class SimulationServiceImpl implements SimulationService {
 
     }
 
-
+    @Override
     @Transactional
     public void deleteSimulation(Long userId, Long simulationId) {
 
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = validUser(userId);
 
         Simulation simulation = simulationRepository.findById(simulationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SIMULATION_NOT_FOUND));
@@ -307,12 +410,12 @@ public class SimulationServiceImpl implements SimulationService {
 
     private User validUser(Long userId) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         return user;
     }
+
     private Goal validGoal(Long goalId, Long userId) {
-        Goal goal = goalRepository.findByIdAndUserId(goalId, userId).
-                orElseThrow(()-> new CustomException(ErrorCode.GOAL_NOT_FOUND));
-        return goal;
+        return goalRepository.findByIdAndUserIdAndStatus(goalId, userId, Status.ACTIVE)
+                .orElseThrow(() -> new CustomException(ErrorCode.GOAL_NOT_FOUND));
     }
 }

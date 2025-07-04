@@ -33,15 +33,11 @@ public class BaseSimulationResponseDto {
     @Builder.Default
     List<Long> goalIds = new ArrayList<>();
 
-    //계산에 필요한 필드
-//    @Convert(converter = SimulationParamsConverter.class)
-//    @Column(columnDefinition = "json")
-//    private SimulationParams params;
+    @Builder.Default
+    private List<MonthlyAchievement> monthlyAchievements = new ArrayList<>();
 
-    //계산결과
-//    @Convert(converter = SimulationParamsConverter.class)
-//    @Column(columnDefinition = "json")
-//    private SimulationResults results;
+    @Builder.Default
+    private List<MonthlyAssetDto> monthlyAssets = new ArrayList<>();
 
     //앞으로 모아야 할 금액
     private Long requiredAmount;
@@ -51,12 +47,6 @@ public class BaseSimulationResponseDto {
 
     //현재 달성률
     private Float currentAchievementRate;
-
-    //매달 달성 상황 리스트
-    private List<MonthlyAchievement> monthlyAchievements;
-
-    //매달 자산 가격 변화
-    private List<MonthlyAssetDto> monthlyAssets;
 
     //이건 조회시.
     public static BaseSimulationResponseDto dto(

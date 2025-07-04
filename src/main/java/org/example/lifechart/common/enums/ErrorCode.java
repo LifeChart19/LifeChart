@@ -100,6 +100,7 @@ public enum ErrorCode implements BaseCode {
 	GOAL_UPDATE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 수정 이벤트 발행에 실패했습니다."),
 	GOAL_DELETE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 삭제 이벤트 발행에 실패했습니다."),
 	GOAL_CREATE_EVENT_PUBLISH_FAILED(HttpStatus.BAD_REQUEST, "목표 생성 이벤트 발행에 실패했습니다."),
+	GOAL_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 리소스 접근 권한이 없습니다."),
 
 
 
@@ -121,7 +122,8 @@ public enum ErrorCode implements BaseCode {
 	SIMULATION_LINKED_ENTITY_EXISTS(HttpStatus.BAD_REQUEST, "연결된 목표가 있는 시뮬레이션은 삭제할 수 없습니다."),
 	INVALID_GOAL_CATEGORY(HttpStatus.BAD_REQUEST,"지원하지 않는 카테고리입니다."),
 	SIMULATION_NOT_FOUND_BY_GOAL(HttpStatus.NOT_FOUND, "업데이트 가능한 목표가 아닙니다. "),
-
+	RETIREMENT_GOAL_SIMULATION_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "은퇴 목표가 있는 시뮬레이션은 삭제할 수 없습니다."),
+	RETIREMENT_GOAL_REQUIRED(HttpStatus.BAD_REQUEST,"은퇴 목표는 연결을 끊을 수 없습니다."),
 
 
 
@@ -234,7 +236,12 @@ public enum ErrorCode implements BaseCode {
 
 	// Notification (Line#: 230~259)
 	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
-	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다.");
+	NOTIFICATION_PERMISSION(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
+
+
+
+	// Json
+	JSON_PROCESSING_FAILED(HttpStatus.BAD_REQUEST, "JSON 파싱 중 오류가 발생했습니다.");
 
 	// 본 코드
 	private final HttpStatus httpStatus;
@@ -245,10 +252,10 @@ public enum ErrorCode implements BaseCode {
 		this.httpStatus = httpStatus;
 		this.message = message;
 		this.cachedReasonDto = ReasonDto.builder()
-			.isSuccess(false)
-			.httpStatus(httpStatus)
-			.message(message)
-			.build();
+				.isSuccess(false)
+				.httpStatus(httpStatus)
+				.message(message)
+				.build();
 	}
 
 	@Override

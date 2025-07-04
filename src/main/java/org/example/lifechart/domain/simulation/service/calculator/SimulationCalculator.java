@@ -1,18 +1,20 @@
 package org.example.lifechart.domain.simulation.service.calculator;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
 //이자율로직을 고쳤습니다. 이전 계산에는 마지막 달에는 저축이자 안붙었었음 -> 모든 달에 저축이자 붙도록
 @Component
-@RequiredArgsConstructor
+@Log4j2
 public class SimulationCalculator {
     //단리  정기적금 마지막 달도 저축 이자가 붙음.
     private static double calculateAccumulatedAssetWithSimpleInterest(
@@ -43,23 +45,27 @@ public class SimulationCalculator {
             double initialAsset,
             YearMonth baseMonth
     ) {
+
         if (initialAsset >= targetAmount) {
-            throw new IllegalArgumentException("목표보다 자산이 이미 많습니다.");
+            return baseMonth;
         }
 
-        double savingRatio = monthlySaving / targetAmount;
-        if (savingRatio < 0.005) {
-            throw new IllegalArgumentException("저축액이 목표 금액의 0.5% 미만입니다. 목표 실현이 어려울 수 있습니다.");
-        }
+        //double savingRatio = monthlySaving / targetAmount;
+        //        if (savingRatio < 0.0014) { //0.5가 아니라 0.05였어야 했음. ->대충 50년 정도됨.
+        //            //이 부분은 경고메시지로 바꿀 예정 응답에 경고 메시지 포함으로 추후 반영
+        //            System.out.println("계산은 완료되었지만 저축액이 너무 적어 목표달성까지 장기간 소요됨");
+
 
         // a = C * r연 / 2400 -> 소수점 처리 반영
         double a = monthlySaving * (annualInterestRate / 2400.0);
 
-        // b = C * (1 + r연 / 2400)
-        double b = monthlySaving * (1 + (annualInterestRate / 2400.0));
+        // b = C * (1 - r연 / 2400)
+        double b = monthlySaving * (1 - (annualInterestRate / 2400.0));
 
         // c = -B
         double c = -(targetAmount - initialAsset);
+
+        //이미 자산이 목표보다 많거나 같으면 달성 월은 이 시점.
 
         // 판별식
         double discriminant = Math.pow(b, 2) - 4 * a * c;
@@ -70,23 +76,16 @@ public class SimulationCalculator {
         // 근의 공식 부분
         double n = (-b + Math.sqrt(discriminant)) / (2 * a);
 
-        if (n > 600) {
-            throw new IllegalArgumentException("50년 이상 소요되는 목표입니다. 저축액을 늘려주세요.");
-        }
+        //경고메시지를 만드려고 했는데, 테스트가 잘 안돼서 하지 못했습니다. 오늘 PR검토하면서 계속 알아봐볼게요
+    //    if (n > 600) {
+    //        throw new IllegalArgumentException("50년 이상 소요되는 목표입니다. 저축액을 늘려주세요.");//   }
+
 
         int monthsToAchieve = (int) Math.ceil(n);
 
         return baseMonth.plusMonths(monthsToAchieve);
-        //n이 매우커지는 조건은 a,b가 작아지는 경우를 생각해 볼 수 있음.
-        //1. 월 저축액 c가 너무 작음
-        //2. 목표 금액이 현재 자산보다 매우 큰 경우
-        //이것은 저축액c가 너무 낮은 것이라고 볼 수 있기 때문에 savingRatio로 예외처리를 던져 다시 값을 요청받을 수 있도록 로직을 짰습니다. 차라리 c값이 커지도록 해서 n을 작아지게 하는 방향이
-        //나을 것이라고 판단한 것 입니다.
-        // 제가 생각한 방향은 목표 금액 대비 저축액 비율이 너무 낮은 경우를 이전에 알리는 것이고 기백님이 말씀해주신건(예)예외처리에서 100년 이상 소요되는 목표입니다.)
-        //계산 결과가 수행되고 난 이후라 더 강한 예외를 줄 수 있을 것이라 생각됩니다. 여기서 Math.sqrt계산의 성능에 관련해 질문주셔서 고민해보았는데,
-        // 이 내장 메서드는 루프 안에서 수천 번 반복되지 않는 이상 성능 이슈는 없다네요.
-        // 지피티는 예외처리가 둘 다 존재하면 좋다고 하네요.
     }
+
 
     // 3. 현재 달성률 (%) 계산
     // 모든 달의 저축에 이자가 붙는 형식
@@ -106,7 +105,6 @@ public class SimulationCalculator {
 
         return Math.min(progressRate, 100.0); // 100% 초과 방지
     }
-
 
     // 4. 매달 예상 달성률 리스트 반환
     // 매달 말 기준 예상 달성이므로 모든 월의 저축에 이자를 받았다고 간주
@@ -144,23 +142,44 @@ public class SimulationCalculator {
     }
 
     // 5. 매달 자산 변화 시뮬레이션 (자산 금액, 매달 변화)
+    // 기대수명에 따른 자산변화로 변경
     public static List<MonthlyAssetDto> simulateMonthlyAssetsWithInterest(
             long initialAsset,
             long monthlySaving,
             double annualInterestRate,
-            int totalMonths,
-            YearMonth baseMonth
+            LocalDate baseDate,
+            LocalDate expectedDeathDate
     ) {
-        List<MonthlyAssetDto> assets = new ArrayList<>();
 
-        for (int monthIndex = 1; monthIndex <= totalMonths; monthIndex++) {
-            double accumulated = calculateAccumulatedAssetWithSimpleInterest(monthlySaving, annualInterestRate, monthIndex);
-            long totalAsset = Math.round(initialAsset + accumulated); // 초기 자산 포함
+        List<MonthlyAssetDto> monthlyAssets = new ArrayList<>();
+        // 기준이 되는 날짜
+        YearMonth currentMonth = YearMonth.from(baseDate);
+        // 기대수명일을 월 단위로 변환 2025-5
+        YearMonth endMonth = YearMonth.from(expectedDeathDate);
+        // 월 이율로 변환
+        double monthlyRate = annualInterestRate / 12.0 / 100.0;
+        // 총 시뮬레이션 기간 월을 계산 예를 들어 2025년 6월 부터 2085년 6월까지는 721개월
+        int totalMonths = (int) ChronoUnit.MONTHS.between(currentMonth, endMonth) + 1;
 
-            YearMonth currentMonth = baseMonth.plusMonths(monthIndex - 1);
-            assets.add(new MonthlyAssetDto(currentMonth, totalAsset));
+        // 721개월 totalMonths만큼 for문을 반복
+        for (int month = 1; month <= totalMonths; month++) {
+            YearMonth targetMonth = currentMonth.plusMonths(month - 1);
+
+            // 초기 자산 이자 -> 초기 자산에 대한 누적 이자 계산 이자 = 원금 x이율x기간
+            double initialAssetInterest = initialAsset * monthlyRate * month;
+
+            // 축 누적 자산 (단리) → 기존 함수 사용
+            double savingWithInterest = calculateAccumulatedAssetWithSimpleInterest(
+                    monthlySaving, annualInterestRate, month
+            );
+
+            // 총 자산 -> 초기 자산 + 초기자산 단리 리이자+저축원금에 이자
+            double total = initialAsset + initialAssetInterest + savingWithInterest;
+
+            monthlyAssets.add(new MonthlyAssetDto(targetMonth, Math.round(total)));
         }
-
-        return assets;
+        //total = monthlySaving * months + monthlySaving * monthlyRate * (months * (months + 1)) / 2;
+        return monthlyAssets;
     }
 }
+

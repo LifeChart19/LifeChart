@@ -3,7 +3,11 @@ package org.example.lifechart.domain.simulation.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.lifechart.common.entity.BaseEntity;
+import org.example.lifechart.domain.simulation.converter.MonthlyAchievementListConverter;
+import org.example.lifechart.domain.simulation.converter.MonthlyAssetListConverter;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.dto.request.SimulationRetirementCalculateRequest;
+import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAchievement;
 import org.example.lifechart.domain.simulation.dto.response.MonthlyAssetDto;
 import org.example.lifechart.domain.simulation.dto.response.SimulationResults;
@@ -59,21 +63,12 @@ public class Simulation extends BaseEntity {
     @OneToMany(mappedBy = "simulation", orphanRemoval = true)
     private List<SimulationGoal> simulationGoals = new ArrayList<>();
 
-    //JPA가 해당 필드를 DB에 저장하거나 읽을 때 사용할 변환 로직(추후 수정예정)
-    //파람은 복합객체라 이것을 직렬화, 역직렬화 해야 함.
-//    @Convert(converter = SimulationParamsConverter.class)
-//    @Column(columnDefinition = "json")
-//    private SimulationParams params;
-//
-//    @Convert(converter = SimulationResultsConverter.class)
-//    @Column(columnDefinition = "json")
-//    private SimulationResults results;
 
     @Builder.Default
-    @Column(nullable = true)
+    @Column
     private boolean isDeleted = false;
 
-    @Column(nullable = true)
+    @Column
     private LocalDateTime deletedAt;
 
     //사용자 입력 연이율
@@ -101,31 +96,19 @@ public class Simulation extends BaseEntity {
     private Long monthlySaving;
 
     //시뮬레이션 테이블에 list로 저장하고싶으면 필요한 어노테이션.
-    @ElementCollection
-    private List<MonthlyAchievement> monthlyAchievements;
-
-    @ElementCollection
+    @Convert(converter = MonthlyAssetListConverter.class)
+    @Column(columnDefinition = "json")
     private List<MonthlyAssetDto> monthlyAssets;
+
+    @Convert(converter = MonthlyAchievementListConverter.class)
+    @Column(columnDefinition = "json")
+    private List<MonthlyAchievement> monthlyAchievements;
 
     //소프트릴리트 DB저장 필드 값 변경
     public void softDelete() {
         if (!this.isDeleted) {
             this.isDeleted = true;
             this.deletedAt = LocalDateTime.now();
-        }
-    }
-
-    // 기존 시뮬레이션 연결 끊고 전체 새로 연결. 업데이트할 때 필요함.
-    public void addSimulationGoals(List<SimulationGoal> simulationGoals) {
-        // 기존 SimulationGoal 들과 연결 끊기
-        for (SimulationGoal simulationGoal : this.simulationGoals) {
-            simulationGoal.setActive(false);
-        }
-        this.simulationGoals.clear();
-
-        // 새로운 SimulationGoal 들 추가 (양방향 동기화 포함)
-        for (SimulationGoal simulationGoal : simulationGoals) {
-            this.addSimulationGoal(simulationGoal);
         }
     }
 
@@ -144,6 +127,29 @@ public class Simulation extends BaseEntity {
     }
 
     public static Simulation createSimulation(BaseCreateSimulationRequestDto dto, SimulationResults results, User user) {
+
+        return Simulation.builder()
+                .title(dto.getTitle())
+                .baseDate(dto.getBaseDate())
+                .initialAsset(dto.getInitialAsset()) //이후에 바꿔야.
+                .monthlyIncome(dto.getMonthlyIncome())
+                .monthlyExpense(dto.getMonthlyExpense())
+                .monthlySaving(dto.getMonthlySaving())
+                .annualInterestRate(dto.getAnnualInterestRate())
+                .elapsedMonths(dto.getElapsedMonths())
+                .totalMonths(dto.getTotalMonths())
+                .requiredAmount(results.getRequiredAmount())
+                .estimatedAchieveMonth(results.getEstimatedAchieveMonth())
+                .currentAchievementRate(results.getCurrentAchievementRate())
+                .monthlyAchievements(results.getMonthlyAchievements())
+                .monthlyAssets(results.getMonthlyAssets())
+                .user(user)
+                .build();
+    }
+
+    public static Simulation ofDefault(SimulationRetirementCalculateRequest dto,
+                                       SimulationResults results,
+                                       User user) {
         return Simulation.builder()
                 .title(dto.getTitle())
                 .baseDate(dto.getBaseDate())
@@ -170,13 +176,26 @@ public class Simulation extends BaseEntity {
         return simulation;
     }
 
+    public void updateFieldsFromDto(UpdateSimulationRequestDto dto) {
+        this.initialAsset = dto.getInitialAsset();
+        this.monthlyIncome = dto.getMonthlyIncome();
+        this.monthlyExpense = dto.getMonthlyExpense();
+        this.monthlySaving = dto.getMonthlySaving();
+        this.totalMonths = dto.getTotalMonths();
+        this.elapsedMonths = dto.getElapsedMonths();
+        this.annualInterestRate = dto.getAnnualInterestRate();
+        this.title = dto.getTitle();
+        this.baseDate = dto.getBaseDate();
+
+    }
+
     public void updateResults(SimulationResults newResults) {
         this.requiredAmount = newResults.getRequiredAmount();
         this.estimatedAchieveMonth = newResults.getEstimatedAchieveMonth();
         this.currentAchievementRate = newResults.getCurrentAchievementRate();
         this.monthlyAchievements = newResults.getMonthlyAchievements();
         this.monthlyAssets = newResults.getMonthlyAssets();
-    }
 
+    }
 
 }
