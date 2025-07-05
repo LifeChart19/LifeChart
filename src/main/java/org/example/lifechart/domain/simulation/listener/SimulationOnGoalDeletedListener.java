@@ -1,5 +1,6 @@
 package org.example.lifechart.domain.simulation.listener;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.lifechart.common.enums.ErrorCode;
@@ -32,6 +33,7 @@ public class SimulationOnGoalDeletedListener {
     private final GoalRepository goalRepository;
     private final GoalRetirementRepository goalRetirementRepository;
 
+    @Transactional
     @EventListener
     public void handleGoalDeletedEvent(GoalDeletedEvent event) {
 
