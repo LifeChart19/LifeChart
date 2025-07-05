@@ -15,11 +15,8 @@ import org.example.lifechart.domain.simulation.entity.Simulation;
 import org.example.lifechart.domain.simulation.repository.SimulationGoalRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationRepository;
 import org.example.lifechart.domain.simulation.service.calculator.CalculateAll;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,15 +32,14 @@ public class SimulationOnGoalDeletedListener {
     private final GoalRepository goalRepository;
     private final GoalRetirementRepository goalRetirementRepository;
 
-    @Async
-    @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleGoalDeletedEvent(GoalDeletedEvent event) {
 
         Long goalId = event.getGoalId();
 
         List<Long> simulationIds = simulationGoalRepository.findSimulationIdsByGoalId(goalId);
 
+        simulationGoalRepository.deleteByGoalId(goalId);
 
         for (Long simulationId : simulationIds) {
 
@@ -81,8 +77,6 @@ public class SimulationOnGoalDeletedListener {
                     expectedDeathDate,
                     selectedGoals
             );
-
-            simulationGoalRepository.deleteByGoalId(goalId);
 
             simulation.updateResults(results);
         }

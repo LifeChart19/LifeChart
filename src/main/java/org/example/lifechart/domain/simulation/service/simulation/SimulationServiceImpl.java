@@ -198,15 +198,6 @@ public class SimulationServiceImpl implements SimulationService {
     @Transactional
     public void updateSimulationsByGoalChange(Long userId, Long goalId) {
 
-//        MockBankApiResponse<AccountResponse> accountResponse = accountClient.getAccount(userId);
-//        AccountResponse account = accountResponse.getData();
-//
-//        if (accountResponse.getData() == null) {
-//            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND);
-//        }
-//
-//        long initialAsset = account.getBalance().longValue();
-
         User user = validUser(userId);
         Goal updateGoal = validGoal(goalId, user.getId());
 
@@ -254,6 +245,8 @@ public class SimulationServiceImpl implements SimulationService {
                     newExpectedDeathDate,
                     relatedGoals
             );
+
+            simulation.updateResults(newResults);
 
             try {
                 eventPublisher.publishUpdateEventByGoalChange(user.getId(), simulation.getId(), updateGoal.getId(), newResults);
