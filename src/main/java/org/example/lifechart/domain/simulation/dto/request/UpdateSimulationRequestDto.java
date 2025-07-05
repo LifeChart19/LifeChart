@@ -57,7 +57,5 @@ public class UpdateSimulationRequestDto {
     @NotEmpty(message = "goalIds는 하나 이상의 값을 포함해야 합니다.")
     private List<Long> goalIds;
 
-//    @Schema(description = "시뮬레이션 파라미터", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-//    private SimulationParams params;
 
 }
