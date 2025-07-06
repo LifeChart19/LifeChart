@@ -21,7 +21,7 @@ public class DistributedLockCommentService {
 	private final CommentService commentService;
 	private final CommentRepository commentRepository;
 	private final String defaultKey = "lock:goal:comment:";
-	private static final long LOCK_WAIT_TIME = 30L;
+	private static final long LOCK_WAIT_TIME = 10L;
 	private static final long LOCK_LEASE_TIME_CREATE = 5L;
 	private static final long LOCK_LEASE_TIME_DELETE = 3L;
 

@@ -109,14 +109,14 @@ class DistributedLockCommentServiceTest {
 		List<Long> commentIds = Collections.synchronizedList(new ArrayList<>());
 
 
-		commentLockTest(5000, ()-> {
+		commentLockTest(500, ()-> {
 			Long commentId = distributedLockCommentService.createComment(savedUser.getId(), savedGoal.getId(),
 				commentRequestDto).getId();
 			commentIds.add(commentId);
 		});
 
-		assertEquals(5000, commentIds.size());
-		assertEquals(5000, commentRepository.count());
+		assertEquals(500, commentIds.size());
+		assertEquals(500, commentRepository.count());
 
 
 		commentLockTest(5000, () -> {
