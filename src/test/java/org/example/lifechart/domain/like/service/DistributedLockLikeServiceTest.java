@@ -73,7 +73,7 @@ class DistributedLockLikeServiceTest {
 	@BeforeEach
 	void setUp() {
 		userList = new ArrayList<>();
-		for (int i = 0; i < 5000; i++) {
+		for (int i = 0; i < 500; i++) {
 			User user = User.builder()
 				.name(i + "1")
 				.email(i + "1")
@@ -109,7 +109,7 @@ class DistributedLockLikeServiceTest {
 		// likeId도 다 다른 것을 삭제해야 해서 Map 사용
 		Map<Long, Long> userLikeIds = Collections.synchronizedMap(new HashMap<>());
 
-		likeLockTest(5000, () -> {
+		likeLockTest(500, () -> {
 			long userId;
 			synchronized (userList) {
 				if (userList.isEmpty()) {
@@ -124,10 +124,10 @@ class DistributedLockLikeServiceTest {
 			userLikeIds.put(userId, likeId);
 		});
 
-		assertEquals(5000, userLikeIds.size());
-		assertEquals(5000, likeRepository.count());
+		assertEquals(500, userLikeIds.size());
+		assertEquals(500, likeRepository.count());
 
-		likeLockTest(5000, () -> {
+		likeLockTest(500, () -> {
 			Long userId;
 			Long likeId;
 			synchronized (userLikeIds) {

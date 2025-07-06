@@ -20,8 +20,8 @@ public class DistributedLockLikeService {
 	private final LikeService likeService;
 	private final LikeRepository likeRepository;
 	private final String defaultKey = "lock:goal:like:";
-	private static final long LOCK_WAIT_TIME_PLUS = 50L;
-	private static final long LOCK_WAIT_TIME_DELETE = 30L;
+	private static final long LOCK_WAIT_TIME_PLUS = 10L;
+	private static final long LOCK_WAIT_TIME_DELETE = 10L;
 	private static final long LOCK_LEASE_TIME = 5L;
 
 	public LikeResponseDto plusLike(Long authId, Long goalId) {
