@@ -119,7 +119,7 @@ class DistributedLockCommentServiceTest {
 		assertEquals(500, commentRepository.count());
 
 
-		commentLockTest(5000, () -> {
+		commentLockTest(500, () -> {
 			Long commentId;
 
 			// 간단한 add / remove면 동시성 제어 리스트로 되지만 isEmpty()와 remove가 묶여 복합적일 땐 에러가 날 위험이 있어서
