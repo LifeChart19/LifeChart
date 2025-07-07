@@ -34,7 +34,7 @@ public class JsonApartmentPriceServiceTest {
 		Long price = apartmentPriceService.getAveragePrice(region, subregion, area);
 
 		// then
-		assertThat(price).isEqualTo(Math.round(1432.1*84));
+		assertThat(price).isEqualTo(Math.round(1432.1*84*10_000L));
 	}
 
 	@Test

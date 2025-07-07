@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test") // application-test.properties 적용
+@Transactional
 public class H2GoalDetailFetcherFactoryTest {
 
 	@Autowired

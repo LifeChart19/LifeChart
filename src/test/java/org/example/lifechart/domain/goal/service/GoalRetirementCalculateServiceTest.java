@@ -37,7 +37,7 @@ public class GoalRetirementCalculateServiceTest {
 			.gender("male")
 			.build();
 
-		given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
 		GoalRetirementCalculateRequest request = GoalRetirementCalculateRequest.builder()
 			.endAt(LocalDateTime.of(2055,1, 31,0,0,0))
 			.expectedLifespan(85L)
@@ -49,8 +49,7 @@ public class GoalRetirementCalculateServiceTest {
 		Long targetAmount = goalRetirementCalculateService.calculateTargetAmount(request, user.getId());
 
 		// then
-		verify(userRepository).findById(user.getId());
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		assertThat(targetAmount).isEqualTo(502_000_000L); // 예상 사망일: 1990 + 85 = 2075 -> 2055.01.31~2075.12.31 = 20년 * 251개월 * 2백만원 = 5.02억
-
 	}
 }

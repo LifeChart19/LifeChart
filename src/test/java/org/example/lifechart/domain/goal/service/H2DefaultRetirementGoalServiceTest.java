@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.response.GoalResponse;
+import org.example.lifechart.domain.goal.entity.Goal;
+import org.example.lifechart.domain.goal.enums.Category;
+import org.example.lifechart.domain.goal.repository.GoalRepository;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -17,9 +20,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 public class H2DefaultRetirementGoalServiceTest {
 
 	@Autowired
@@ -29,6 +34,8 @@ public class H2DefaultRetirementGoalServiceTest {
 	private DefaultRetirementGoalService defaultRetirementGoalService;
 
 	LocalDateTime fixedNow = LocalDateTime.of(2025, 7, 1, 0, 0);
+	@Autowired
+	private GoalRepository goalRepository;
 
 	@Test
 	@DisplayName("기본 은퇴 목표를 정상적으로 생성한다.")
@@ -50,7 +57,10 @@ public class H2DefaultRetirementGoalServiceTest {
 		GoalResponse response = defaultRetirementGoalService.createDefaultRetirementGoal(user.getId());
 
 		// then
-		assertThat(response.getGoalId()).isEqualTo(1L);
+		Goal defaultGoal = goalRepository.findById(response.getGoalId())
+			.orElseThrow(() -> new CustomException(ErrorCode.GOAL_NOT_FOUND));
+		assertThat(defaultGoal).isNotNull();
+		assertThat(defaultGoal.getCategory()).isEqualTo(Category.RETIREMENT);
 	}
 
 	@Test
