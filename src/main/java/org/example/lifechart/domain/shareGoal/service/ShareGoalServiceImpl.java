@@ -57,6 +57,10 @@ public class ShareGoalServiceImpl implements ShareGoalService {
 			sort = Sort.RECENT;
 		}
 
+		if (share != null && share != Share.ALL && share != Share.FOLLOWER) {
+			throw new CustomException(ErrorCode.SHARE_GOAL_SHARE_BAD_REQUEST);
+		}
+
 		List<ShareGoalResponseDto> shareGoalList = goalRepository.findByAuthIdAndCursorAndFilters(
 				foundUser.getId(), cursorGoal, cursorId, size, category, share, sort, period
 			)
