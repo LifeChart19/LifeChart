@@ -4,20 +4,31 @@
 - 프로젝트 설명: 사용자의 자산 흐름과 목표 달성 가능성을 데이터로 시각화한 인생 목표 경로 설계 API 시스템
 
 - 팀 19조
-  
+
 | 역할 | 팀장 | 팀원 | 팀원 | 팀원 | 팀원 | 팀원 |
 |:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
 |이름|정기백|이형진|오병택|고승표|석창훈|이혜원|
 |GitHub|rlqor9688|le951|byeongtaek12|KSP0321|ChangHoonS|EZRANDO|
+
+---
+
 ## API 명세서
 
-[API 명세서 링크](https://www.notion.so/teamsparta/API-2032dc3ef5148016a993e6b5b3d1688f)
+[API 명세서 링크](http://3.37.215.135/swagger-ui/index.html#/auth-controller/refresh)
+
+---
+
+## 와이어 프레임
+
+[와이어프레임 링크](https://www.figma.com/design/zTSk1flAYiXfST3GZB6niZ/LifeChart?node-id=342-11&p=f&t=pmxRvrUhetYTCGk8-0)
+
+---
 
 ## ERD
 
 ![erd](https://github.com/user-attachments/assets/8a33f2e2-ebe7-4efb-9528-2cb9a10e4f3a)
 
-
+---
 
 # 2. Key Features (주요 기능)
 
@@ -25,42 +36,83 @@
 
 - **사용자 회원가입 시 은행 계좌 자동 생성**
 
-
 <h3>목표</h3>
 
-
+- **사용자는 원하는 카테고리를 선택해 목표를 생성**
 
 <h3>공유 목표</h3>
 
-
+- **사용자는 커뮤니티에서 목표를 조회하고 댓글·좋아요·팔로우 등을 통해 다른 사용자와 상호작용이 가능**
 
 <h3>시뮬레이션</h3>
 
-
+- **사용자가 생성한 목표를 기반으로 자산 설정(현재 자산, 연 이율, 저축액)을 요청하면, 시뮬레이션에서 목표에 맞는 계산이 자동으로 반영**
 
 <h3>알림</h3>
 
-
+- **사용자는 다양한 이벤트에 대한 알림을 실시간으로 수신하고, 조회·읽음 처리**
 
 <h3>CI/CD & Monitoring</h3>
 
+- **GitHub Actions로 Docker 기반 배포 자동화를 구성**
+- **Prometheus와 Grafana로 서비스 상태를 실시간 모니터링**
 
+---
 
 # 3. Technology Stack (기술 스택)
 
-## Language
+### Language
+![Java 21](https://img.shields.io/badge/Java_21-007396?style=flat-square&logo=openjdk&logoColor=white)
 
-<img src="https://img.shields.io/badge/java-007396?style=flat-square&logo=java&logoColor=white"/><img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=MySQL&logoColor=white"/>
-
-## Version Control
+### Version Control
 
 <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white"/><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"/><img src="https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=Postman&logoColor=white"/>
 
-## JDK Version
+### Interface Description Language
+![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ_IDEA-000000?style=flat-square&logo=intellijidea&logoColor=white)
 
-Java 17 (OpenJDK 17)
+### Backend
+![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Spring_Data_JPA-59666C?style=flat-square&logo=hibernate)
+![Spring Boot Web](https://img.shields.io/badge/Spring_Boot_Web-6DB33F?style=flat-square&logo=spring)
+![Spring Validation](https://img.shields.io/badge/Spring_Validation-6DB33F?style=flat-square&logo=spring)
+![Spring Cloud Gateway](https://img.shields.io/badge/Spring_Cloud_Gateway-6DB33F?style=flat-square&logo=spring)
+![QueryDSL](https://img.shields.io/badge/QueryDSL-008000?style=flat-square)
+![Lombok](https://img.shields.io/badge/Lombok-ED1C24?style=flat-square&logo=lombok)
+![Gradle](https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=gradle)
 
+### Monitoring
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat-square&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white)
 
+### Security
+![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square)
+![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
+![BCrypt](https://img.shields.io/badge/BCrypt-E6772E?style=flat-square)
+
+### Deployment & Distribution
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Docker Hub](https://img.shields.io/badge/Docker_Hub-2496ED?style=flat-square&logo=docker)
+![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=flat-square&logo=amazonaws&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat-square&logo=ubuntu)
+![AWS IAM](https://img.shields.io/badge/AWS_IAM-232F3E?style=flat-square&logo=amazonaws)
+
+### API Communication
+![Spring Cloud OpenFeign](https://img.shields.io/badge/OpenFeign-007396?style=flat-square)
+![OpenAPI](https://img.shields.io/badge/OpenAPI-6BA539?style=flat-square)
+![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black)
+![Postman](https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=postman&logoColor=white)
+![AWS SQS](https://img.shields.io/badge/AWS_SQS-FF4F8B?style=flat-square&logo=amazonaws)
+![AWS SNS](https://img.shields.io/badge/AWS_SNS-FF9900?style=flat-square&logo=amazonaws)
+
+### Database
+![H2](https://img.shields.io/badge/H2-1A73E8?style=flat-square)
+![JDBC](https://img.shields.io/badge/JDBC-007396?style=flat-square)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
+
+---
 <br/>
 
 # 4. Project Structure (프로젝트 구조)
@@ -190,66 +242,12 @@ validation
 
 <br/>
 
+---
+
 # 5. Development Workflow (개발 워크플로우)
 
 ## 브랜치 전략 (Branch Strategy)
 
-- 공동 작업을 위해 `dev` 브랜치를 생성하여 기능 개발의 기준 브랜치(origin) 로 사용함
-- 개인 작업은 `feature/기능명` 형식의 브랜치를 dev 브랜치에서 분리하여 개발
-- 개발 완료시 pull request로 `dev` 브랜치에 병합
-
-## 블록 구문
-
-한 줄짜리 블록일 경우라도 {}를 생략하지 않고, 명확히 줄 바꿈 하여 사용
-
-```
-if (session != null) {
-     session.invalidate();
-}
-```
-
-<br/>
-<br/>   
-카멜 표기법을 이용하여 가독성을 향상
-
-```
-private final UserRepository userRepository;
-private final PasswordEncoder passwordEncoder;
-
-```
-
-<br/>
-
-## 메소드 네이밍 통일
-
-메소드 작성 시 아래 네이밍 규칙을 준수하여 의미 전달을 명확하게 함<br/>
-
-```
-- 생성 create{필드명}  
-- 조회 find{필드명}by{조회기준} 
-- 페이지 적용시 findPage{필드명}By{조회기준} 
-- 수정 update{필드명} 
-- 삭제 delete{필드명}
-```
-
-## 예외처리
-
-예외 발생시 커스텀 예외를 설정해 처리
-```
-public class AccessDeniedException extends RuntimeException {
-    public AccessDeniedException(String message) {
-        super(message);
-    }
-}
-```
-
-## 생성자 & Setter
-데이터베이스 보호를 위해 생성자 사용 지양 <br/>
-setter를 엔티티 내부에서 사용하므로써 보안 향상
-```
-public static Board of(CreateRequestDto requestDto, User user) {
-        Board board = new Board(requestDto);
-        board.initUser(user);
-        return board;
-    }
-```
+- 코드 컨벤션: 네이버 코드 컨벤션을 기준으로 적용
+- 커밋 & PR 컨벤션: 정해진 템플릿을 활용하여 작성
+- 코드리뷰 & 머지 방식: PR은 단위 비즈니스 로직 및 테스트 코드 구현 후 생성
