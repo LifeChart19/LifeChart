@@ -4,13 +4,17 @@ package org.example.lifechart.domain.simulation;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.entity.Goal;
+import org.example.lifechart.domain.goal.entity.GoalRetirement;
+import org.example.lifechart.domain.goal.enums.Category;
+import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalRepository;
+import org.example.lifechart.domain.goal.repository.GoalRetirementRepository;
 import org.example.lifechart.domain.simulation.dto.request.BaseCreateSimulationRequestDto;
-import org.example.lifechart.domain.simulation.dto.response.BaseSimulationResponseDto;
-import org.example.lifechart.domain.simulation.dto.response.DeletedSimulationResponseDto;
-import org.example.lifechart.domain.simulation.dto.response.SimulationSummaryDto;
+import org.example.lifechart.domain.simulation.dto.request.UpdateSimulationRequestDto;
+import org.example.lifechart.domain.simulation.dto.response.*;
 import org.example.lifechart.domain.simulation.entity.Simulation;
 import org.example.lifechart.domain.simulation.entity.SimulationGoal;
+import org.example.lifechart.domain.simulation.listener.SimulationUpdateListener;
 import org.example.lifechart.domain.simulation.logging.repository.SimulationLogRepository;
 import org.example.lifechart.domain.simulation.logging.service.SimulationLogEventPublisher;
 import org.example.lifechart.domain.simulation.logging.service.SimulationLogService;
@@ -18,12 +22,15 @@ import org.example.lifechart.domain.simulation.repository.SimulationGoalJdbcRepo
 import org.example.lifechart.domain.simulation.repository.SimulationGoalRepository;
 import org.example.lifechart.domain.simulation.repository.SimulationRepository;
 import org.example.lifechart.domain.simulation.service.calculator.CalculateAll;
+import org.example.lifechart.domain.simulation.service.calculator.SimulationCalculator;
+import org.example.lifechart.domain.simulation.service.simulation.DefaultRetirementSimulationService;
 import org.example.lifechart.domain.simulation.service.simulation.SimulationServiceImpl;
 import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,6 +44,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -75,6 +83,15 @@ public class SimulationServiceImplTest {
     @Mock
     private SimulationLogEventPublisher eventPublisher;
 
+    @Mock
+    private GoalRetirementRepository goalRetirementRepository;
+
+    @InjectMocks
+    private DefaultRetirementSimulationService defaultRetirementSimulationService;
+
+    @InjectMocks
+    private SimulationUpdateListener simulationUpdateListener;
+
 
     @Test
     @DisplayName("사용자 id로 Simulation 전체 목록 조회 성공")
@@ -110,56 +127,151 @@ public class SimulationServiceImplTest {
         assertThat(result.get(0).getSimulationId()).isEqualTo(simulation.getId());
     }
 
-//    @Test
-//    @DisplayName("save에서 계산로직이 정상적으로 수행")
-//    void save에서_계산로직이_정상적으로_수행() {
-//        // given
-//        //보통 사용자는 수입/지출 항목을 단독으로 관리하며, 목표 기반 계좌와는 별도로 운영할 가능성이 큼. 좀 더  고민해볼 것.
-//        long initialAsset = 2_000_000L; //초기 자산
-//        long monthlyIncome = 2_000_000L; //월 수입
-//        long monthlyExpense = 1_000_000L; //월 지출
-//        Long monthlySaving = 500000L; // 자동 계산 월마다 얼마나 저축 (null이면 monthlyIncome - monthlyExpense되게 해놔야..)
-//        double annualInterestRate = 3.0; //연 이자율
-//        int elapsedMonths = 0; //기준일로부터 경과한 개월 수
-//        int totalMonths = 12; //전체 시뮬레이션 기간
-//        LocalDate baseDate = LocalDate.of(2025, 6, 1); //시작 기준일.
-//
-//        List<Goal> goals = List.of(
-//                Goal.builder().id(1L).targetAmount(10_000_000L).build()
-//        );
-//
-//        // CalculateAll 및 Calculator 직접 생성
-//        //빈을 주입하면 스프링컨텍슽트(스프링이 관리하는 객체 저장소) 비용증가 가능성이 있다고 함.
-//        SimulationCalculator calculator = new SimulationCalculator();
-//        CalculateAll calculateAll = new CalculateAll(calculator);
-//
-//        // when 시뮬레이션 계산결과들
-//        SimulationResults results = calculateAll.calculate(
-//                initialAsset,
-//                monthlyIncome,
-//                monthlyExpense,
-//                monthlySaving,
-//                annualInterestRate,
-//                elapsedMonths,
-//                totalMonths,
-//                baseDate,
-//                goals
-//        );
-//
-//        // then
-//        assertThat(results).isNotNull();
-//        //필요금액 확인
-//        assertThat(results.getRequiredAmount()).isEqualTo(8_000_000L);
-//        //목표 달성까지 걸리는 개월 수가 0보다 큼 -> 달성 기간 계산됐는지
-//        assertThat(results.getEstimatedAchieveMonth()).isGreaterThan("2025-06");
-//        //현재 달성률 0보다 큼.
-//        assertThat(results.getCurrentAchievementRate()).isGreaterThan(0f);
-//        //월별 자산 변화 리스트 생성됐는지
-//        assertThat(results.getMonthlyAssets()).isNotEmpty();
-//        //달성률 리스트도 잘 생성 됐는지.
-//        assertThat(results.getMonthlyAchievements()).isNotEmpty();
-//    }
+    @Test
+    @DisplayName("save에서 계산로직이 정상적으로 수행")
+    void save에서_계산로직이_정상적으로_수행() {
+        // given
+        //보통 사용자는 수입/지출 항목을 단독으로 관리하며, 목표 기반 계좌와는 별도로 운영할 가능성이 큼. 좀 더  고민해볼 것.
+        long initialAsset = 2_000_000L; //초기 자산
+        long monthlyIncome = 2_000_000L; //월 수입
+        long monthlyExpense = 1_000_000L; //월 지출
+        Long monthlySaving = 500000L; // 자동 계산 월마다 얼마나 저축 (null이면 monthlyIncome - monthlyExpense되게 해놔야..)
+        double annualInterestRate = 3.0; //연 이자율
+        int elapsedMonths = 0; //기준일로부터 경과한 개월 수
+        int totalMonths = 12; //전체 시뮬레이션 기간
+        LocalDate baseDate = LocalDate.of(2025, 6, 1);//시작 기준일.
+        LocalDate expectedDeathDate = baseDate.plusYears(60); //기대수명
 
+        List<Goal> goals = List.of(
+                Goal.builder().id(1L).targetAmount(10_000_000L).build()
+        );
+
+        // CalculateAll 및 Calculator 직접 생성
+        //빈을 주입하면 스프링컨텍슽트(스프링이 관리하는 객체 저장소) 비용증가 가능성이 있다고 함.
+        SimulationCalculator calculator = new SimulationCalculator();
+        CalculateAll calculateAll = new CalculateAll(calculator);
+
+        // when 시뮬레이션 계산결과들
+        SimulationResults results = calculateAll.calculate(
+                initialAsset,
+                monthlyIncome,
+                monthlyExpense,
+                monthlySaving,
+                annualInterestRate,
+                elapsedMonths,
+                totalMonths,
+                baseDate,
+                expectedDeathDate,
+                goals
+
+        );
+
+        // then
+        assertThat(results).isNotNull();
+        //필요금액 확인
+        assertThat(results.getRequiredAmount()).isEqualTo(8_000_000L);
+        //목표 달성까지 걸리는 개월 수가 0보다 큼 -> 달성 기간 계산됐는지
+        assertThat(results.getEstimatedAchieveMonth()).isGreaterThan("2025-06");
+        //현재 달성률 0보다 큼.
+        assertThat(results.getCurrentAchievementRate()).isGreaterThan(0f);
+        //월별 자산 변화 리스트 생성됐는지
+        assertThat(results.getMonthlyAssets()).isNotEmpty();
+        //달성률 리스트도 잘 생성 됐는지.
+        assertThat(results.getMonthlyAchievements()).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("시뮬레이션은 정상적으로 저장")
+    void 시뮬레이션은_정상적으로_저장된다() {
+
+        List<Long> goalIds = List.of(100L, 101L);
+        LocalDate baseDate = LocalDate.of(2025, 6, 16);
+        LocalDate expectedDeath = baseDate.plusYears(60);
+
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("password")
+                .nickname("testuser")
+                .isDeleted(false)
+                .build();
+
+        // UserRepository id찾으면 user를 줌.
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+
+        Goal housingGoal = Goal.builder()
+                .id(100L)
+                .user(user) // 꼭 넣어야 함 (nullable = false)
+                .title("테스트 목표")
+                .category(Category.HOUSING)
+                .targetAmount(1_000_000L)
+                .status(Status.ACTIVE)
+                .build();
+
+        Goal retirementGoal = Goal.builder()
+                .id(101L)
+                .user(user)
+                .title("은퇴 목표")
+                .category(Category.RETIREMENT)
+                .status(Status.ACTIVE)
+                .targetAmount(2_000_000L)
+                .status(Status.ACTIVE)
+                .build();
+
+        List<Goal> goals = List.of(retirementGoal,housingGoal);
+
+        GoalRetirement retirement = GoalRetirement.builder()
+                .goal(retirementGoal)
+                .expectedDeathDate(expectedDeath)
+                .build();
+
+        given(goalRepository.findAllWithUserByIdAndUserId(goalIds, user.getId())).willReturn(goals);
+
+        given(goalRetirementRepository.findByGoalId(101L)).willReturn(Optional.of(retirement));
+
+        BaseCreateSimulationRequestDto dto = BaseCreateSimulationRequestDto.builder()
+                .title("5년 뒤 내 집 마련")
+                .baseDate(baseDate)
+                .initialAsset(1_000_000L)
+                .monthlyIncome(3_000_000L)
+                .monthlyExpense(2_000_000L)
+                .monthlySaving(1_000_000L)
+                .annualInterestRate(3.0)
+                .elapsedMonths(0)
+                .totalMonths(60)
+                .build();
+
+        SimulationResults mockResults = new SimulationResults();
+
+        Simulation simulation = Simulation.builder()
+                .id(1L)
+                .user(user)
+                .title("테스트 시뮬레이션")
+                .isDeleted(false)
+                .initialAsset(1000000L)
+                .monthlyIncome(300000L)
+                .monthlyExpense(100000L)
+                .monthlySaving(200000L)
+                .annualInterestRate(2.5)
+                .elapsedMonths(0)
+                .totalMonths(60)
+                .baseDate(baseDate)
+                .build();
+
+        given(calculateAll.calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(), any(), anyList())
+        ).willReturn(mockResults);
+
+        given(simulationRepository.save(any(Simulation.class))).willReturn(simulation);
+
+        CreateSimulationResponseDto responseDto = simulationService.saveSimulation(dto, user.getId(), goalIds);
+
+        assertNotNull(responseDto);
+        verify(simulationRepository).save(any(Simulation.class));
+        verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
+
+    }
 
     @Test
     @DisplayName("사용자가 선택한 simulationId에 해당하는 시뮬레이션 softdelete시뮬레이션 목록 조회 성공")
@@ -238,227 +350,196 @@ public class SimulationServiceImplTest {
         });
     }
 
-//    @Test
-//    @DisplayName("시뮬레이션은 선택한 목표들과 성공적으로 업데이트된다")
-//    void 시뮬레이션은_선택한_목표들과_성공적으로_업데이트가_가능() {
-//
-//        Long userId = 1L;
-//        Long simulationId = 10L;
-//        List<Long> goalIds = List.of(100L);
-//
-//        //given
-//        User user = User.builder()
-//                .id(userId)
-//                .email("test@example.com")
-//                .password("password")
-//                .isDeleted(false)
-//                .nickname("testuser")
-//                .build();
-//
-//        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
-//
-//        Goal goal = Goal.builder()
-//                .id(1L)
-//                .user(user) // 꼭 넣어야 함 (nullable = false)
-//                .title("테스트 목표")
-//                .category(Category.HOUSING)
-//                .targetAmount(1_000_000L)
-//                .build();
-//
-//        given(goalRepository.findAllWithUserByIdAndUserId(goalIds, userId)).willReturn(List.of(goal));
-//
-//        Simulation simulation = Simulation.builder()
-//                .id(simulationId)
-//                .user(user)
-//                .title("테스트 시뮬레이션")
-//                .isDeleted(false)
-//                .initialAsset(1000000L)
-//                .monthlyIncome(300000L)
-//                .monthlyExpense(100000L)
-//                .monthlySaving(200000L)
-//                .annualInterestRate(2.5)
-//                .elapsedMonths(0)
-//                .totalMonths(60)
-//                .baseDate(LocalDate.now())
-//                .build();
-//
-//        given(simulationRepository.findById(simulation.getId())).willReturn(Optional.of(simulation));
-//
-//
-//        SimulationResults mockResults = new SimulationResults();
-//
-//        given(calculateAll.calculate(
-//                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
-//                anyInt(), anyInt(), any(LocalDate.class), anyList()
-//        )).willReturn(mockResults);
-//
-//        CreateSimulationResponseDto response = simulationService.updateSimulationSettings(userId, simulationId, goalIds);
-//
-//        //batchinsert호출 검증
-//        verify(simulationGoalJdbcRepository).deactivateSimulationGoals(simulationId);
-//        verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
-//
-//        verify(calculateAll).calculate(
-//                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
-//                anyInt(), anyInt(), any(LocalDate.class), anyList()
-//        );
-//
-//        verify(simulationRepository).findById(simulationId);
-//        assertThat(response).isNotNull();
-//        assertThat(response.getSimulationId()).isEqualTo(simulationId);
-//
-//    }
 
-//    @Test
-//    @DisplayName("시뮬레이션은 목표가 수정되면 시뮬레이션도 수정된다")
-//    void 시뮬레이션은_목표가_수정되면_시뮬레이션도_수정된다() {
-//        //given
-//        User user = User.builder()
-//                .id(1L)
-//                .email("test@example.com")
-//                .password("password")
-//                .isDeleted(false)
-//                .nickname("testuser")
-//                .build();
-//
-//        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
-//
-//        Goal goal = Goal.builder()
-//                .id(1L)
-//                .user(user) // 꼭 넣어야 함 (nullable = false)
-//                .title("테스트 목표")
-//                .category(Category.HOUSING)
-//                .targetAmount(1_000_000L)
-//                .build();
-//
-//        Simulation simulation = Simulation.builder()
-//                .id(2L)
-//                .user(user)
-//                .title("테스트 시뮬레이션")
-//                .isDeleted(false)
-//                .initialAsset(1000000L)
-//                .monthlyIncome(300000L)
-//                .monthlyExpense(100000L)
-//                .monthlySaving(200000L)
-//                .annualInterestRate(2.5)
-//                .elapsedMonths(0)
-//                .totalMonths(60)
-//                .baseDate(LocalDate.now())
-//                .build();
-//
-//        SimulationGoal simulationGoal = SimulationGoal.builder()
-//                .id(1L)
-//                .simulation(simulation)
-//                .goal(goal)
-//                .active(true)
-//                .linkedAt(LocalDateTime.now())
-//                .build();
-//
-//        given(simulationGoalRepository.findAllByGoalIdAndActiveTrue(goal.getId())).willReturn(List.of(simulationGoal));
-//        given(simulationGoalRepository.findActiveGoalsBySimulationId(simulation.getId())).willReturn(List.of(goal));
-//
-//        SimulationResults results = SimulationResults.builder()
-//                .requiredAmount(8_000_000L)
-//                .estimatedAchieveMonth("2026-05")
-//                .currentAchievementRate(10.0f)
-//                .monthlyAchievements(List.of())
-//                .monthlyAssets(List.of())
-//                .build();
-//
-//        given(calculateAll.calculate(
-//                anyLong(), anyLong(), anyLong(), any(), anyDouble(),
-//                anyInt(), anyInt(), any(LocalDate.class), anyList()
-//        )).willReturn(results);
-//
-//        simulationService.updateSimulationsByGoalChange(user.getId(), goal.getId());
-//
-//        // then
-//        // 시뮬레이션 객체 내부값이 실제로 바꼈는지 확인
-//        assertThat(simulation.getRequiredAmount()).isEqualTo(results.getRequiredAmount());
-//        assertThat(simulation.getEstimatedAchieveMonth()).isEqualTo(results.getEstimatedAchieveMonth());
-//
-//    }
+    @Test
+    @DisplayName("시뮬레이션은 선택한 목표들과 성공적으로 업데이트된다")
+    void 시뮬레이션은_선택한_목표들과_성공적으로_업데이트가_가능() {
+
+        Long userId = 1L;
+        Long simulationId = 10L;
+        List<Long> goalIds = List.of(100L, 101L);
+        LocalDate baseDate = LocalDate.of(2025, 6, 16);
+        //given
+        User user = User.builder()
+                .id(userId)
+                .email("test@example.com")
+                .password("password")
+                .isDeleted(false)
+                .nickname("testuser")
+                .build();
+
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+
+        Goal housingGoal = Goal.builder()
+                .id(1L)
+                .user(user) // 꼭 넣어야 함 (nullable = false)
+                .title("테스트 목표")
+                .category(Category.HOUSING)
+                .targetAmount(1_000_000L)
+                .build();
+
+        Goal retirementGoal = Goal.builder()
+                .id(101L)
+                .user(user)
+                .title("은퇴 목표")
+                .category(Category.RETIREMENT)
+                .status(Status.ACTIVE)
+                .targetAmount(2_000_000L)
+                .build();
+
+        given(goalRepository.findAllWithUserByIdAndUserId(goalIds, userId))
+                .willReturn(List.of(housingGoal, retirementGoal));
+
+        Simulation simulation = Simulation.builder()
+                .id(simulationId)
+                .user(user)
+                .title("테스트 시뮬레이션")
+                .isDeleted(false)
+                .initialAsset(1000000L)
+                .monthlyIncome(300000L)
+                .monthlyExpense(100000L)
+                .monthlySaving(200000L)
+                .annualInterestRate(2.5)
+                .elapsedMonths(0)
+                .totalMonths(60)
+                .baseDate(baseDate)
+                .build();
+
+        given(simulationRepository.findById(simulation.getId())).willReturn(Optional.of(simulation));
 
 
-    //batchInsert가 insert가 한 번만 수행되는 것이 맞는지 log로 확인할 수 있음.
-    //save에서 batchInsert메서드가 호출이 되는지 확인만 -> 원래 따로 메서드만들어서 테스트하는 것이 좋음.
-//    @Test
-//    @DisplayName("saveSimulation은 batchInsert호출과 DTO반환을 검증")
-//    void saveSimulation은_batchInsert_호출과_DTO반환을_검증한다() {
-//        //given
-//        User user2 = User.builder()
-//                .email("test@example.com")
-//                .password("password")
-//                .nickname("testuser")
-//                .isDeleted(false)
-//                .build();
-//
-//        given(userRepository.findByIdAndDeletedAtIsNull(user2.getId())).willReturn(Optional.of(user2));
-//
-//        Long goalId = 1L;
-//        Goal mockGoal = Goal.builder()
-//                .id(goalId)
-//                .user(user2) // 꼭 넣어야 함 (nullable = false)
-//                .title("테스트 목표")
-//                .category(Category.HOUSING)
-//                .targetAmount(1_000_000L)
-//                .startAt(LocalDateTime.now())
-//                .endAt(LocalDateTime.now().plusMonths(6))
-//                .status(Status.ACTIVE)
-//                .share(Share.PRIVATE)
-//                .build();
-//        System.out.println("mockGoal ID = " + mockGoal.getId());
-//        // GoalRepository.findAllById()가 goal1 리턴하도록 mock 설정
-//
-//        given(goalRepository.findAllWithUserByIdAndUserId(List.of(goalId), user2.getId()))
-//                .willReturn(List.of(mockGoal));
-//
-//        //simulationParam(json에 필요한 엔티티)
-//        LocalDate baseDate = LocalDate.of(2025, 6, 16);
-//
-//        var dto = new BaseCreateSimulationRequestDto(
-//                "5년 뒤 내 집 마련",
-//                baseDate,
-//                1_000_000L,
-//                3_000_000L,
-//                2_000_000L,
-//                1_000_000L,
-//                3.0,
-//                0,
-//                60,
-//                List.of(mockGoal.getId())
-//        );
-//
-//        SimulationResults mockResults = SimulationResults.builder()
-//                .requiredAmount(8_000_000L)
-//                .estimatedAchieveMonth("2025-6")
-//                .currentAchievementRate(10.0f)
-//                .monthlyAchievements(List.of()) // 또는 dummy 데이터
-//                .monthlyAssets(List.of())
-//                .build();
-//
-//        given(calculateAll.calculate(
-//                anyLong(), anyLong(), anyLong(), any(), anyDouble(),
-//                anyInt(), anyInt(), any(LocalDate.class), anyList()
-//        )).willReturn(mockResults);
-//
-//
-//        //when
-//        //내부 구현에 대한 필드를 몰라야한다
-//        //BaseCreateSimulationRequestDto dto, User user, List<Long> goalIds
-//        CreateSimulationResponseDto result = simulationService.saveSimulation(
-//                dto,
-//                user2.getId(),
-//                List.of(goalId) //이거 넘겨줄 때 그냥 goalId가 simulationGoal에 연결되어있는 걸로 가져오느거임.
-//        );
-//
-//        //이런 방법으로도 id세팅가능
-//        ReflectionTestUtils.setField(result, "simulationId", 1L);
-//        //then
-//        //테스트 중간에 실행되어야 함. 이건 배치 인설트 부분이므로 , 따로 테스트
-//        //verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
-//        assertEquals("시뮬레이션 ID가 일치", 1L, result.getSimulationId());
-//    }
+        SimulationResults mockResults = new SimulationResults();
+
+        given(calculateAll.calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), ArgumentMatchers.any(LocalDate.class), ArgumentMatchers.any(LocalDate.class), anyList()
+        )).willReturn(mockResults);
+
+
+        UpdateSimulationRequestDto dto = new UpdateSimulationRequestDto(
+                "은퇴 & 주거 계획",
+                LocalDate.of(2025, 6, 1),
+                1_000_000L,
+                3_000_000L,
+                2_000_000L,
+                1_000_000L,
+                3.0,
+                0,
+                60,
+                goalIds
+        );
+
+        CreateSimulationResponseDto response = simulationService.updateSimulationSettings(userId, simulationId, dto);
+        verify(simulationGoalJdbcRepository).deactivateSimulationGoals(simulationId);
+        //batchinsert호출 검증
+        verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
+        verify(calculateAll).calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(),
+                any(LocalDate.class), any(LocalDate.class), anyList()
+        );
+        verify(simulationRepository).findById(simulationId);
+        assertThat(response).isNotNull();
+        assertThat(response.getSimulationId()).isEqualTo(simulationId);
+
+    }
+
+    @Test
+    @DisplayName("시뮬레이션은 목표가 수정되면 시뮬레이션도 수정된다")
+    void 시뮬레이션은_목표가_수정되면_시뮬레이션도_수정된다() {
+        //given
+        Long userId = 1L;
+        Long goalId = 1L;
+
+        User user = User.builder()
+                .id(userId)
+                .email("test@example.com")
+                .password("password")
+                .isDeleted(false)
+                .nickname("testuser")
+                .build();
+
+        given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
+
+        Goal housingGoal = Goal.builder()
+                .id(goalId)
+                .user(user) // 꼭 넣어야 함 (nullable = false)
+                .title("테스트 목표")
+                .category(Category.HOUSING)
+                .status(Status.ACTIVE)
+                .targetAmount(1_000_000L)
+                .build();
+
+        Goal retirementGoal = Goal.builder()
+                .id(101L)
+                .user(user)
+                .title("은퇴 목표")
+                .category(Category.RETIREMENT)
+                .status(Status.ACTIVE)
+                .targetAmount(2_000_000L)
+                .build();
+
+        given(goalRepository.findByIdAndUserIdAndStatus(goalId, user.getId(), Status.ACTIVE))
+                .willReturn(Optional.of(housingGoal));
+
+        Simulation simulation = Simulation.builder()
+                .id(2L)
+                .user(user)
+                .title("테스트 시뮬레이션")
+                .isDeleted(false)
+                .initialAsset(1000000L)
+                .monthlyIncome(300000L)
+                .monthlyExpense(100000L)
+                .monthlySaving(200000L)
+                .annualInterestRate(2.5)
+                .elapsedMonths(0)
+                .totalMonths(60)
+                .baseDate(LocalDate.now())
+                .build();
+
+        SimulationGoal simulationGoal = SimulationGoal.builder()
+                .id(1L)
+                .simulation(simulation)
+                .goal(housingGoal)
+                .active(true)
+                .linkedAt(LocalDateTime.now())
+                .build();
+
+        List<Goal> relatedGoals = List.of(housingGoal, retirementGoal);
+
+        given(simulationGoalRepository.findAllByGoalIdAndSimulationUserIdAndActiveTrue(goalId, user.getId())).willReturn(List.of(simulationGoal));
+        given(simulationGoalRepository.findActiveGoalsBySimulationId(simulation.getId())).willReturn(relatedGoals);
+
+        GoalRetirement goalRetirement = GoalRetirement.builder()
+                .id(1000L)
+                .goal(retirementGoal)
+                .expectedDeathDate(LocalDate.of(2085, 1, 1))
+                .build();
+
+        given(goalRetirementRepository.findByGoalId(retirementGoal.getId()))
+                .willReturn(Optional.of(goalRetirement));
+
+        given(simulationGoalRepository.findActiveGoalsBySimulationId(simulation.getId()))
+                .willReturn(List.of(housingGoal, retirementGoal));
+
+        SimulationResults mockResults = new SimulationResults();
+
+        given(calculateAll.calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), ArgumentMatchers.any(LocalDate.class), ArgumentMatchers.any(LocalDate.class), anyList()
+        )).willReturn(mockResults);
+
+
+        simulationService.updateSimulationsByGoalChange(user.getId(), goalId);
+
+        // then
+        // 시뮬레이션 객체 내부값이 실제로 바꼈는지 확인
+        assertThat(simulation.getRequiredAmount()).isEqualTo(mockResults.getRequiredAmount());
+        assertThat(simulation.getEstimatedAchieveMonth()).isEqualTo(mockResults.getEstimatedAchieveMonth());
+
+    }
+
+
 
     @Test
     @DisplayName("시뮬레이션 단건 조회 수행")
@@ -609,6 +690,7 @@ public class SimulationServiceImplTest {
                 .build();
 
         given(simulationRepository.findById(simulationId)).willReturn(Optional.of(simulation));
+
         given(userRepository.findByIdAndDeletedAtIsNull(userId)).willReturn(Optional.of(user));
 
         // when
@@ -616,6 +698,142 @@ public class SimulationServiceImplTest {
 
         // then
         verify(simulationRepository).delete(simulation); // delete 호출 여부 검증
+    }
+
+    @Test
+    @DisplayName("기본 은퇴 시뮬레이션이 정상적으로 저장")
+    void initializeDefaultSimulation_성공() {
+
+        Long userId = 1L;
+        Long goalId = 100L;
+        LocalDate baseDate = LocalDate.now();
+        LocalDate expectedDeath = baseDate.plusYears(60);
+
+        User user = User.builder()
+                .id(userId)
+                .nickname("test-user")
+                .email("test@example.com")
+                .isDeleted(false)
+                .build();
+
+        given(userRepository.findByIdAndDeletedAtIsNull(userId)).willReturn(Optional.of(user));
+
+        Goal goal = Goal.builder()
+                .id(goalId)
+                .user(user)
+                .category(Category.RETIREMENT)
+                .status(Status.ACTIVE)
+                .title("은퇴 목표")
+                .targetAmount(2_000_000L)
+                .build();
+
+        GoalRetirement retirement = GoalRetirement.builder()
+                .goal(goal)
+                .expectedDeathDate(expectedDeath)
+                .monthlyExpense(1_500_000L)
+                .build();
+
+        given(goalRepository.findByIdAndUserId(goalId, userId)).willReturn(Optional.of(goal));
+
+        SimulationResults mockResults = new SimulationResults();
+
+        given(goalRetirementRepository.findByGoalId(goalId)).willReturn(Optional.of(retirement));
+
+        Simulation simulation = Simulation.builder()
+                .id(1L)
+                .user(user)
+                .title("기본 은퇴 시뮬레이션")
+                .baseDate(baseDate)
+                .initialAsset(3_000_000L)
+                .monthlyIncome(3_000_000L)
+                .monthlyExpense(1_500_000L)
+                .monthlySaving(1_500_000L)
+                .annualInterestRate(2.0)
+                .build();
+
+        given(calculateAll.calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(), any(), anyList())
+        ).willReturn(mockResults);
+
+        given(simulationRepository.save(any(Simulation.class))).willReturn(simulation);
+
+        // when
+        defaultRetirementSimulationService.initializeDefaultSimulation(userId, goalId);
+
+        // then
+        verify(simulationRepository).save(any(Simulation.class));
+        verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
+        verify(calculateAll).calculate(anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(), any(), anyList());
+    }
+
+    @Test
+    @DisplayName("목표 삭제 이벤트가 발생하면 관련 시뮬레이션이 업데이트된다")
+    void handleGoalDeletedEvent_성공() {
+
+        Long userId = 1L;
+        Long goalId = 100L;
+        LocalDate baseDate = LocalDate.now();
+        LocalDate expectedDeath = baseDate.plusYears(60);
+
+        User user = User.builder()
+                .id(userId)
+                .nickname("test-user")
+                .email("test@example.com")
+                .isDeleted(false)
+                .build();
+
+        given(userRepository.findByIdAndDeletedAtIsNull(userId)).willReturn(Optional.of(user));
+
+        Goal goal = Goal.builder()
+                .id(goalId)
+                .user(user)
+                .category(Category.RETIREMENT)
+                .status(Status.ACTIVE)
+                .title("은퇴 목표")
+                .targetAmount(2_000_000L)
+                .build();
+
+        given(goalRepository.findByIdAndUserId(goalId, userId)).willReturn(Optional.of(goal));
+
+        GoalRetirement retirement = GoalRetirement.builder()
+                .goal(goal)
+                .expectedDeathDate(expectedDeath)
+                .monthlyExpense(1_500_000L)
+                .build();
+
+        given(goalRetirementRepository.findByGoalId(goalId)).willReturn(Optional.of(retirement));
+
+        SimulationResults mockResults = new SimulationResults();
+
+        Simulation simulation = Simulation.builder()
+                .id(goal.getId())
+                .initialAsset(3_000_000L)
+                .monthlyIncome(2_000_000L)
+                .monthlyExpense(1_000_000L)
+                .monthlySaving(1_000_000L)
+                .annualInterestRate(2.5)
+                .elapsedMonths(0)
+                .totalMonths(60)
+                .baseDate(LocalDate.now())
+                .build();
+
+
+        given(calculateAll.calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(), any(), anyList())
+        ).willReturn(mockResults);
+
+        given(simulationRepository.save(any(Simulation.class))).willReturn(simulation);
+
+        defaultRetirementSimulationService.initializeDefaultSimulation(userId, goalId);
+
+        verify(simulationRepository).save(any(Simulation.class));
+        verify(simulationGoalJdbcRepository).batchInsertSimulationGoals(anyList());
+        verify(calculateAll).calculate(
+                anyLong(), anyLong(), anyLong(), anyLong(), anyDouble(),
+                anyInt(), anyInt(), any(), any(), anyList());
     }
 
 }
