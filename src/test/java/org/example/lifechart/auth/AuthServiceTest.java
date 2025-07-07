@@ -1,13 +1,14 @@
 package org.example.lifechart.auth;
 
 import io.jsonwebtoken.Claims;
-import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
+import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.auth.dto.LoginRequest;
 import org.example.lifechart.domain.auth.dto.TokenRefreshRequest;
 import org.example.lifechart.domain.auth.dto.TokenRefreshResponse;
 import org.example.lifechart.domain.auth.service.AuthServiceImpl;
 import org.example.lifechart.domain.user.entity.User;
+import org.example.lifechart.domain.user.port.AccountEventPublisherPort;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.example.lifechart.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
@@ -49,6 +52,12 @@ class AuthServiceTest {
     @Mock
     private ValueOperations<String, String> valueOperations;
 
+    @Mock
+    private AccountEventPublisherPort accountEventPublisherPort;
+
+    @Mock
+    private SendSqsPort sendSqsPort;
+
     private final String email = "test@example.com";
     private final String password = "password";
     private final String encodedPassword = "encoded";
@@ -68,7 +77,14 @@ class AuthServiceTest {
     void login_success() {
         LoginRequest request = new LoginRequest(email, password);
 
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        User user = User.builder()
+                .id(1L)
+                .email(email)
+                .password(encodedPassword)
+                .build();
+
+        given(userRepository.findByEmailAndIsDeletedFalse(email))
+                .willReturn(Optional.of(user));
         given(passwordEncoder.matches(password, encodedPassword)).willReturn(true);
         given(jwtUtil.createAccessToken(userId, email)).willReturn(accessToken);
         given(jwtUtil.createRefreshToken(userId, email)).willReturn(refreshToken);
@@ -85,23 +101,24 @@ class AuthServiceTest {
     @DisplayName("로그인 실패 - 이메일 없음")
     void login_fail_email_not_found() {
         LoginRequest request = new LoginRequest(email, password);
-        given(userRepository.findByEmail(email)).willReturn(Optional.empty());
+        given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(CustomException.class)
-                .hasMessageContaining(ErrorCode.EMAIL_NOT_FOUND.getMessage());
+        CustomException exception = assertThrows(CustomException.class, () ->
+                        authService.login(request));
+
+        assertEquals("이메일을 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
     }
 
     @Test
     @DisplayName("로그인 실패 - 비밀번호 불일치")
     void login_fail_password_mismatch() {
         LoginRequest request = new LoginRequest(email, password);
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.of(user));
         given(passwordEncoder.matches(password, encodedPassword)).willReturn(false);
 
-        assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(CustomException.class)
-                .hasMessageContaining(ErrorCode.NOT_MATCH_PASSWORD.getMessage());
+        CustomException exception = assertThrows(CustomException.class, () ->
+                authService.login(request));
+        assertEquals("비밀번호가 일치하지 않습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
     }
 
     @Test
@@ -114,12 +131,11 @@ class AuthServiceTest {
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
         given(valueOperations.get("refresh:" + userId)).willReturn(refreshToken);
         given(jwtUtil.createAccessToken(userId, email)).willReturn(accessToken);
-        given(jwtUtil.createRefreshToken(userId, email)).willReturn("new-refresh");
 
         TokenRefreshResponse response = authService.refresh(request);
 
         assertThat(response.getAccessToken()).isEqualTo(accessToken);
-        assertThat(response.getRefreshToken()).isEqualTo("new-refresh");
+        assertThat(response.getRefreshToken()).isEqualTo(refreshToken);
     }
 
     @Test
@@ -128,9 +144,10 @@ class AuthServiceTest {
         TokenRefreshRequest request = new TokenRefreshRequest(refreshToken);
         given(jwtUtil.validateToken(refreshToken)).willReturn(false);
 
-        assertThatThrownBy(() -> authService.refresh(request))
-                .isInstanceOf(CustomException.class)
-                .hasMessageContaining(ErrorCode.INVALID_REFRESH_TOKEN.getMessage());
+        CustomException exception = assertThrows(CustomException.class, () ->
+                authService.refresh(request));
+
+        assertEquals("Refresh Token이 유효하지 않습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
     }
 
     @Test

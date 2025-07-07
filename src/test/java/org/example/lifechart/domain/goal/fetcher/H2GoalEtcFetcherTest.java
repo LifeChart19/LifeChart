@@ -1,21 +1,12 @@
 package org.example.lifechart.domain.goal.fetcher;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
 import org.example.lifechart.domain.goal.dto.response.GoalEtcInfoResponse;
 import org.example.lifechart.domain.goal.entity.Goal;
 import org.example.lifechart.domain.goal.entity.GoalEtc;
-import org.example.lifechart.domain.goal.entity.GoalHousing;
 import org.example.lifechart.domain.goal.enums.Category;
-import org.example.lifechart.domain.goal.enums.HousingType;
 import org.example.lifechart.domain.goal.enums.Share;
 import org.example.lifechart.domain.goal.enums.Status;
 import org.example.lifechart.domain.goal.repository.GoalEtcRepository;
@@ -28,6 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test") // application-test.properties 적용
@@ -113,8 +111,16 @@ public class H2GoalEtcFetcherTest {
 	void fetch_category가_ETC이나_DB에_없으면_GOAL_ETC_NOT_FOUND_예외를_던진다() {
 		// given
 		User user = User.builder()
-			.id(1L)
-			.build();
+				.name("이름")
+				.email("email@email.com")
+				.password("5678")
+				.nickname("닉네임")
+				.gender("male")
+				.birthDate(LocalDate.of(1990,1,1))
+				.isDeleted(false)
+				.build();
+
+		userRepository.save(user);
 
 		Goal goal = Goal.builder()
 			.user(user)
@@ -131,12 +137,6 @@ public class H2GoalEtcFetcherTest {
 			.build();
 
 		goalRepository.save(goal);
-
-		GoalEtc goalEtc = GoalEtc.builder()
-			.goal(goal)
-			.theme("여행")
-			.expectedPrice(30_000_000L)
-			.build();
 
 		// when
 		CustomException customException = assertThrows(CustomException.class, () ->

@@ -1,14 +1,5 @@
 package org.example.lifechart.domain.goal.fetcher;
 
-import static org.assertj.core.api.AssertionsForClassTypes.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.response.GoalDetailInfoResponse;
@@ -25,14 +16,17 @@ import org.example.lifechart.domain.user.entity.User;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -128,8 +122,16 @@ public class H2GoalRetirementFetcherTest {
 	void fetch_goalId에_해당하는_은퇴_목표가_없으면_GOAL_RETIREMENT_NOT_FOUND_예외를_던진다() {
 		// given
 		User user = User.builder()
-			.id(1L)
-			.build();
+				.name("이름")
+				.email("email1@email.com")
+				.password("5678")
+				.nickname("닉네임1")
+				.gender("male")
+				.birthDate(LocalDate.of(1990,1,1))
+				.isDeleted(false)
+				.build();
+
+		userRepository.save(user);
 
 		Goal goal = Goal.builder()
 			.user(user)
@@ -146,14 +148,6 @@ public class H2GoalRetirementFetcherTest {
 			.build();
 
 		goalRepository.save(goal);
-
-		GoalRetirement goalRetirement = GoalRetirement.builder()
-			.id(1L)
-			.goal(goal)
-			.monthlyExpense(5_000_000L)
-			.expectedDeathDate(LocalDate.of(2083,12,31))
-			.retirementType(RetirementType.COUPLE)
-			.build();
 
 		// when
 		CustomException customException = assertThrows(CustomException.class, () ->

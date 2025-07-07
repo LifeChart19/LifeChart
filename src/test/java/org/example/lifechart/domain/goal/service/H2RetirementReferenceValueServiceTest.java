@@ -1,13 +1,6 @@
 package org.example.lifechart.domain.goal.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
-
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.Optional;
-
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
 import org.example.lifechart.domain.goal.dto.response.GoalRetirementEstimateResponse;
@@ -18,13 +11,16 @@ import org.example.lifechart.support.TestJsonLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import java.time.LocalDate;
+import java.util.Map;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -61,7 +57,6 @@ public class H2RetirementReferenceValueServiceTest {
 		userRepository.save(user);
 
 		int currentYear = 2025;
-
 		// when
 		GoalRetirementEstimateResponse response = retirementReferenceValueService.getReferenceValues(user.getId(), currentYear);
 
