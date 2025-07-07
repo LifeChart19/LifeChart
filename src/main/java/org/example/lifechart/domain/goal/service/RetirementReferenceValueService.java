@@ -57,7 +57,8 @@ public class RetirementReferenceValueService {
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		Long expectedLifespan = getExpectedLifespan(user.getGender(), currentYear);
+		String gender = user.getGender() != null ? user.getGender() : "none";
+		Long expectedLifespan = getExpectedLifespan(gender, currentYear);
 		RetirementType retirementType = RetirementType.COUPLE;
 		Long monthlyExpense = getAverageMonthlyExpense(retirementType);
 		LocalDateTime expectedRetirementDate = calculateExpectedRetirementDate(user.getGender(), user.getBirthDate());

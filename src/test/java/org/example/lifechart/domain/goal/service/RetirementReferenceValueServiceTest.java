@@ -4,6 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
@@ -45,16 +46,17 @@ public class RetirementReferenceValueServiceTest {
 		User user = User.builder()
 			.id(1L)
 			.gender("male")
+			.birthDate(LocalDate.of(1990,1,1))
 			.build();
 
-		given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
 		int currentYear = 2025;
 
 		// when
 		GoalRetirementEstimateResponse response = retirementReferenceValueService.getReferenceValues(user.getId(), currentYear);
 
 		// then
-		verify(userRepository).findById(user.getId());
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		assertThat(response.getExpectedLifespan()).isEqualTo(Math.round(82.1));
 		assertThat(response.getMonthlyExpense()).isEqualTo(2_793_000L);
 		assertThat(response.getRetirementType()).isEqualTo(RetirementType.COUPLE);
@@ -67,9 +69,10 @@ public class RetirementReferenceValueServiceTest {
 		User user = User.builder()
 			.id(1L)
 			.gender("중성")
+			.birthDate(LocalDate.of(1990,1,1))
 			.build();
 
-		given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
 
 		int currentYear = 2025;
 
@@ -77,7 +80,7 @@ public class RetirementReferenceValueServiceTest {
 		GoalRetirementEstimateResponse response = retirementReferenceValueService.getReferenceValues(user.getId(), currentYear);
 
 		// then
-		verify(userRepository).findById(user.getId());
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		assertThat(response.getExpectedLifespan()).isEqualTo(Math.round(85.0));
 	}
 
@@ -88,9 +91,10 @@ public class RetirementReferenceValueServiceTest {
 		User user = User.builder()
 			.id(1L)
 			.gender("중성")
+			.birthDate(LocalDate.of(1990,1,1))
 			.build();
 
-		given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
 
 		int currentYear = 2030;
 
@@ -99,7 +103,7 @@ public class RetirementReferenceValueServiceTest {
 			retirementReferenceValueService.getReferenceValues(user.getId(), currentYear));
 
 		// then
-		verify(userRepository).findById(user.getId());
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_LIFESPAN_DATA_NOT_EXIST);
 	}
 
@@ -110,17 +114,19 @@ public class RetirementReferenceValueServiceTest {
 		User user = User.builder()
 			.id(1L)
 			.gender("남자")
+			.birthDate(LocalDate.of(1990,1,1))
 			.build();
 
 		int currentYear = 2100;
 
-		given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+		given(userRepository.findByIdAndDeletedAtIsNull(user.getId())).willReturn(Optional.of(user));
 
 		// when
 		CustomException customException = assertThrows(CustomException.class, () ->
 			retirementReferenceValueService.getReferenceValues(user.getId(), currentYear));
 
 		// then
+		verify(userRepository).findByIdAndDeletedAtIsNull(user.getId());
 		assertThat(customException.getErrorCode()).isEqualTo(ErrorCode.GOAL_LIFESPAN_DATA_NOT_EXIST);
 	}
 }
