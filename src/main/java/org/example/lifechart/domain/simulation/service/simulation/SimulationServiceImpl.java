@@ -130,7 +130,7 @@ public class SimulationServiceImpl implements SimulationService {
                 .toList();
 
         //8. entity저장
-        simulation.addSimulationGoalList(simulationGoals);
+        //simulation.addSimulationGoalList(simulationGoals);
 
         //10. 배치인서트로 insert
         simulationGoalJdbcRepository.batchInsertSimulationGoals(simulationGoals);
@@ -332,8 +332,8 @@ public class SimulationServiceImpl implements SimulationService {
         );
         simulation.updateResults(newResults);
         try {
-        eventPublisher.publishUpdateEventBySimulationEdit(user.getId(), simulation.getId(), goalIds, dto, newResults
-        );
+            eventPublisher.publishUpdateEventBySimulationEdit(user.getId(), simulation.getId(), goalIds, dto, newResults
+            );
         } catch (Exception e) {
             log.warn("시뮬레이션 생성 이벤트 발행 실패: {}", e.getMessage());
         }

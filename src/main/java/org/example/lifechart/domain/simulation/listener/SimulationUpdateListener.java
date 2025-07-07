@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class SimulationUpdateListener {
-    //은퇴 목표 생성이벤트를 수신하고, 전달받은 goalId를 추출하고, service메서드를 호출한다.
 
     private final SimulationService simulationService;
 
