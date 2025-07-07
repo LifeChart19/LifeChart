@@ -2,10 +2,12 @@ package org.example.lifechart.domain.user.service;
 
 import org.example.lifechart.common.enums.ErrorCode;
 import org.example.lifechart.common.exception.CustomException;
+import org.example.lifechart.common.port.SendSqsPort;
 import org.example.lifechart.domain.user.dto.SignupRequest;
 import org.example.lifechart.domain.user.dto.UserUpdateRequest;
 import org.example.lifechart.domain.user.dto.WithdrawalRequest;
 import org.example.lifechart.domain.user.entity.User;
+import org.example.lifechart.domain.user.port.AccountEventPublisherPort;
 import org.example.lifechart.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -34,6 +38,15 @@ class UserServiceTest {
     @InjectMocks
     private UserServiceImpl userService;
 
+    @Mock
+    private SendSqsPort sqsPort;
+
+    @Mock
+    private AccountEventPublisherPort accountEventPublisherPort;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -42,18 +55,35 @@ class UserServiceTest {
     @Test
     @DisplayName("회원가입 성공")
     void signup_success() {
-        SignupRequest request = new SignupRequest("test@email.com", "pass", "테스터","nick", LocalDate.now(), new java.math.BigDecimal("1500000"),"MALE", "JOB", "01012345678");
+        SignupRequest request = new SignupRequest(
+                "test@email.com",
+                "pass",
+                "테스터",
+                "nick",
+                LocalDate.now(),
+                new java.math.BigDecimal("1500000"),
+                "MALE",
+                "JOB",
+                "01012345678"
+        );
 
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(userRepository.existsByNickname(any())).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("encoded_pw");
-        when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        when(userRepository.save(any())).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            ReflectionTestUtils.setField(user, "createdAt", java.time.LocalDateTime.now());
+            return user;
+        });
 
         User result = userService.signup(request);
 
         assertThat(result.getEmail()).isEqualTo("test@email.com");
         assertThat(result.getPassword()).isEqualTo("encoded_pw");
+        assertThat(result.getCreatedAt()).isNotNull();
     }
+
 
     @Test
     @DisplayName("회원가입 실패 - 이메일 중복")
