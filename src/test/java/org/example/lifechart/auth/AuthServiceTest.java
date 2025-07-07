@@ -53,7 +53,7 @@ class AuthServiceTest {
     private final String password = "password";
     private final String encodedPassword = "encoded";
     private final String accessToken = "access-token";
-    private final String refreshToken = "refresh-token";
+    private final String refreshToken = "new-refresh";
     private final Long userId = 1L;
 
     private User user;
