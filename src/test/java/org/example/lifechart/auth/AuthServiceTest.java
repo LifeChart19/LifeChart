@@ -68,7 +68,7 @@ class AuthServiceTest {
     void login_success() {
         LoginRequest request = new LoginRequest(email, password);
 
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.of(user)); // 수정!
         given(passwordEncoder.matches(password, encodedPassword)).willReturn(true);
         given(jwtUtil.createAccessToken(userId, email)).willReturn(accessToken);
         given(jwtUtil.createRefreshToken(userId, email)).willReturn(refreshToken);
